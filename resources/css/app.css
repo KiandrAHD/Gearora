@@ -2,11 +2,79 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
-@source "../**/*.blade.php";
-@source "../**/*.js";
-@source "../**/*.vue";
+@source '../**/*.blade.php';
+@source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-forest: #183D32;
+    --color-navy: #08213F;
+    --color-blue: #2377C9;
+    --color-sage: #A8B99A;
+    --color-sand: #E9DDC9;
+    --color-cloud: #F7F8F3;
+    --color-earth: #80664E;
+    --color-line: #DBE0D7;
+
+    --font-heading: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-editorial: Georgia, serif;
+}
+
+:root {
+    --forest: #183D32;
+    --navy: #08213F;
+    --blue: #2377C9;
+    --sage: #A8B99A;
+    --sand: #E9DDC9;
+    --cloud: #F7F8F3;
+    --earth: #80664E;
+    --line: #DBE0D7;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-width: 320px;
+    background: var(--cloud);
+    color: var(--navy);
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.font-heading {
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.035em;
+}
+
+.editorial-accent {
+    color: var(--blue);
+    font-family: Georgia, serif;
+    font-style: italic;
+}
+
+:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
