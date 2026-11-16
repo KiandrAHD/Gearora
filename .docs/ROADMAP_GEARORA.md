@@ -40,28 +40,30 @@ Prinsip delivery:
 
 ### Tasks
 
-- [ ] Setujui PRD, arsitektur, Tech Stack, dan Roadmap sebagai baseline.
-- [ ] Tetapkan kebijakan rental: tanggal/jam, durasi, pickup, return, pembatalan, keterlambatan, deposit, dan metode pembayaran.
-- [ ] Tetapkan apakah GEARORA hanya memiliki satu lokasi usaha pada MVP.
-- [ ] Buka cPanel AeonFree dan cek versi PHP aktual.
-- [ ] Cek ekstensi PHP wajib Laravel dan `pdo_mysql`.
-- [ ] Cek MySQL version dan pembuatan database/user.
-- [ ] Cek apakah SSH/Terminal, Composer, cron, File Manager, dan phpMyAdmin tersedia.
-- [ ] Cek kemampuan menempatkan source Laravel di luar `public_html`.
-- [ ] Cek permission `storage` dan `bootstrap/cache`.
-- [ ] Siapkan PHP, Composer, Node, dan MySQL lokal yang kompatibel.
-- [ ] Tentukan versi Laravel sesuai PHP runtime yang benar-benar tersedia.
+- [x] Setujui PRD, arsitektur, Tech Stack, dan Roadmap sebagai baseline. — dibekukan di `.docs/REQUIREMENT_FREEZE.md`.
+- [ ] Tetapkan kebijakan rental: tanggal/jam, durasi, pickup, return, pembatalan, keterlambatan, deposit, dan metode pembayaran. — **OUTSTANDING** (keputusan bisnis; sengaja belum diimplementasikan).
+- [ ] Tetapkan apakah GEARORA hanya memiliki satu lokasi usaha pada MVP. — **OUTSTANDING** (default PRD: satu lokasi, belum diformalkan).
+- [ ] Buka cPanel AeonFree dan cek versi PHP aktual. — **BLOCKED** (butuh akses cPanel).
+- [ ] Cek ekstensi PHP wajib Laravel dan `pdo_mysql`. — **BLOCKED** (hosting); ekstensi lokal terverifikasi lengkap.
+- [ ] Cek MySQL version dan pembuatan database/user. — **BLOCKED** (hosting); MySQL lokal 8.4.3 + database `gearora` dibuat dan terverifikasi.
+- [ ] Cek apakah SSH/Terminal, Composer, cron, File Manager, dan phpMyAdmin tersedia. — **BLOCKED** (butuh akses cPanel).
+- [ ] Cek kemampuan menempatkan source Laravel di luar `public_html`. — **BLOCKED** (butuh akses cPanel).
+- [ ] Cek permission `storage` dan `bootstrap/cache`. — **BLOCKED** (hosting); lokal writable.
+- [x] Siapkan PHP, Composer, Node, dan MySQL lokal yang kompatibel. — PHP 8.5.9, Composer 2.9.7, Node 26.13.0, npm 11.20.0, MySQL 8.4.3.
+- [ ] Tentukan versi Laravel sesuai PHP runtime yang benar-benar tersedia. — **PROVISIONAL**: Laravel 12.72.0; final setelah PHP hosting diverifikasi.
 
 ### Deliverables
 
-- Hosting validation checklist yang terisi.
-- Keputusan final versi PHP/Laravel.
-- Daftar aturan bisnis yang disetujui.
-- Struktur repository dan environment development.
+- [x] Hosting validation checklist yang terisi. — terisi; item yang butuh akun berstatus **BLOCKED**.
+- [ ] Keputusan final versi PHP/Laravel. — masih **PROVISIONAL** (Laravel 12.x).
+- [ ] Daftar aturan bisnis yang disetujui. — baseline terdokumentasi; kebijakan final **OUTSTANDING**.
+- [x] Struktur repository dan environment development. — selesai.
 
 ### Exit Criteria
 
 Tidak ada blocker penting terkait versi PHP, ekstensi, document root, koneksi database, atau permission. Jika hosting gagal pada syarat keamanan/kompatibilitas, lanjutkan development lokal tetapi jangan deploy ke hosting tersebut.
+
+**Status (16 Nov 2026): BELUM terpenuhi sepenuhnya.** Blocker hosting tidak dapat diverifikasi karena tidak ada akses cPanel. Development lokal tetap dilanjutkan; deployment produksi **ditahan**. Rincian: `.docs/PHASE_0_HOSTING_VALIDATION.md`.
 
 ## 4. Phase 1 — Project Foundation
 
@@ -69,27 +71,29 @@ Tidak ada blocker penting terkait versi PHP, ekstensi, document root, koneksi da
 
 ### Tasks
 
-- [ ] Inisialisasi Laravel sesuai versi yang lolos Phase 0.
-- [ ] Konfigurasi `.env` lokal dan koneksi MySQL.
-- [ ] Siapkan Git repository, `.gitignore`, dan branch workflow.
-- [ ] Konfigurasi Vite dan Tailwind CSS.
-- [ ] Buat design tokens berdasarkan `Desain_Gearora.md`.
-- [ ] Buat Blade layout public, customer, dan admin.
-- [ ] Buat komponen dasar: button, input, badge, card, table, modal, alert, pagination.
-- [ ] Atur locale Indonesia, format Rupiah, dan timezone `Asia/Jakarta`.
-- [ ] Buat error pages dan empty states awal.
-- [ ] Tambahkan smoke test bahwa aplikasi berjalan dan database terkoneksi.
+- [x] Inisialisasi Laravel sesuai versi yang lolos Phase 0. — Laravel 12.72.0 (PROVISIONAL).
+- [x] Konfigurasi `.env` lokal dan koneksi MySQL. — `.env.example` + `.env`; MySQL 8.4.3 terhubung, database `gearora` termigrasi.
+- [x] Siapkan Git repository, `.gitignore`, dan branch workflow. — `main`; `.env` di-ignore.
+- [x] Konfigurasi Vite dan Tailwind CSS. — Vite 6 + Tailwind 4; `npm run build` lulus.
+- [x] Buat design tokens berdasarkan `Desain_Gearora.md`. — token warna + typography Poppins/Inter/Georgia.
+- [ ] Buat Blade layout public, customer, dan admin. — **SEBAGIAN**: layout publik/base sudah ada; layout customer & admin belum dibuat.
+- [ ] Buat komponen dasar: button, input, badge, card, table, modal, alert, pagination. — **SEBAGIAN**: baru `foundation-card`; sisanya belum.
+- [ ] Atur locale Indonesia, format Rupiah, dan timezone `Asia/Jakarta`. — **SEBAGIAN**: locale `id` + timezone `Asia/Jakarta` selesai; format Rupiah belum.
+- [ ] Buat error pages dan empty states awal. — **SEBAGIAN**: halaman 404/500 selesai; empty states belum.
+- [x] Tambahkan smoke test bahwa aplikasi berjalan dan database terkoneksi. — 11 test, 23 assertion, lulus.
 
 ### Deliverables
 
-- Laravel app dapat dijalankan lokal.
-- Layout public dan admin skeleton.
-- Design token dan komponen dasar.
-- Database connection serta migration awal.
+- [x] Laravel app dapat dijalankan lokal.
+- [ ] Layout public dan admin skeleton. — publik ada; admin belum.
+- [ ] Design token dan komponen dasar. — token ada; komponen dasar belum lengkap.
+- [x] Database connection serta migration awal. — MySQL terhubung + baseline migration.
 
 ### Exit Criteria
 
 Aplikasi dapat start tanpa error, CSS/JS hasil build muncul, migrasi dapat dijalankan ulang pada database development, dan struktur layout konsisten.
+
+**Status (16 Nov 2026): TERPENUHI untuk fondasi inti.** Start tanpa error, aset build muncul, migrate/rollback lulus. Namun 4 task roadmap (layout customer/admin, komponen dasar lengkap, format Rupiah, empty states) **belum selesai** dan ditandai sebagai sisa pekerjaan. Rincian: `.docs/PHASE_0_1_COMPLETION_REPORT.md`.
 
 ## 5. Phase 2 — Database Foundation, Authentication & RBAC
 

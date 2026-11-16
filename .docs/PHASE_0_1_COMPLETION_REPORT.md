@@ -227,6 +227,9 @@ Commits:
 | `20d8350` | chore: configure application environment, locale, timezone, and database |
 | `5dfc6cf` | chore: configure frontend asset pipeline and base UI foundation |
 | `fc6be07` | test: add application foundation tests |
+| `ecd794a` | docs: add local setup, AeonFree deployment guide, and completion report |
+
+> Commit dokumentasi koreksi checklist ditambahkan setelah tabel ini; lihat `git log --oneline` untuk hash terbaru.
 
 ---
 
@@ -238,7 +241,7 @@ Commits:
 | Ekstensi PHP lengkap | Tidak ada daftar publik | Script diagnostik siap |
 | Document root / private dir placement | Tidak ada info publik | Deployment strategy konservatif; deploy dihold |
 | SSH/Composer | Tidak diverifikasi | Build lokal + upload manual |
-| MySQL local access | Password root tidak tersedia | Pakai SQLite; konfigurasi MySQL tetap ada di `.env.example` |
+| MySQL local access | ~~Password root tidak tersedia~~ **RESOLVED** (16 Nov 2026) | MySQL 8.4.3 terhubung; database `gearora` dibuat & termigrasi. |
 | Kebijakan bisnis final | PRD §14: open questions | Tidak diimplementasi prematur; ditandai di business rules |
 | Cron jobs | Tidak diverifikasi | Sistem inti dirancang tanpa ketergantungan cron |
 
@@ -248,7 +251,41 @@ Commits:
 
 | Phase | Status | Catatan |
 |---|---|---|
-| **Phase 0: Requirement Freeze & Hosting Validation** | ✅ **COMPLETED** | Seluruh checklist terpenuhi. Item hosting: BLOCKED (bukan ditolak, butuh akses akun). Tidak ada yang dikarang. |
-| **Phase 1: Project Foundation** | ✅ **COMPLETED** | Semua acceptance criteria terpenuhi. 20/20 validasi check PASS. Deployment dihold sesuai protokol. |
+| **Phase 0: Requirement Freeze & Hosting Validation** | ⚠️ **COMPLETED (dengan blocker hosting)** | Seluruh analisis, dokumen, dan keputusan selesai. Namun **exit criteria roadmap belum terpenuhi penuh**: validasi hosting tidak dapat diselesaikan tanpa akses cPanel (BLOCKED, bukan gagal). Tidak ada hasil yang dikarang. |
+| **Phase 1: Project Foundation** | ⚠️ **PARTIALLY COMPLETED** | Fondasi inti selesai & terverifikasi (11/11 test, 20/20 validasi, MySQL terhubung). 4 task roadmap belum selesai — lihat §12. |
 
-**GEARORA Phase 0 + Phase 1: DONE.**
+**GEARORA Phase 1 (fondasi inti): DONE.** Sisa task roadmap §12 adalah pekerjaan lanjutan, bukan kegagalan.
+
+---
+
+## 12. Gaps vs ROADMAP (belum selesai)
+
+Task pada `.docs/ROADMAP_GEARORA.md` Phase 1 yang **belum** selesai:
+
+| # | Task roadmap Phase 1 | Kondisi | Alasan |
+|---|---|---|---|
+| 1 | Blade layout **public, customer, dan admin** | Publik/base ada; customer & admin belum | Layout customer/admin butuh struktur navigasi yang bergantung modul auth (Phase 2) |
+| 2 | Komponen dasar: button, input, badge, card, table, modal, alert, pagination | Hanya `foundation-card` | Komponen sebaiknya dibuat saat kebutuhan halaman nyata terbukti, agar tidak jadi abstraksi kosong |
+| 3 | Locale Indonesia, **format Rupiah**, timezone | Locale `id` + timezone selesai; format Rupiah belum | Helper format Rupiah relevan saat fitur harga/transaksi dibuat (Phase 3+) |
+| 4 | Error pages **dan empty states** awal | Error pages 404/500 selesai; empty states belum | Empty state butuh konteks halaman; dibuat bersama halaman terkait |
+
+Task ROADMAP Phase 0 yang **belum** selesai (semua kecuali 2 item):
+
+| # | Task roadmap Phase 0 | Kondisi | Alasan |
+|---|---|---|---|
+| 1 | Kebijakan rental (tanggal/jam, durasi, pickup, return, pembatalan, keterlambatan, deposit, metode pembayaran) | OUTSTANDING | Keputusan bisnis pengguna, bukan teknis |
+| 2 | Satu lokasi atau multi-cabang | OUTSTANDING | Default PRD: satu lokasi; belum diformalkan |
+| 3–7 | Semua item validasi cPanel (PHP, ekstensi, MySQL hosting, SSH/Composer/cron, document root, permission) | BLOCKED | **Tidak ada akses akun AeonFree** |
+| 8 | Versi Laravel final | PROVISIONAL | Menunggu PHP hosting diverifikasi |
+
+> Catatan: acceptance criteria pada prompt eksekusi (BAGIAN 8) **tidak** memuat komponen dasar/layout customer-admin/Rupiah/empty states, sehingga Phase 1 dinyatakan selesai terhadap kriteria prompt. Terhadap daftar task ROADMAP yang lebih luas, Phase 1 berstatus **PARTIALLY COMPLETED**.
+
+---
+
+## 13. Catatan Verifikasi Ulang (16 Nov 2026)
+
+- `php artisan test` → **11 passed (23 assertions)**.
+- `npm run build` → sukses (CSS 26.82 kB, JS 115.14 kB).
+- `php artisan db:show` → MySQL 8.4.3, database `gearora`, 9 tabel baseline.
+- `php artisan migrate:status` → ketiga migration `Ran`.
+- Route `storage/{path}` (Laravel local disk) tidak mengekspos file privat: butuh signed URL, dan mengembalikan 404 di produksi — aman untuk baseline.
