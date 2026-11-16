@@ -1,66 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GEARORA
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Gear Up. Explore More.**
 
-## About Laravel
+GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perlengkapan outdoor** (hiking, trekking, camping, dan aktivitas alam lainnya). Platform menyatukan pencarian gear, pemeriksaan ketersediaan, reservasi, panduan penggunaan, serta pengelolaan inventaris dan transaksi.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+> Status: **Phase 0 (Requirement Freeze & Hosting Validation) selesai** dan **Phase 1 (Project Foundation) selesai**. Modul bisnis (auth, katalog, rental order, pembayaran, dll.) dibangun pada fase berikutnya.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 1. Ringkasan Proyek
 
-## Learning Laravel
+- Website publik (Blade, server-rendered): Homepage, katalog SEWA/BELI, detail produk, akun, trip planner, panduan.
+- Admin Console (fase berikutnya): dashboard, katalog/inventaris, rental order, pembayaran, deposit, inspeksi, pengembalian, sales, laporan.
+- Arsitektur: **modular monolith**, MVC + Service Layer, satu database MySQL.
+- Dirancang **hosting-aware**: tidak bergantung pada Node.js, Composer, SSH, queue worker, WebSocket, atau proses daemon di server.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 2. Tech Stack
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+| Layer | Teknologi |
+|---|---|
+| Framework | Laravel 12.x |
+| Bahasa | PHP 8.2+ |
+| Frontend | Blade + Tailwind CSS 4 + Alpine.js 3 |
+| Build tool | Vite 6 (Node.js, build di lokal) |
+| Database | MySQL 8.0 (target hosting), InnoDB, `utf8mb4` |
+| ORM | Eloquent |
+| Testing | PHPUnit 11 (SQLite `:memory:` untuk test) |
+| Version control | Git + GitHub |
+| Hosting | AeonFree (shared hosting) |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 3. System Requirements
 
-## Laravel Sponsors
+### Development lokal
+- PHP **8.2+** (diuji pada 8.5.9) dengan ekstensi: `pdo_mysql`, `mbstring`, `fileinfo`, `openssl`, `ctype`, `curl`, `dom`, `xml`, `tokenizer`, `json`, `bcmath`, `sqlite3` (untuk test).
+- Composer 2.x.
+- Node.js 20+ dan npm.
+- MySQL 8.0 (opsional untuk dev; SQLite cukup untuk memulai).
+- Git.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Produksi (AeonFree)
+- PHP **8.2+** dan MySQL — **wajib diverifikasi** di cPanel (lihat `.docs/PHASE_0_HOSTING_VALIDATION.md`).
 
-### Premium Partners
+## 4. Instalasi
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```bash
+git clone https://github.com/KiandrAHD/Gearora.git
+cd Gearora
+composer install
+cp .env.example .env      # Windows: copy .env.example .env
+php artisan key:generate
+npm install
+```
 
-## Contributing
+## 5. Environment Configuration
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Konfigurasi utama di `.env` (jangan di-commit). Ringkasan:
 
-## Code of Conduct
+| Variabel | Nilai GEARORA | Catatan |
+|---|---|---|
+| `APP_NAME` | `GEARORA` | — |
+| `APP_ENV` | `local` / `production` | — |
+| `APP_DEBUG` | `true` (local) / `false` (produksi) | Wajib `false` di produksi |
+| `APP_TIMEZONE` | `Asia/Jakarta` | — |
+| `APP_LOCALE` | `id` | UI Bahasa Indonesia |
+| `DB_CONNECTION` | `mysql` (produksi) | `sqlite` untuk dev tanpa MySQL |
+| `SESSION_DRIVER` | `database` | Redis tidak diasumsikan tersedia |
+| `CACHE_STORE` | `database` | — |
+| `QUEUE_CONNECTION` | `sync` | Tanpa worker persisten |
+| `MAIL_MAILER` | `log` | Placeholder aman |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 6. Database Setup
 
-## Security Vulnerabilities
+**MySQL (target produksi / parity):**
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```sql
+CREATE DATABASE gearora CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'gearora'@'localhost' IDENTIFIED BY 'ganti-password-kuat';
+GRANT ALL PRIVILEGES ON gearora.* TO 'gearora'@'localhost';
+FLUSH PRIVILEGES;
+```
 
-## License
+Atur `DB_*` di `.env`, lalu:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan migrate
+```
+
+**SQLite (tanpa install MySQL):** ubah `.env` menjadi `DB_CONNECTION=sqlite` (dan pastikan `database/database.sqlite` ada), lalu `php artisan migrate`.
+
+> Phase 1 hanya memuat migration **baseline** bawaan Laravel (`users`, `sessions`, `cache`, `jobs`). Tabel bisnis (produk, rental order, dsb.) dibuat pada fase berikutnya.
+
+## 7. Running Development Server
+
+```bash
+php artisan serve
+# http://127.0.0.1:8000
+```
+
+Health check internal bawaan Laravel: `GET /up`.
+
+## 8. Running Vite
+
+```bash
+npm run dev      # mode watch, untuk development
+```
+
+## 9. Running Tests
+
+Test memakai SQLite `:memory:` (terpisah dari database dev/produksi).
+
+```bash
+php artisan test
+# atau
+./vendor/bin/phpunit
+```
+
+## 10. Build Production
+
+```bash
+npm run build                       # menghasilkan public/build/
+composer install --no-dev --optimize-autoloader
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+## 11. AeonFree Deployment Strategy
+
+Ringkas (detail + langkah lengkap: `.docs/DEPLOYMENT_AEONFREE.md`):
+
+1. Verifikasi hosting lebih dulu (`.docs/PHASE_0_HOSTING_VALIDATION.md`).
+2. Build `vendor/` dan `public/build/` **di lokal**.
+3. Taruh source Laravel **di luar** `public_html` (mis. `gearora-app/`); hanya file publik (`index.php`, `.htaccess`, `build/`, `assets/`) di document root.
+4. Set `APP_DEBUG=false`, `APP_ENV=production`, isi kredensial DB nyata (jangan commit).
+5. Jalankan smoke test.
+
+> Status dokumentasi deployment: **sebagian PENDING** menunggu verifikasi akun AeonFree (versi PHP, Composer/SSH, document root).
+
+## 12. Project Documentation Links
+
+| Dokumen | Isi |
+|---|---|
+| [`.docs/PRD_GEARORA.md`](.docs/PRD_GEARORA.md) | Visi, persona, kebutuhan fungsional/nonfungsional, business rules |
+| [`.docs/ARCHITECTURE_GEARORA.md`](.docs/ARCHITECTURE_GEARORA.md) | Arsitektur, modul, domain model, alur transaksi, keamanan |
+| [`.docs/TECH_STACK_GEARORA.md`](.docs/TECH_STACK_GEARORA.md) | Teknologi, kompatibilitas versi, batasan AeonFree |
+| [`.docs/ROADMAP_GEARORA.md`](.docs/ROADMAP_GEARORA.md) | Fase implementasi dan exit criteria |
+| [`.docs/Desain_Gearora.md`](.docs/Desain_Gearora.md) | Master design reference Homepage |
+| [`.docs/PHASE_0_REQUIREMENT_AUDIT.md`](.docs/PHASE_0_REQUIREMENT_AUDIT.md) | Audit requirement & konflik dokumen |
+| [`.docs/PHASE_0_HOSTING_VALIDATION.md`](.docs/PHASE_0_HOSTING_VALIDATION.md) | Validasi hosting + status bukti |
+| [`.docs/PHASE_0_TECHNICAL_DECISIONS.md`](.docs/PHASE_0_TECHNICAL_DECISIONS.md) | Technology Decision Record |
+| [`.docs/REQUIREMENT_FREEZE.md`](.docs/REQUIREMENT_FREEZE.md) | Requirement freeze |
+| [`.docs/LOCAL_DEVELOPMENT.md`](.docs/LOCAL_DEVELOPMENT.md) | Setup lokal dari nol |
+| [`.docs/DEPLOYMENT_AEONFREE.md`](.docs/DEPLOYMENT_AEONFREE.md) | Prosedur deployment |
+| [`.docs/PHASE_0_1_COMPLETION_REPORT.md`](.docs/PHASE_0_1_COMPLETION_REPORT.md) | Laporan penyelesaian Phase 0 & 1 |
+| [`.Gearora/GEARORA.md`](.Gearora/GEARORA.md) | Proposal konsep |
+
+---
+
+**GEARORA — Gear Up. Explore More.**
