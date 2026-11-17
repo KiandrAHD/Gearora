@@ -4,7 +4,9 @@
 
 GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perlengkapan outdoor** (hiking, trekking, camping, dan aktivitas alam lainnya). Platform menyatukan pencarian gear, pemeriksaan ketersediaan, reservasi, panduan penggunaan, serta pengelolaan inventaris dan transaksi.
 
-> Status: **Phase 0 (Requirement Freeze & Hosting Validation) selesai** dan **Phase 1 (Project Foundation) selesai**. Modul bisnis (auth, katalog, rental order, pembayaran, dll.) dibangun pada fase berikutnya.
+> Status: **Phase 0 selesai untuk requirement, kebijakan bisnis, dan keputusan teknis**; verifikasi akun hosting AeonFree masih **BLOCKED** (butuh akses cPanel). **Phase 1 (Project Foundation) selesai.** Modul bisnis (auth, katalog, rental order, pembayaran, dll.) dibangun pada fase berikutnya.
+>
+> Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_0_1_FINAL_REPORT.md`](.docs/PHASE_0_1_FINAL_REPORT.md).
 
 ---
 
@@ -125,6 +127,32 @@ php artisan route:cache
 php artisan view:cache
 ```
 
+## 10.1 UI Foundation (Phase 1)
+
+Halaman skeleton: `/` (home), `/katalog`, `/panduan`, `/akun`. Admin Dashboard skeleton ada di `resources/views/admin/dashboard.blade.php` dan belum diberi route publik (menunggu RBAC Phase 2).
+
+| Komponen | Pemakaian |
+|---|---|
+| `x-layouts.public` / `x-layout` | Layout publik |
+| `x-layouts.customer` | Layout area pelanggan |
+| `x-layouts.admin` | Layout Admin Dashboard |
+| `x-ui.button` | `variant="primary\|secondary\|outline\|ghost\|danger"`, `size`, `href` |
+| `x-ui.input` | label, hint, error, `aria-describedby` otomatis |
+| `x-ui.badge` | `variant="neutral\|success\|warning\|danger\|info\|forest"` |
+| `x-ui.card` | title, description, `footer` slot |
+| `x-ui.table` | `:headers`, `empty`, `caption` |
+| `x-ui.modal` | Alpine.js, `id`, `title`, `footer` slot; buka via `x-dispatch` `open-modal` |
+| `x-ui.alert` | `variant`, `dismissible` |
+| `x-ui.pagination` | `:paginator` |
+| `x-ui.empty-state` | title, description, icon, action slot |
+
+Format Rupiah:
+
+```php
+rupiah(1250000);        // "Rp 1.250.000"
+rupiah('1250000.50', 2); // "Rp 1.250.000,50"
+```
+
 ## 11. AeonFree Deployment Strategy
 
 Ringkas (detail + langkah lengkap: `.docs/DEPLOYMENT_AEONFREE.md`):
@@ -150,9 +178,11 @@ Ringkas (detail + langkah lengkap: `.docs/DEPLOYMENT_AEONFREE.md`):
 | [`.docs/PHASE_0_HOSTING_VALIDATION.md`](.docs/PHASE_0_HOSTING_VALIDATION.md) | Validasi hosting + status bukti |
 | [`.docs/PHASE_0_TECHNICAL_DECISIONS.md`](.docs/PHASE_0_TECHNICAL_DECISIONS.md) | Technology Decision Record |
 | [`.docs/REQUIREMENT_FREEZE.md`](.docs/REQUIREMENT_FREEZE.md) | Requirement freeze |
+| [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md) | Kebijakan rental baseline MVP (satu lokasi, durasi, deposit, refund, pembayaran) |
 | [`.docs/LOCAL_DEVELOPMENT.md`](.docs/LOCAL_DEVELOPMENT.md) | Setup lokal dari nol |
 | [`.docs/DEPLOYMENT_AEONFREE.md`](.docs/DEPLOYMENT_AEONFREE.md) | Prosedur deployment |
-| [`.docs/PHASE_0_1_COMPLETION_REPORT.md`](.docs/PHASE_0_1_COMPLETION_REPORT.md) | Laporan penyelesaian Phase 0 & 1 |
+| [`.docs/PHASE_0_1_FINAL_REPORT.md`](.docs/PHASE_0_1_FINAL_REPORT.md) | Laporan penyelesaian Phase 0 & 1 terbaru |
+| [`.docs/PHASE_0_1_COMPLETION_REPORT.md`](.docs/PHASE_0_1_COMPLETION_REPORT.md) | Laporan penyelesaian Phase 0 & 1 (16 Nov 2026) |
 | [`.Gearora/GEARORA.md`](.Gearora/GEARORA.md) | Proposal konsep |
 
 ---

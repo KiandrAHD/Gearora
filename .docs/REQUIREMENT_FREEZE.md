@@ -42,9 +42,9 @@ Dilarang dibuat pada seluruh MVP: microservices, WebSocket/Reverb, queue worker 
 
 Mengacu `PHASE_0_TECHNICAL_DECISIONS.md`:
 
-- **Laravel 12.x** (PROVISIONAL; dinaikkan bila hosting ≥ PHP 8.2 terverifikasi).
-- **PHP** target 8.2+ (lokal 8.5.9).
-- **MySQL 8.0** (PENDING), InnoDB, `utf8mb4`.
+- **Laravel 12.x** (ACCEPTED 17 Nov 2026; 12.72.0 dipakai final untuk MVP).
+- **PHP** target 8.2+ (lokal 8.5.9); PHP < 8.2 = hosting tidak memenuhi syarat.
+- **MySQL 8.0** target, minimum 5.7, InnoDB, `utf8mb4`.
 - **Blade** SSR, **Tailwind CSS 4**, **Alpine.js 3.x**, **Vite** (build lokal).
 - **Modular monolith + MVC + Service Layer**.
 - **Eloquent ORM**; MySQL target, sqlite untuk testing.
@@ -68,7 +68,8 @@ Mengacu `PHASE_0_TECHNICAL_DECISIONS.md`:
 - Order `completed` hanya setelah unit dikembalikan/ditangani.
 - Perubahan sensitif wajib audit trail.
 - Data bertransaksi diarsipkan, bukan dihapus permanen.
-- **Belum ditetapkan** (jangan diimplementasikan tanpa keputusan): nominal deposit, tarif denda, grace period, kebijakan pembatalan/refund, jam pengambilan, multi-cabang.
+- **Telah ditetapkan** pada `.docs/RENTAL_POLICY.md` v1.0 (17 Nov 2026): satu lokasi, sewa harian, pickup/return, grace period, denda, deposit, pembatalan/refund, metode pembayaran, dan status order.
+- Nilai kebijakan wajib dapat dikonfigurasi; order lama memakai snapshot saat dibuat.
 
 ---
 
@@ -101,9 +102,9 @@ Detail: `PHASE_0_HOSTING_VALIDATION.md`.
 1. Versi PHP & MySQL aktual akun AeonFree.
 2. Ekstensi PHP wajib tersedia? SSH/Composer/cron/symlink?
 3. Document root dapat diatur?
-4. Kebijakan bisnis final (jam, grace, denda, deposit, pembatalan, cabang).
-5. Format/ukuran bukti pembayaran final.
-6. Siapa yang berwenang mengelola staf/pembayaran/deposit (default: Owner tertinggi).
+4. ~~Kebijakan bisnis final (jam, grace, denda, deposit, pembatalan, cabang).~~ **RESOLVED** — `.docs/RENTAL_POLICY.md` v1.0.
+5. Format/ukuran bukti pembayaran final. **RESOLVED** — JPG/PNG/PDF, maks. 5 MB.
+6. Siapa yang berwenang mengelola staf/pembayaran/deposit (default: Owner tertinggi). **RESOLVED** — Owner/Admin untuk pembayaran & deposit; Owner tertinggi untuk role.
 
 ---
 
@@ -128,7 +129,7 @@ Detail: `PHASE_0_HOSTING_VALIDATION.md`.
 - [x] Constraint hosting didokumentasikan.
 - [x] Informasi hosting diberi status verifikasi (mayoritas BLOCKED — butuh akun).
 - [x] Risiko deployment dianalisis.
-- [x] Versi Laravel dipilih dengan status **PROVISIONAL** eksplisit (Laravel 12.x).
+- [x] Versi Laravel dipilih dan **final** untuk MVP (Laravel 12.72.0; minimum PHP 8.2).
 - [x] Technology Decision Record tersedia.
 - [x] Requirement Freeze tersedia.
 - [x] Tidak ada asumsi hosting yang dinyatakan sebagai fakta.

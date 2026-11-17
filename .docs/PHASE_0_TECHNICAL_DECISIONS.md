@@ -15,7 +15,7 @@ Legenda status keputusan: **ACCEPTED** (final untuk Phase 1), **PENDING** (menun
 - **Selected Decision:** **Laravel 12.x (terpasang: 12.72.0)**.
 - **Reason:** Kompatibel dengan runtime terendah yang kemungkinan besar tersedia (PHP 8.2) sekaligus berjalan pada PHP lokal 8.5.9. Laravel 13 akan **tidak dapat** berjalan bila hosting hanya PHP 8.2. Security support Laravel 12 sampai **24 Februari 2027**.
 - **Trade-offs:** masa dukungan lebih pendek daripada Laravel 13. Bila hosting terbukti PHP 8.3+, dapat ditingkatkan ke Laravel 13 (dampak upgrade: rendah untuk fondasi, tinggi bila sudah ada banyak kode bisnis).
-- **Status:** **PROVISIONAL** — dinaikkan ke ACCEPTED bila akun dikonfirmasi ≥ PHP 8.2, atau ditinjau ulang bila < 8.2.
+- **Status:** **ACCEPTED** (17 Nov 2026) — Laravel 12.72.0 dipakai final untuk MVP. Hosting wajib menyediakan PHP ≥ 8.2; bila tidak, hosting diganti. Deployment tetap menunggu verifikasi akun.
 
 ## TDR-02 — Versi PHP
 
@@ -24,7 +24,7 @@ Legenda status keputusan: **ACCEPTED** (final untuk Phase 1), **PENDING** (menun
 - **Selected Decision:** target produksi **PHP 8.2+**; development lokal **8.5.9**.
 - **Reason:** 8.2 = batas bawah yang dipublikasikan; kode harus jalan di 8.2 agar aman.
 - **Trade-offs:** PHP 8.5 lokal memunculkan deprecation pada beberapa default Laravel (mis. `PDO::MYSQL_ATTR_SSL_CA`); tidak memengaruhi produksi 8.2.
-- **Status:** **PROVISIONAL** (blocked: verifikasi akun).
+- **Status:** **ACCEPTED** (17 Nov 2026) — PHP ≥ 8.2 adalah syarat minimum final. PHP < 8.2 = hosting tidak memenuhi syarat.
 
 ## TDR-03 — Versi MySQL
 
@@ -33,7 +33,7 @@ Legenda status keputusan: **ACCEPTED** (final untuk Phase 1), **PENDING** (menun
 - **Selected Decision:** target **MySQL 8.0**, InnoDB; charset `utf8mb4`.
 - **Reason:** sesuai PRD/Tech Stack dan fitur yang dibutuhkan (foreign key, index, transaksi). MySQL 5.7 masih mendukung `utf8mb4`, tetapi 8.0 jadi baseline dokumen.
 - **Trade-offs:** jika akun benar 5.7, sebagian sintaks/opsi 8.0 harus dihindari (tidak relevan untuk Phase 1 — belum ada tabel bisnis).
-- **Status:** **PENDING** (blocked: verifikasi akun).
+- **Status:** **ACCEPTED** (17 Nov 2026) — target MySQL 8.0; minimum yang ditoleransi MySQL 5.7 dengan InnoDB/`utf8mb4`. Verifikasi versi akun tetap bagian dari deployment gate.
 
 ## TDR-04 — Strategi Frontend
 
@@ -110,7 +110,8 @@ Legenda status keputusan: **ACCEPTED** (final untuk Phase 1), **PENDING** (menun
 
 ## TDR-13 — Bahasa, Timezone, Format
 
-- **Selected Decision:** locale aplikasi **`id`** (fallback `en`), timezone **`Asia/Jakarta`**, format mata uang **Rupiah** (ditunda ke fase pembuatan fitur), faker locale `id_ID`.
+- **Selected Decision:** locale aplikasi **`id`** (fallback `en`), timezone **`Asia/Jakarta`**, format mata uang **Rupiah**.
+- **Implementation (17 Nov 2026):** `App\Support\Rupiah` + helper global `rupiah()`; contoh `Rp 1.250.000`, desimal `Rp 1.234,56`; delimiter ribuan `titik`, desimal `koma`.
 - **Reason:** sesuai PRD NFR (Usability).
 - **Status:** **ACCEPTED**.
 
@@ -126,9 +127,11 @@ Legenda status keputusan: **ACCEPTED** (final untuk Phase 1), **PENDING** (menun
 
 | TDR | Status | Blocker |
 |---|---|---|
-| TDR-01 Laravel version | PROVISIONAL | Verifikasi PHP akun (≥ 8.2) |
-| TDR-02 PHP version | PROVISIONAL | Verifikasi PHP akun |
-| TDR-03 MySQL version | PENDING | Verifikasi MySQL akun |
+| TDR-01 Laravel version | **ACCEPTED** | Tidak ada — hosting < PHP 8.2 diganti |
+| TDR-02 PHP version | **ACCEPTED** | Tidak ada — PHP ≥ 8.2 syarat final |
+| TDR-03 MySQL version | **ACCEPTED** | Verifikasi versi akun (deployment gate) |
 | TDR-08 Deployment | PENDING | Verifikasi document root |
 | TDR-11 Cache/Session/Queue | PROVISIONAL | Verifikasi ekstensi/DB/RAM akun |
 | TDR-12 Dependency | PENDING | Verifikasi Composer/SSH |
+
+**Business policy:** `.docs/RENTAL_POLICY.md` v1.0 ditetapkan 17 Nov 2026 (satu lokasi, tanggal/jam, durasi, pickup/return, pembatalan, keterlambatan, deposit, pembayaran).

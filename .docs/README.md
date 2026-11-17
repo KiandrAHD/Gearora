@@ -8,6 +8,8 @@ Dokumen baseline untuk pengembangan **GEARORA — Outdoor Supply**.
 | [ARCHITECTURE_GEARORA.md](./ARCHITECTURE_GEARORA.md) | Arsitektur aplikasi, modul, layer, domain model, alur transaksi, keamanan, dan deployment topology |
 | [TECH_STACK_GEARORA.md](./TECH_STACK_GEARORA.md) | Pemilihan teknologi, kompatibilitas versi Laravel/PHP, tooling, database, dan batasan AeonFree |
 | [ROADMAP_GEARORA.md](./ROADMAP_GEARORA.md) | Fase implementasi, deliverables, exit criteria, dependency, dan Definition of Done |
+| [RENTAL_POLICY.md](./RENTAL_POLICY.md) | Kebijakan rental baseline MVP yang mengikat implementasi Phase 3–7 |
+| [PHASE_0_1_FINAL_REPORT.md](./PHASE_0_1_FINAL_REPORT.md) | Laporan penyelesaian Phase 0 & 1 (17 November 2026) |
 
 ## Sumber utama
 

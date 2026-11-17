@@ -1,6 +1,7 @@
 # Phase 0 — Hosting Validation (AeonFree) — GEARORA
 
-> **Tanggal:** 16 November 2026
+> **Tanggal audit awal:** 16 November 2026
+> **Tanggal verifikasi ulang publik:** 17 November 2026
 > **Sumber:** situs publik AeonFree + repository lokal.
 > **Aturan status:** setiap item diberi label bukti. Tidak ada asumsi yang ditulis sebagai fakta.
 
@@ -44,6 +45,28 @@ Diambil langsung dari situs AeonFree (16 Nov 2026).
 | Disk | 5 GB | Unlimited |
 
 **Kesimpulan:** spesifikasi publik tidak konsisten. Keduanya hanya **PUBLICLY DOCUMENTED**, bukan bukti runtime akun. Versi PHP/MySQL **harus** diverifikasi di cPanel akun sebelum mengunci versi framework.
+
+### 2.4 Verifikasi Ulang Publik — 17 November 2026
+
+Pemeriksaan ulang langsung pada dua halaman publik dilakukan untuk memastikan konflik bukan informasi kedaluwarsa:
+
+| Halaman | PHP | MySQL | Disk |
+|---|---|---|---|
+| `https://aeonfree.com/` | 8.2 | 8.0 | 5 GB |
+| `https://aeonfree.com/free-php-mysql-hosting` | 7.4 | 5.7 | Unlimited |
+
+**Hasil:** konflik **masih ada** pada 17 November 2026. Tidak ada bukti baru yang dapat menaikkan status item akun dari **BLOCKED** menjadi **VERIFIED**. Verifikasi akun tetap wajib dan hanya dapat dilakukan pemilik akun melalui cPanel.
+
+### 2.5 Keputusan Go/No-Go Deployment
+
+| Temuan runtime | Keputusan |
+|---|---|
+| PHP ≥ 8.2 + ekstensi wajib lengkap + document root aman | **GO** — deployment boleh dilanjutkan |
+| PHP 8.2 tetapi document root tidak dapat diamankan | **NO-GO** — cari hosting lain atau tahan deployment |
+| PHP < 8.2 | **NO-GO** — Laravel 12 tidak dapat berjalan; jangan turunkan framework |
+| Ekstensi wajib tidak lengkap dan tidak dapat diaktifkan | **NO-GO** — ganti hosting |
+
+Keputusan versi Laravel sudah final untuk pengembangan (Laravel 12.72.0, minimum PHP 8.2). Hosting yang tidak memenuhi syarat **diganti**, bukan framework yang diturunkan.
 
 ---
 
