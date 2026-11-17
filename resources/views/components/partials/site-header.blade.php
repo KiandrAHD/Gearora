@@ -4,19 +4,22 @@
     $tripUrl = route('trip-planner.index');
     $guidesUrl = route('guides.index');
     $accountUrl = auth()->check() ? route('customer.dashboard') : route('login');
-    $active = request()->routeIs('home') ? 'home' : (request()->routeIs('catalog.*') ? 'catalog' : '');
+    $isCatalogIndex = request()->routeIs('catalog.index');
+    $activeMode = request()->query('mode', 'sewa');
+    $isRentalActive = $isCatalogIndex && $activeMode === 'sewa';
+    $isSaleActive = $isCatalogIndex && $activeMode === 'beli';
     $cartCount = (int) session('cart_count', 0);
 @endphp
-<header class="site-header" x-data="{ open: false }">
+<header class="site-header" x-data="{ open: false }" x-effect="document.body.classList.toggle('nav-open', open)" @keydown.escape.window="open = false" @resize.window="if (window.innerWidth > 900) open = false">
     <div class="site-header-inner">
         <a href="{{ $homeUrl }}" class="brand" aria-label="GEARORA, kembali ke beranda">
             <img src="{{ asset('images/gearora-logo.png') }}" width="37" height="37" alt="" class="brand-mark">
             <span class="brand-copy"><strong>GEARORA</strong><small>OUTDOOR SUPPLY</small></span>
         </a>
         <nav class="primary-nav" aria-label="Navigasi utama">
-            <a href="{{ $catalogUrl }}?mode=sewa" @if($active === 'catalog') aria-current="page" @endif>Sewa</a>
-            <a href="{{ $catalogUrl }}?mode=beli" @if($active === 'catalog') aria-current="page" @endif>Beli</a>
-            <a href="{{ $tripUrl }}">Rekomendasi Trip</a>
+            <a href="{{ route('catalog.index', ['mode' => 'sewa']) }}" @if($isRentalActive) aria-current="page" @endif>Sewa</a>
+            <a href="{{ route('catalog.index', ['mode' => 'beli']) }}" @if($isSaleActive) aria-current="page" @endif>Beli</a>
+            <a href="{{ $tripUrl }}" @if(request()->routeIs('trip-planner.*')) aria-current="page" @endif>Rekomendasi Trip</a>
             <a href="{{ $guidesUrl }}" @if(request()->routeIs('guides.*')) aria-current="page" @endif>Panduan</a>
         </nav>
         <div class="header-actions">
@@ -26,7 +29,13 @@
             <button type="button" class="mobile-menu" @click="open = !open" :aria-expanded="open.toString()" aria-controls="mobile-navigation" aria-label="Buka atau tutup menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path x-show="!open" d="M4 7h16M4 12h16M4 17h16"/><path x-show="open" x-cloak d="m6 6 12 12M18 6 6 18"/></svg></button>
         </div>
     </div>
+    <div class="mobile-nav-backdrop" x-show="open" x-cloak x-transition.opacity @click="open = false" aria-hidden="true"></div>
     <nav id="mobile-navigation" class="mobile-nav" x-show="open" x-cloak x-transition aria-label="Navigasi seluler">
-        <a href="{{ $catalogUrl }}?mode=sewa" @click="open=false">Sewa</a><a href="{{ $catalogUrl }}?mode=beli" @click="open=false">Beli</a><a href="{{ $tripUrl }}" @click="open=false">Rekomendasi Trip</a><a href="{{ $guidesUrl }}" @click="open=false">Panduan</a><a href="{{ $accountUrl }}" @click="open=false">Akun Saya</a><a href="{{ route('admin.login') }}" @click="open=false">Admin Console</a>
+        <a href="{{ route('catalog.index', ['mode' => 'sewa']) }}" @click="open=false" class="{{ $isRentalActive ? 'is-active' : '' }}">Sewa</a>
+        <a href="{{ route('catalog.index', ['mode' => 'beli']) }}" @click="open=false" class="{{ $isSaleActive ? 'is-active' : '' }}">Beli</a>
+        <a href="{{ $tripUrl }}" @click="open=false">Rekomendasi Trip</a>
+        <a href="{{ $guidesUrl }}" @click="open=false">Panduan</a>
+        <a href="{{ $accountUrl }}" @click="open=false">{{ auth()->check() ? 'Akun Saya' : 'Masuk' }}</a>
+        @if(auth()->check() && auth()->user()->isStaff())<a href="{{ route('admin.dashboard') }}" @click="open=false">Admin Console</a>@endif
     </nav>
 </header>

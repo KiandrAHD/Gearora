@@ -20,7 +20,7 @@
                     <path d="m291 442 88-132 91 132Z" fill="#E9DDC9" stroke="#08213F" stroke-width="8" stroke-linejoin="round"/>
                     <path d="m379 310 91 132h-91Z" fill="#80664E"/>
                     <path d="m332 442 47-93 50 93Z" fill="#F7F8F3" stroke="#08213F" stroke-width="7" stroke-linejoin="round"/>
-                    <g transform="translate(178 290">
+                    <g transform="translate(178 290)">
                         <circle cx="42" cy="24" r="18" fill="#B98562"/><path d="M23 23q3-22 22-18 13 3 17 17l-7 2-6-8-11 8Z" fill="#08213F"/>
                         <path d="m31 46 26-1 15 55-39 4-8-34Z" fill="#2377C9"/><path d="m35 55-18 23m37-23 14 22" fill="none" stroke="#B98562" stroke-width="10" stroke-linecap="round"/>
                         <path d="m42 101-7 42m27-40 13 37" fill="none" stroke="#08213F" stroke-width="11" stroke-linecap="round"/>
