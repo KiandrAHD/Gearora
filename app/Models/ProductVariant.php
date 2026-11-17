@@ -60,6 +60,14 @@ class ProductVariant extends Model
     }
 
     /**
+     * @return HasMany<RentalOrderItem, $this>
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(RentalOrderItem::class);
+    }
+
+    /**
      * @param  Builder<ProductVariant>  $query
      */
     public function scopeActive(Builder $query): void

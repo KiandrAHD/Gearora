@@ -52,6 +52,10 @@ Phase 2 (database, autentikasi, RBAC), Phase 3 (katalog dan inventaris), serta P
 | Migrasi lokal | 17 tabel baru terpasang pada database MySQL `gearora`; data tabel/DB lain tidak disentuh |
 | Concurrency MySQL nyata | **Belum diverifikasi.** Test suite menggunakan SQLite `:memory:` dan tidak membuktikan perilaku row lock MySQL di bawah request paralel. |
 
+## Bugfix UI/UX dan Admin CRUD
+
+Perbaikan lanjutan terdokumentasi di `.docs/BUGFIX_ADMIN_UX_REPORT.md`. HeroArt transform diperbaiki, active state Sewa/Beli memakai query mode, mobile navigation usable dengan Alpine, dan admin product/variant lifecycle memakai dependency-aware delete/deactivate/archive. Test suite bertambah menjadi 72 test dan 228 assertion.
+
 ## Batasan dan tindak lanjut
 
 1. Deployment AeonFree tetap **BLOCKED** hingga pemilik memverifikasi cPanel, PHP, ekstensi, MySQL, document root, SSH/cron, dan permission. Lihat `.docs/PHASE_0_HOSTING_VALIDATION.md`.

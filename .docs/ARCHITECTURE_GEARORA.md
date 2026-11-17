@@ -172,6 +172,7 @@ Jika implementasi awal memilih satu role per user, relasi dapat dibuat lebih sed
 - `categories`: kategori produk.
 - `products`: identitas dan informasi utama barang, tipe `rental`, `sale`, atau `both`.
 - `product_variants`: ukuran, kapasitas, warna, dan SKU/atribut yang memengaruhi stok atau harga.
+- Product lifecycle membedakan permanent delete, deactivate variant, dan archive product. Permanent delete hanya boleh tanpa rental assets, assignments, order items, stock movements, atau histori transaksi; data historis tetap dipertahankan.
 - `rental_assets`: unit fisik yang dapat disewakan secara individual, termasuk kode aset, kondisi, dan status.
 - `stock_movements`: jejak barang masuk, keluar, penyesuaian, rusak, dan hilang.
 

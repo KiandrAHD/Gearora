@@ -9,12 +9,15 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\ActivityLogger;
 use App\Services\InventoryService;
+use App\Services\ProductLifecycleService;
 use Illuminate\Http\RedirectResponse;
+use RuntimeException;
 
 class ProductVariantController extends Controller
 {
     public function __construct(
         private readonly InventoryService $inventory,
+        private readonly ProductLifecycleService $lifecycle,
         private readonly ActivityLogger $logger,
     ) {}
 
@@ -55,6 +58,7 @@ class ProductVariantController extends Controller
         abort_unless($variant->product_id === $product->getKey(), 404);
 
         $data = $request->validated();
+        $newStock = $data['stock_quantity'] ?? null;
 
         $variant->fill([
             'name' => $data['name'],
@@ -64,6 +68,16 @@ class ProductVariantController extends Controller
             'is_active' => $request->boolean('is_active', $variant->is_active),
             'sort_order' => $data['sort_order'] ?? $variant->sort_order,
         ])->save();
+
+        if ($newStock !== null && (int) $newStock !== $variant->stock_quantity) {
+            $this->inventory->setSaleStock(
+                $variant,
+                (int) $newStock,
+                StockMovementType::Adjustment,
+                'Perubahan stok dari editor varian',
+                $request->user(),
+            );
+        }
 
         $this->logger->log('product_variant.updated', $variant, "Varian {$variant->sku} diperbarui.");
 
@@ -75,18 +89,28 @@ class ProductVariantController extends Controller
         $this->authorize('update', $product);
         abort_unless($variant->product_id === $product->getKey(), 404);
 
-        if ($variant->rentalAssets()->exists() || $variant->stockMovements()->exists()) {
-            $variant->forceFill(['is_active' => false])->save();
-            $this->logger->log('product_variant.deactivated', $variant, "Varian {$variant->sku} dinonaktifkan karena memiliki riwayat.");
+        $dependencies = $this->lifecycle->variantDependencies($variant);
 
-            return redirect()->route('admin.products.edit', $product)
-                ->with('status', 'Varian memiliki riwayat stok/unit sehingga dinonaktifkan, bukan dihapus.');
+        if (! $this->lifecycle->canDeleteDependencies($dependencies)) {
+            $this->lifecycle->deactivateVariant($variant, 'varian masih memiliki dependensi inventaris/pesanan');
+
+            $units = $dependencies['rental_assets'];
+            $message = $units > 0
+                ? "Varian tidak dihapus permanen karena masih memiliki {$units} unit rental. Varian berhasil dinonaktifkan dan tidak lagi tersedia untuk pemesanan baru."
+                : 'Varian tidak dihapus permanen karena masih memiliki riwayat inventaris/pesanan. Varian berhasil dinonaktifkan dan tidak lagi tersedia untuk pemesanan baru.';
+
+            return redirect()->route('admin.products.edit', $product)->with('status', $message);
         }
 
         $sku = $variant->sku;
-        $variant->delete();
-        $this->logger->log('product_variant.deleted', $product, "Varian {$sku} dihapus.", ['sku' => $sku]);
 
-        return redirect()->route('admin.products.edit', $product)->with('status', 'Varian dihapus.');
+        try {
+            $this->lifecycle->deleteVariant($variant);
+        } catch (RuntimeException $exception) {
+            return redirect()->route('admin.products.edit', $product)
+                ->with('error', $exception->getMessage());
+        }
+
+        return redirect()->route('admin.products.edit', $product)->with('status', "Varian {$sku} dihapus permanen.");
     }
 }

@@ -131,6 +131,7 @@ Pengguna tanpa login tidak dapat mengakses halaman privat; customer tidak dapat 
 
 - [x] CRUD kategori.
 - [x] CRUD produk dan foto.
+- [x] Safe product/variant lifecycle: modal view/edit, archive, dependency-aware permanent delete, deactivate, activity log, dan database regression test.
 - [x] Tipe produk: rental, sale, atau both.
 - [x] CRUD product variants (ukuran, kapasitas, warna, SKU).
 - [x] Pencatatan stok produk jual.

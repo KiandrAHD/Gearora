@@ -71,6 +71,7 @@ Route::prefix('admin')->as('admin.')->group(function (): void {
         Route::resource('categories', AdminCategoryController::class)->except('show');
         Route::resource('products', AdminProductController::class)->except('show', 'destroy');
         Route::post('/products/{product}/archive', [AdminProductController::class, 'archive'])->name('products.archive');
+        Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
         Route::post('/products/{product}/variants', [AdminProductVariantController::class, 'store'])->name('products.variants.store');
         Route::put('/products/{product}/variants/{variant}', [AdminProductVariantController::class, 'update'])->name('products.variants.update');
         Route::delete('/products/{product}/variants/{variant}', [AdminProductVariantController::class, 'destroy'])->name('products.variants.destroy');

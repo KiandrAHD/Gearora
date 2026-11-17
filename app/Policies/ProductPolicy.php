@@ -32,4 +32,9 @@ class ProductPolicy
     {
         return $user->hasPermission(PermissionName::ProductsArchive->value);
     }
+
+    public function delete(User $user, Product $product): bool
+    {
+        return $user->hasPermission(PermissionName::ProductsDelete->value);
+    }
 }

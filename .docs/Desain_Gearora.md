@@ -363,6 +363,7 @@ Gap icon ke teks adalah `8px`; icon berwarna Forest.
 - Container `.hero-visual`: relative, `min-height: 500px`, overflow hidden, stretch terhadap grid.
 - SVG render: width `110%`, height `100%`, margin-left `-2%`.
 - Jangan mengubah menjadi raster kecuali sistem target tidak mendukung SVG; jika dirasterisasi, gunakan rasio 660:520 dan resolusi minimal 2×.
+- Implementasi Blade mempertahankan HeroArt inline SVG dan transform karakter valid `translate(178 290)`; mobile header memakai menu Alpine dengan backdrop dan active state mode katalog.
 
 ### 4.C.2 Layer order SVG
 

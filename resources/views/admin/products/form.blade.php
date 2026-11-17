@@ -45,27 +45,46 @@
             <div class="form-actions"><button class="btn-primary" type="submit">{{ $editing ? 'Simpan perubahan' : 'Buat produk' }}</button><a class="text-link" href="{{ route('admin.products.index') }}">Kembali</a></div>
         </form>
         @if($editing)
-            <form class="danger-zone" method="post" action="{{ route('admin.products.archive', $product) }}" onsubmit="return confirm('Arsipkan produk ini?')">@csrf<button class="btn-danger" type="submit">Arsipkan produk</button></form>
+            <div class="danger-zone">
+                <p class="field-hint">Arsipkan produk agar tidak tampil di katalog publik tetapi riwayat transaksi tetap tersimpan.</p>
+                <button class="btn-danger" type="button" x-on:click="$dispatch('open-modal', 'product-archive-{{ $product->id }}')">Arsipkan produk</button>
+            </div>
         @endif
     </div>
 
     @if($editing)
         <div class="panel">
             <h2>Varian</h2>
-            <table class="data-table"><thead><tr><th>Nama</th><th>SKU</th><th>Sewa/hari</th><th>Jual</th><th>Stok</th><th>Aktif</th><th class="text-right">Aksi</th></tr></thead><tbody>
-                @forelse($product->variants as $variant)
-                    <tr>
-                        <td>{{ $variant->name }}</td><td>{{ $variant->sku }}</td>
-                        <td>{{ $variant->rental_price_per_day ? rupiah($variant->rental_price_per_day) : '—' }}</td>
-                        <td>{{ $variant->sale_price ? rupiah($variant->sale_price) : '—' }}</td>
-                        <td>{{ $variant->stock_quantity }}</td>
-                        <td><span class="status-badge status-{{ $variant->is_active ? 'ok' : 'neutral' }}">{{ $variant->is_active ? 'Ya' : 'Tidak' }}</span></td>
-                        <td class="text-right"><form method="post" action="{{ route('admin.products.variants.destroy', [$product, $variant]) }}" onsubmit="return confirm('Hapus varian ini?')">@csrf @method('DELETE')<button class="text-link" type="submit">Hapus</button></form></td>
-                    </tr>
-                @empty
-                    <tr><td colspan="7" class="empty-cell">Belum ada varian.</td></tr>
-                @endforelse
-            </tbody></table>
+            <div class="overflow-x-auto">
+                <table class="data-table"><thead><tr><th>Nama</th><th>SKU</th><th>Sewa/hari</th><th>Jual</th><th>Stok</th><th>Unit</th><th>Aktif</th><th class="text-right">Aksi</th></tr></thead><tbody>
+                    @forelse($product->variants as $variant)
+                        @php
+                            $variantDeps = $variantDependencies[$variant->id] ?? ['rental_assets' => 0, 'stock_movements' => 0, 'order_items' => 0, 'assignments' => 0];
+                            $variantHasHistory = array_sum($variantDeps) > 0;
+                        @endphp
+                        <tr>
+                            <td>{{ $variant->name }}</td><td>{{ $variant->sku }}</td>
+                            <td>{{ $variant->rental_price_per_day ? rupiah($variant->rental_price_per_day) : '—' }}</td>
+                            <td>{{ $variant->sale_price ? rupiah($variant->sale_price) : '—' }}</td>
+                            <td>{{ $variant->stock_quantity }}</td>
+                            <td>{{ $variant->rental_assets_count }}</td>
+                            <td><span class="status-badge status-{{ $variant->is_active ? 'ok' : 'neutral' }}">{{ $variant->is_active ? 'Ya' : 'Tidak' }}</span></td>
+                            <td>
+                                <div class="flex flex-wrap items-center justify-end gap-3">
+                                    <button type="button" class="text-link" x-on:click="$dispatch('open-modal', 'variant-edit-{{ $variant->id }}')">Edit</button>
+                                    @if($variantHasHistory && ! $variant->is_active)
+                                        <span class="badge-inline">Nonaktif</span>
+                                    @else
+                                        <button type="button" class="text-link text-danger" x-on:click="$dispatch('open-modal', 'variant-action-{{ $variant->id }}')">{{ $variantHasHistory ? 'Nonaktifkan' : 'Hapus permanen' }}</button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="8" class="empty-cell">Belum ada varian.</td></tr>
+                    @endforelse
+                </tbody></table>
+            </div>
             <h3>Varian baru</h3>
             <form class="stack-form" method="post" action="{{ route('admin.products.variants.store', $product) }}">
                 @csrf
@@ -89,7 +108,7 @@
                 @forelse($product->images as $image)
                     <figure class="thumb"><img src="{{ media_url($image->path) }}" alt="{{ $image->alt }}"><figcaption>
                         @if($image->is_primary)<span class="status-badge status-ok">Utama</span>@else<form method="post" action="{{ route('admin.products.images.primary', [$product, $image]) }}">@csrf<button class="text-link" type="submit">Jadikan utama</button></form>@endif
-                        <form method="post" action="{{ route('admin.products.images.destroy', [$product, $image]) }}" onsubmit="return confirm('Hapus foto ini?')">@csrf @method('DELETE')<button class="text-link" type="submit">Hapus</button></form>
+                        <button type="button" class="text-link text-danger" x-on:click="$dispatch('open-modal', 'image-delete-{{ $image->id }}')">Hapus</button>
                     </figcaption></figure>
                 @empty
                     <p class="empty-cell">Belum ada foto.</p>
@@ -101,5 +120,95 @@
                 <button class="btn-primary" type="submit">Unggah foto</button>
             </form>
         </div>
+
+        @foreach($product->variants as $variant)
+            @php
+                $variantDeps = $variantDependencies[$variant->id] ?? ['rental_assets' => 0, 'stock_movements' => 0, 'order_items' => 0, 'assignments' => 0];
+                $variantHasHistory = array_sum($variantDeps) > 0;
+            @endphp
+
+            <x-ui.modal id="variant-edit-{{ $variant->id }}" title="Edit varian" maxWidth="lg">
+                <form id="variant-edit-form-{{ $variant->id }}" class="stack-form" method="post" action="{{ route('admin.products.variants.update', [$product, $variant]) }}">
+                    @csrf
+                    @method('PUT')
+                    <div class="form-row">
+                        <label><span>Nama</span><input name="name" type="text" value="{{ $variant->name }}" required></label>
+                        <label><span>SKU</span><input name="sku" type="text" value="{{ $variant->sku }}" required></label>
+                    </div>
+                    <div class="form-row">
+                        <label><span>Harga sewa / hari</span><input name="rental_price_per_day" type="number" step="0.01" min="0" value="{{ $variant->rental_price_per_day }}"></label>
+                        <label><span>Harga jual</span><input name="sale_price" type="number" step="0.01" min="0" value="{{ $variant->sale_price }}"></label>
+                    </div>
+                    <div class="form-row">
+                        <label><span>Stok jual</span><input name="stock_quantity" type="number" min="0" value="{{ $variant->stock_quantity }}"></label>
+                        <label><span>Urutan</span><input name="sort_order" type="number" min="0" value="{{ $variant->sort_order }}"></label>
+                    </div>
+                    <label class="check-row"><input name="is_active" type="checkbox" value="1" @checked($variant->is_active)> <span>Aktif</span></label>
+                    <p class="field-hint">Perubahan stok jual dicatat sebagai stock movement.</p>
+                </form>
+                <x-slot name="footer">
+                    <button type="button" class="text-link" @click="close()">Batal</button>
+                    <button type="submit" form="variant-edit-form-{{ $variant->id }}" class="btn-primary">Simpan varian</button>
+                </x-slot>
+            </x-ui.modal>
+
+            @if(! ($variantHasHistory && ! $variant->is_active))
+                <x-ui.modal id="variant-action-{{ $variant->id }}" :title="$variantHasHistory ? 'Nonaktifkan varian?' : 'Hapus varian permanen?'" maxWidth="md">
+                    <div class="space-y-3 text-sm text-slate-600">
+                        <p>Nama: <strong class="text-navy">{{ $variant->name }}</strong></p>
+                        <p>SKU: {{ $variant->sku }}</p>
+                        @if($variantHasHistory)
+                            <p>Varian masih mempunyai:</p>
+                            <ul class="list-disc pl-5">
+                                @if($variantDeps['rental_assets'] > 0)<li>{{ $variantDeps['rental_assets'] }} unit rental.</li>@endif
+                                @if($variantDeps['stock_movements'] > 0)<li>{{ $variantDeps['stock_movements'] }} riwayat stok.</li>@endif
+                                @if($variantDeps['order_items'] > 0)<li>{{ $variantDeps['order_items'] }} riwayat pesanan.</li>@endif
+                                @if($variantDeps['assignments'] > 0)<li>{{ $variantDeps['assignments'] }} riwayat pemakaian unit.</li>@endif
+                            </ul>
+                            <p>Data historis akan dipertahankan. Varian tidak lagi dapat digunakan untuk pemesanan baru.</p>
+                        @else
+                            <p class="text-danger">Tindakan ini akan menghapus data secara permanen. Tindakan tidak dapat dibatalkan.</p>
+                        @endif
+                    </div>
+                    <x-slot name="footer">
+                        <button type="button" class="text-link" @click="close()">Batal</button>
+                        <form method="post" action="{{ route('admin.products.variants.destroy', [$product, $variant]) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn-danger" type="submit">{{ $variantHasHistory ? 'Nonaktifkan' : 'Hapus permanen' }}</button>
+                        </form>
+                    </x-slot>
+                </x-ui.modal>
+            @endif
+        @endforeach
+
+        @foreach($product->images as $image)
+            <x-ui.modal id="image-delete-{{ $image->id }}" title="Hapus foto produk?" maxWidth="md">
+                <div class="space-y-3 text-sm text-slate-600">
+                    <img src="{{ media_url($image->path) }}" alt="{{ $image->alt }}" class="max-h-48 w-full rounded-lg border border-line object-cover">
+                    <p class="text-danger">Foto akan dihapus permanen dari produk dan penyimpanan. Tindakan tidak dapat dibatalkan.</p>
+                </div>
+                <x-slot name="footer">
+                    <button type="button" class="text-link" @click="close()">Batal</button>
+                    <form method="post" action="{{ route('admin.products.images.destroy', [$product, $image]) }}">@csrf @method('DELETE')<button class="btn-danger" type="submit">Hapus foto</button></form>
+                </x-slot>
+            </x-ui.modal>
+        @endforeach
+
+        <x-ui.modal id="product-archive-{{ $product->id }}" title="Arsipkan produk?" maxWidth="md">
+            <div class="space-y-3 text-sm text-slate-600">
+                <p><strong class="text-navy">{{ $product->name }}</strong></p>
+                <p>Produk yang diarsipkan:</p>
+                <ul class="list-disc pl-5">
+                    <li>Tidak muncul di katalog publik.</li>
+                    <li>Tidak dapat digunakan untuk booking baru.</li>
+                    <li>Tetap tersimpan untuk menjaga riwayat transaksi.</li>
+                </ul>
+            </div>
+            <x-slot name="footer">
+                <button type="button" class="text-link" @click="close()">Batal</button>
+                <form method="post" action="{{ route('admin.products.archive', $product) }}">@csrf<button class="btn-danger" type="submit">Arsipkan</button></form>
+            </x-slot>
+        </x-ui.modal>
     @endif
 </x-layouts.admin>

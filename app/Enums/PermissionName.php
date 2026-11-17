@@ -20,6 +20,7 @@ enum PermissionName: string
     case ProductsCreate = 'products.create';
     case ProductsUpdate = 'products.update';
     case ProductsArchive = 'products.archive';
+    case ProductsDelete = 'products.delete';
 
     case InventoryView = 'inventory.view';
     case InventoryManage = 'inventory.manage';
@@ -53,6 +54,7 @@ enum PermissionName: string
             self::ProductsCreate => 'Membuat produk',
             self::ProductsUpdate => 'Mengubah produk',
             self::ProductsArchive => 'Mengarsipkan produk',
+            self::ProductsDelete => 'Menghapus produk permanen',
             self::InventoryView => 'Melihat inventaris',
             self::InventoryManage => 'Mengelola inventaris',
             self::InventoryAdjustStock => 'Menyesuaikan stok',

@@ -4,7 +4,7 @@
 
 GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perlengkapan outdoor** (hiking, trekking, camping, dan aktivitas alam lainnya). Platform menyatukan pencarian gear, pemeriksaan ketersediaan, reservasi, panduan penggunaan, serta pengelolaan inventaris dan transaksi.
 
-> Status: **Phase 0 selesai untuk requirement, kebijakan bisnis, dan keputusan teknis**; verifikasi akun hosting AeonFree masih **BLOCKED** (butuh akses cPanel). **Phase 1 (Project Foundation) selesai.** Modul bisnis (auth, katalog, rental order, pembayaran, dll.) dibangun pada fase berikutnya.
+> Status: **Phase 0–4 selesai lokal** untuk foundation, auth/RBAC, katalog/inventaris, dan rental MVP; bugfix UI/UX serta Admin Product/Variant CRUD selesai dan diuji lokal. Verifikasi akun hosting AeonFree masih **BLOCKED** (butuh akses cPanel). Laporan bugfix: [`.docs/BUGFIX_ADMIN_UX_REPORT.md`](.docs/BUGFIX_ADMIN_UX_REPORT.md).
 >
 > Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_0_1_FINAL_REPORT.md`](.docs/PHASE_0_1_FINAL_REPORT.md).
 

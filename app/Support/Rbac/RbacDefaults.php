@@ -46,6 +46,7 @@ final class RbacDefaults
                     PermissionName::ProductsCreate->value,
                     PermissionName::ProductsUpdate->value,
                     PermissionName::ProductsArchive->value,
+                    PermissionName::ProductsDelete->value,
                     PermissionName::InventoryView->value,
                     PermissionName::InventoryManage->value,
                     PermissionName::InventoryAdjustStock->value,
