@@ -126,8 +126,11 @@ Test feature umum memakai isolated SQLite `:memory:`. MySQL integration terpisah
 ## 11. Git Summary
 
 - Branch: `main`
-- Commit/push: belum dilakukan pada laporan ini.
-- Working tree perlu ditinjau sebelum staging; build artifacts ignored sesuai `.gitignore`.
+- Commits:
+  - `8398b9f` — `fix(ui): repair hero art, sewa/beli tabs, and mobile nav`
+  - `f2bf3c9` — `feat(admin): safe product lifecycle and modal CRUD`
+- Push: `origin/main` updated `1a7cf95..f2bf3c9`; working tree bersih.
+- Build artifacts ignored sesuai `.gitignore`; tidak ada `.env`, dump, log, atau secret yang di-commit.
 
 ## 12. Outstanding Issues
 
