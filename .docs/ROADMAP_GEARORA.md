@@ -63,7 +63,7 @@ Prinsip delivery:
 
 Tidak ada blocker penting terkait versi PHP, ekstensi, document root, koneksi database, atau permission. Jika hosting gagal pada syarat keamanan/kompatibilitas, lanjutkan development lokal tetapi jangan deploy ke hosting tersebut.
 
-**Status (17 Nov 2026): requirement, kebijakan bisnis, dan keputusan versi SELESAI. Validasi akun hosting BELUM dapat diselesaikan** karena tidak ada akses cPanel; 6 item tetap `BLOCKED`. Development lokal dilanjutkan; deployment produksi **ditahan** sampai pemilik menjalankan checklist §4 di `.docs/PHASE_0_HOSTING_VALIDATION.md`. Rincian: `.docs/PHASE_0_1_FINAL_REPORT.md`.
+**Status (17 Nov 2026): requirement, kebijakan bisnis, dan keputusan versi SELESAI. Validasi akun hosting BELUM dapat diselesaikan** karena tidak ada akses cPanel; 6 item tetap `BLOCKED`. Development lokal dilanjutkan; deployment produksi **ditahan** sampai pemilik menjalankan checklist §4 di `.docs/PHASE_0_HOSTING_VALIDATION.md`. Laporan: `.docs/PHASE_0_1_FINAL_REPORT.md`.
 
 ## 4. Phase 1 — Project Foundation
 

@@ -183,6 +183,7 @@ Ringkas (detail + langkah lengkap: `.docs/DEPLOYMENT_AEONFREE.md`):
 | [`.docs/DEPLOYMENT_AEONFREE.md`](.docs/DEPLOYMENT_AEONFREE.md) | Prosedur deployment |
 | [`.docs/PHASE_0_1_FINAL_REPORT.md`](.docs/PHASE_0_1_FINAL_REPORT.md) | Laporan penyelesaian Phase 0 & 1 terbaru |
 | [`.docs/PHASE_0_1_COMPLETION_REPORT.md`](.docs/PHASE_0_1_COMPLETION_REPORT.md) | Laporan penyelesaian Phase 0 & 1 (16 Nov 2026) |
+| [`.docs/PHASE_0_1_COMPLETION_REPORT.md`](.docs/PHASE_0_1_COMPLETION_REPORT.md) | Laporan penyelesaian Phase 0 & 1 (16 Nov 2026) |
 | [`.Gearora/GEARORA.md`](.Gearora/GEARORA.md) | Proposal konsep |
 
 ---
