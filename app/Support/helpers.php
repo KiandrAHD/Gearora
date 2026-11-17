@@ -11,3 +11,13 @@ if (! function_exists('rupiah')) {
         return Rupiah::format($amount, $decimals);
     }
 }
+
+if (! function_exists('media_url')) {
+    /**
+     * URL aset publik yang disajikan controller, tanpa storage symlink.
+     */
+    function media_url(?string $path): ?string
+    {
+        return filled($path) ? route('media.show', ['path' => ltrim($path, '/')]) : null;
+    }
+}

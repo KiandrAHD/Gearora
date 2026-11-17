@@ -1,69 +1,64 @@
-@php
-    $stats = [
-        ['label' => 'Rental aktif', 'value' => '0', 'hint' => 'Data Phase 4'],
-        ['label' => 'Jatuh tempo hari ini', 'value' => '0', 'hint' => 'Data Phase 5'],
-        ['label' => 'Terlambat', 'value' => '0', 'hint' => 'Data Phase 5'],
-        ['label' => 'Unit perawatan', 'value' => '0', 'hint' => 'Data Phase 3'],
-    ];
-@endphp
-<x-layouts.admin title="Dashboard" subtitle="Kerangka Admin Dashboard GEARORA. Angka operasional akan diambil dari database pada phase berikutnya; tidak ada data dummy yang ditampilkan sebagai data nyata.">
-    <div class="space-y-6">
-        <x-ui.alert variant="warning" title="Admin Dashboard belum diamankan">
-            Role, permission, dan middleware admin diimplementasikan pada Phase 2. Jangan menghubungkan route admin ke publik sebelum kontrol akses selesai.
-        </x-ui.alert>
-
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            @foreach ($stats as $stat)
-                <x-ui.card padding="p-5">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $stat['label'] }}</p>
-                    <p class="mt-2 font-heading text-3xl font-semibold text-navy">{{ $stat['value'] }}</p>
-                    <p class="mt-1 text-xs text-slate-500">{{ $stat['hint'] }}</p>
-                </x-ui.card>
-            @endforeach
-        </div>
-
-        <div class="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-            <x-ui.card title="Pesanan terbaru" description="Ringkasan order rental dan sales order." padding="p-0">
-                <div class="p-5">
-                    <x-ui.table
-                        :headers="['Kode', 'Pelanggan', 'Status', 'Total']"
-                        caption="Pesanan terbaru"
-                        empty="Belum ada pesanan pada database."
-                    />
-                </div>
-                <x-slot:footer>
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                        <x-ui.badge variant="neutral">0 pesanan</x-ui.badge>
-                        <x-ui.button type="button" variant="outline" size="sm" disabled>Lihat semua</x-ui.button>
-                    </div>
-                </x-slot:footer>
-            </x-ui.card>
-
-            <x-ui.card title="Aksi cepat" description="Menu operasional disiapkan untuk phase berikutnya.">
-                <div class="space-y-3">
-                    <x-ui.button type="button" variant="primary" size="sm" block disabled>Buat pesanan manual</x-ui.button>
-                    <x-ui.button type="button" variant="outline" size="sm" block disabled>Verifikasi pembayaran</x-ui.button>
-                    <x-ui.button type="button" variant="outline" size="sm" block disabled>Catat pengembalian</x-ui.button>
-                </div>
-                <dl class="mt-6 space-y-3 border-t border-line pt-4 text-sm">
-                    <div class="flex items-center justify-between gap-3">
-                        <dt class="text-slate-600">Status modul admin</dt>
-                        <dd><x-ui.badge variant="warning">Skeleton</x-ui.badge></dd>
-                    </div>
-                    <div class="flex items-center justify-between gap-3">
-                        <dt class="text-slate-600">Koneksi database</dt>
-                        <dd><x-ui.badge variant="success">Aktif</x-ui.badge></dd>
-                    </div>
-                </dl>
-            </x-ui.card>
-        </div>
-
-        <x-ui.card title="Aktivitas terbaru" description="Audit trail perubahan sensitif tersedia pada Phase 2.">
-            <x-ui.empty-state
-                icon="inbox"
-                title="Belum ada aktivitas"
-                description="Log aksi admin akan tampil di sini setelah modul autentikasi dan audit tersedia."
-            />
-        </x-ui.card>
+<x-layouts.admin title="Dashboard" subtitle="Ringkasan operasional GEARORA. Semua angka diambil langsung dari database.">
+    <div class="stat-grid">
+        @foreach($stats as $stat)
+            <div class="stat-card"><p>{{ $stat['label'] }}</p><strong>{{ number_format((int) $stat['value'], 0, ',', '.') }}</strong><small>{{ $stat['hint'] }}</small></div>
+        @endforeach
     </div>
+
+    <div class="admin-grid-2">
+        <section class="panel">
+            <div class="panel-head"><h2>Pesanan terbaru</h2><a class="text-link" href="{{ route('admin.rentals.index') }}">Semua pesanan</a></div>
+            <table class="data-table"><thead><tr><th>Kode</th><th>Pelanggan</th><th>Status</th><th class="text-right">Total</th></tr></thead><tbody>
+                @forelse($recentOrders as $order)
+                    <tr><td><a class="text-link" href="{{ route('admin.rentals.show', $order) }}">{{ $order->order_code }}</a></td><td>{{ $order->customer?->name }}</td><td><x-partials.status-badge :status="$order->order_status" /></td><td class="text-right">{{ rupiah($order->total) }}</td></tr>
+                @empty
+                    <tr><td colspan="4" class="empty-cell">Belum ada pesanan.</td></tr>
+                @endforelse
+            </tbody></table>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><h2>Pembayaran menunggu verifikasi</h2><a class="text-link" href="{{ route('admin.payments.index', ['status' => 'waiting_verification']) }}">Kelola</a></div>
+            <ul class="plain-list">
+                @forelse($pendingPayments as $payment)
+                    <li><a class="text-link" href="{{ route('admin.rentals.show', $payment->order) }}">{{ $payment->order?->order_code }}</a><span>{{ rupiah($payment->amount) }} · {{ $payment->method->label() }}</span></li>
+                @empty
+                    <li class="empty-cell">Tidak ada pembayaran menunggu.</li>
+                @endforelse
+            </ul>
+        </section>
+    </div>
+
+    <div class="admin-grid-2">
+        <section class="panel">
+            <div class="panel-head"><h2>Stok jual menipis</h2><a class="text-link" href="{{ route('admin.inventory.index', ['tab' => 'stock']) }}">Inventaris</a></div>
+            <ul class="plain-list">
+                @forelse($lowStock as $product)
+                    <li><span>{{ $product->name }}</span><span>{{ $product->variants->sum('stock_quantity') }} unit</span></li>
+                @empty
+                    <li class="empty-cell">Tidak ada varian jual dengan stok menipis.</li>
+                @endforelse
+            </ul>
+        </section>
+        <section class="panel">
+            <div class="panel-head"><h2>Ringkasan data</h2></div>
+            <dl class="summary-list">
+                <div><dt>Kategori</dt><dd>{{ $totals['categories'] }}</dd></div>
+                <div><dt>Produk</dt><dd>{{ $totals['products'] }}</dd></div>
+                <div><dt>Unit rental</dt><dd>{{ $totals['assets'] }}</dd></div>
+                <div><dt>Pelanggan</dt><dd>{{ $totals['customers'] }}</dd></div>
+            </dl>
+        </section>
+    </div>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Aktivitas terbaru</h2><a class="text-link" href="{{ route('admin.activity.index') }}">Log lengkap</a></div>
+        <ul class="plain-list">
+            @forelse($activities as $activity)
+                <li><span>{{ $activity->description }}</span><span>{{ $activity->created_at?->translatedFormat('d M Y H:i') }}</span></li>
+            @empty
+                <li class="empty-cell">Belum ada aktivitas.</li>
+            @endforelse
+        </ul>
+    </section>
 </x-layouts.admin>

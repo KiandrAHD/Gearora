@@ -2,57 +2,58 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Support\Facades\View;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class UiFoundationTest extends TestCase
 {
-    public function test_catalog_skeleton_renders_filter_and_empty_state(): void
+    use RefreshDatabase;
+
+    public function test_catalog_renders_filter_and_empty_state(): void
     {
         $this->get('/katalog')
             ->assertOk()
             ->assertSee('Temukan gear untuk perjalananmu.')
             ->assertSee('Cari gear')
             ->assertSee('name="q"', false)
-            ->assertSee('Belum ada produk di katalog')
-            ->assertSee('Terapkan filter');
+            ->assertSee('Belum ada gear yang cocok');
     }
 
-    public function test_guides_skeleton_renders_empty_state(): void
+    public function test_guides_page_renders(): void
     {
         $this->get('/panduan')
             ->assertOk()
-            ->assertSee('Belum ada panduan yang dipublikasikan')
-            ->assertSee('Konten draft tidak akan ditampilkan');
+            ->assertSee('Panduan sebelum bertualang.')
+            ->assertSee('Segera hadir');
     }
 
-    public function test_customer_layout_renders_navigation_and_empty_orders(): void
+    public function test_customer_route_requires_login(): void
     {
-        $this->get('/akun')
-            ->assertOk()
-            ->assertSee('Ringkasan akun')
-            ->assertSee('Navigasi akun')
-            ->assertSee('Pesanan saya')
-            ->assertSee('Belum ada pesanan');
+        $this->get('/akun')->assertRedirect(route('login'));
     }
 
-    public function test_admin_layout_renders_skeleton_dashboard(): void
+    public function test_admin_route_requires_login(): void
     {
-        $html = View::make('admin.dashboard')->render();
-
-        $this->assertStringContainsString('Admin Dashboard', $html);
-        $this->assertStringContainsString('Navigasi admin', $html);
-        $this->assertStringContainsString('Belum ada pesanan pada database.', $html);
-        $this->assertStringContainsString('Phase 2', $html);
-        $this->assertStringContainsString('Lewati ke konten utama', $html);
+        $this->get('/admin')->assertRedirect(route('login'));
     }
 
     public function test_all_skeletons_expose_accessible_main_landmark(): void
     {
-        foreach (['/', '/katalog', '/panduan', '/akun'] as $url) {
+        foreach (['/', '/katalog', '/panduan'] as $url) {
             $this->get($url)
                 ->assertOk()
                 ->assertSee('id="main-content"', false);
         }
+    }
+
+    public function test_customer_dashboard_exposes_main_landmark_after_login(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/akun')
+            ->assertOk()
+            ->assertSee('id="main-content"', false);
     }
 }

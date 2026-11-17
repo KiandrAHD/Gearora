@@ -101,16 +101,16 @@ Aplikasi dapat start tanpa error, CSS/JS hasil build muncul, migrasi dapat dijal
 
 ### Tasks
 
-- [ ] Finalisasi ERD dan migration inti.
-- [ ] Buat model `User`, `Role`, dan `Permission`.
-- [ ] Implementasikan registrasi/login pelanggan.
-- [ ] Implementasikan login admin melalui route terpisah atau guard/policy yang jelas.
-- [ ] Buat middleware autentikasi admin.
-- [ ] Implementasikan RBAC minimum: Owner, Admin, Warehouse Staff, Customer.
-- [ ] Implementasikan Policy/Gate untuk setiap aksi sensitif.
-- [ ] Pastikan customer hanya dapat melihat pesanan miliknya.
-- [ ] Tambahkan rate limit login dan validasi password.
-- [ ] Buat audit log untuk perubahan akses dan aksi admin yang penting.
+- [x] Finalisasi ERD dan migration inti.
+- [x] Buat model `User`, `Role`, dan `Permission`.
+- [x] Implementasikan registrasi/login pelanggan.
+- [x] Implementasikan login admin melalui route terpisah atau guard/policy yang jelas.
+- [x] Buat middleware autentikasi admin.
+- [x] Implementasikan RBAC minimum: Owner, Admin, Warehouse Staff, Customer.
+- [x] Implementasikan Policy/Gate untuk setiap aksi sensitif.
+- [x] Pastikan customer hanya dapat melihat pesanan miliknya.
+- [x] Tambahkan rate limit login dan validasi password.
+- [x] Buat audit log untuk perubahan akses dan aksi admin yang penting.
 
 ### Deliverables
 
@@ -129,17 +129,17 @@ Pengguna tanpa login tidak dapat mengakses halaman privat; customer tidak dapat 
 
 ### Tasks
 
-- [ ] CRUD kategori.
-- [ ] CRUD produk dan foto.
-- [ ] Tipe produk: rental, sale, atau both.
-- [ ] CRUD product variants (ukuran, kapasitas, warna, SKU).
-- [ ] Pencatatan stok produk jual.
-- [ ] Pencatatan unit fisik rental (`rental_assets`).
-- [ ] Status unit: available, reserved, rented, maintenance, damaged, lost.
-- [ ] Stock movement untuk barang masuk, penyesuaian, kerusakan, dan kehilangan.
-- [ ] Validasi upload foto dan optimasi gambar.
-- [ ] Katalog publik: pencarian, kategori, filter tipe layanan, pagination.
-- [ ] Detail produk menampilkan spesifikasi, harga, kondisi, dan varian.
+- [x] CRUD kategori.
+- [x] CRUD produk dan foto.
+- [x] Tipe produk: rental, sale, atau both.
+- [x] CRUD product variants (ukuran, kapasitas, warna, SKU).
+- [x] Pencatatan stok produk jual.
+- [x] Pencatatan unit fisik rental (`rental_assets`).
+- [x] Status unit: available, reserved, rented, maintenance, damaged, lost.
+- [x] Stock movement untuk barang masuk, penyesuaian, kerusakan, dan kehilangan.
+- [x] Validasi upload foto dan optimasi gambar.
+- [x] Katalog publik: pencarian, kategori, filter tipe layanan, pagination.
+- [x] Detail produk menampilkan spesifikasi, harga, kondisi, dan varian.
 
 ### Deliverables
 
@@ -157,17 +157,17 @@ Setiap produk memiliki tipe dan data harga yang valid; unit rental dapat dilacak
 
 ### Tasks
 
-- [ ] Implementasikan form tanggal mulai dan pengembalian.
-- [ ] Finalisasi aturan durasi dan overlap periode.
-- [ ] Implementasikan `RentalAvailabilityService`.
-- [ ] Implementasikan perhitungan harga dengan snapshot saat order dibuat.
-- [ ] Implementasikan cart/booking summary.
-- [ ] Implementasikan pembuatan rental order dan kode transaksi unik.
-- [ ] Tambahkan database transaction dan row locking untuk mencegah double allocation.
-- [ ] Buat status order dan validasi transisi.
-- [ ] Buat halaman riwayat/detail order pelanggan.
-- [ ] Buat halaman daftar/detail order pada Admin Dashboard.
-- [ ] Tambahkan test untuk tanggal beririsan, stok habis, quantity, dan order bersamaan.
+- [x] Implementasikan form tanggal mulai dan pengembalian.
+- [x] Finalisasi aturan durasi dan overlap periode (`.docs/ADR_RENTAL_INTERVAL.md`).
+- [x] Implementasikan `RentalAvailabilityService`.
+- [x] Implementasikan perhitungan harga dengan snapshot saat order dibuat.
+- [x] Implementasikan cart/booking summary (MVP satu varian per booking).
+- [x] Implementasikan pembuatan rental order dan kode transaksi unik.
+- [x] Tambahkan database transaction dan row locking untuk mencegah double allocation.
+- [x] Buat status order dan validasi transisi.
+- [x] Buat halaman riwayat/detail order pelanggan.
+- [x] Buat halaman daftar/detail order pada Admin Dashboard.
+- [x] Tambahkan test untuk tanggal beririsan, stok habis, quantity, dan reuse periode bersebelahan. **Catatan:** test concurrency sungguhan belum dilakukan; SQLite `:memory:` tidak memverifikasi row-lock MySQL.
 
 ### Deliverables
 

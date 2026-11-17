@@ -1,14 +1,1 @@
-<footer class="bg-navy px-6 py-10 text-white lg:px-10">
-    <div class="mx-auto flex max-w-7xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <p class="font-heading font-semibold">GEARORA</p>
-            <p class="mt-1 text-sm text-slate-300">Gear Up. Explore More.</p>
-        </div>
-        <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-300" aria-label="Navigasi footer">
-            <a class="hover:text-white" href="{{ route('home') }}">Beranda</a>
-            <a class="hover:text-white" href="{{ route('catalog.index') }}">Katalog</a>
-            <a class="hover:text-white" href="{{ route('guides.index') }}">Panduan</a>
-            <a class="hover:text-white" href="{{ route('home') }}#tentang">Tentang</a>
-        </nav>
-    </div>
-</footer>
+<footer class="site-footer"><div class="page-container footer-grid"><div class="footer-brand"><a href="{{ route('home') }}" class="brand brand-light"><img src="{{ asset('images/gearora-logo.png') }}" width="37" height="37" alt=""><span class="brand-copy"><strong>GEARORA</strong><small>OUTDOOR SUPPLY</small></span></a><p>Perlengkapan outdoor terkurasi untuk cerita perjalanan yang lebih siap.</p></div><div><h2>Jelajahi</h2><a href="{{ route('catalog.index', ['mode' => 'sewa']) }}">Sewa gear</a><a href="{{ route('catalog.index', ['mode' => 'beli']) }}">Beli gear</a><a href="{{ route('trip-planner.index') }}">Rekomendasi Trip</a></div><div><h2>Bantuan</h2><a href="{{ route('guides.index') }}">Panduan</a><a href="{{ route('home') }}#tentang">Tentang GEARORA</a><a href="{{ route('login') }}">Akun saya</a></div><div class="footer-newsletter"><h2>Dapatkan cerita perjalanan</h2><p>Tips gear dan inspirasi petualangan, sesekali.</p><form><label class="sr-only" for="newsletter-email">Email</label><input id="newsletter-email" type="email" placeholder="Alamat email"><button type="submit" aria-label="Daftar newsletter">→</button></form></div></div><div class="page-container footer-bottom"><span>© {{ date('Y') }} GEARORA. Gear Up. Explore More.</span><span>Satu lokasi · Self pickup · Indonesia</span></div></footer>

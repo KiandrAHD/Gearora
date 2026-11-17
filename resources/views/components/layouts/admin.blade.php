@@ -1,15 +1,17 @@
 @props(['title' => 'Dashboard', 'subtitle' => null])
 @php
-    $adminNav = [
-        ['label' => 'Dashboard', 'key' => 'dashboard', 'ready' => true],
-        ['label' => 'Kategori', 'key' => 'categories', 'ready' => false],
-        ['label' => 'Produk & varian', 'key' => 'products', 'ready' => false],
-        ['label' => 'Inventaris', 'key' => 'inventory', 'ready' => false],
-        ['label' => 'Pesanan rental', 'key' => 'rentals', 'ready' => false],
-        ['label' => 'Pembayaran', 'key' => 'payments', 'ready' => false],
-        ['label' => 'Pengembalian', 'key' => 'returns', 'ready' => false],
-        ['label' => 'Laporan', 'key' => 'reports', 'ready' => false],
-    ];
+    $user = auth()->user();
+    $can = fn (string $permission) => $user !== null && ($user->isOwner() || $user->hasPermission($permission));
+    $adminNav = array_values(array_filter([
+        $can('dashboard.view') ? ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'match' => 'admin.dashboard'] : null,
+        $can('categories.view') ? ['label' => 'Kategori', 'route' => 'admin.categories.index', 'match' => 'admin.categories.*'] : null,
+        $can('products.view') ? ['label' => 'Produk & varian', 'route' => 'admin.products.index', 'match' => 'admin.products.*'] : null,
+        $can('inventory.view') ? ['label' => 'Inventaris', 'route' => 'admin.inventory.index', 'match' => 'admin.inventory.*'] : null,
+        $can('rentals.view') ? ['label' => 'Pesanan rental', 'route' => 'admin.rentals.index', 'match' => 'admin.rentals.*'] : null,
+        $can('payments.view') ? ['label' => 'Pembayaran', 'route' => 'admin.payments.index', 'match' => 'admin.payments.*'] : null,
+        $can('customers.view') ? ['label' => 'Pelanggan', 'route' => 'admin.customers.index', 'match' => 'admin.customers.*'] : null,
+        $can('dashboard.view') ? ['label' => 'Log aktivitas', 'route' => 'admin.activity.index', 'match' => 'admin.activity.*'] : null,
+    ]));
 @endphp
 <!doctype html>
 <html lang="id">
@@ -17,92 +19,44 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
     <title>{{ $title }} — Admin GEARORA</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-cloud text-navy" x-data="{ sidebarOpen: false }">
-    <a href="#admin-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:px-4 focus:py-3 focus:text-navy">
-        Lewati ke konten utama
-    </a>
-
-    <div class="min-h-screen lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
-        <div class="fixed inset-0 z-30 bg-navy/60 lg:hidden" x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" aria-hidden="true"></div>
-
-        <aside
-            class="fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col bg-navy text-white transition-transform lg:static lg:translate-x-0"
-            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            aria-label="Navigasi admin"
-        >
-            <div class="flex items-center justify-between border-b border-white/10 px-5 py-5">
-                <a href="{{ route('home') }}" class="flex items-center gap-3" aria-label="GEARORA, kembali ke situs publik">
-                    <span class="grid size-9 place-items-center rounded-full bg-forest text-base font-bold text-white" aria-hidden="true">G</span>
-                    <span>
-                        <span class="block font-heading text-sm font-bold tracking-[0.05em]">GEARORA</span>
-                        <span class="block text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-sage">Admin panel</span>
-                    </span>
-                </a>
-                <button type="button" class="inline-flex size-9 items-center justify-center rounded-md border border-white/20 lg:hidden" @click="sidebarOpen = false" aria-label="Tutup menu admin">
-                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
-                    </svg>
-                </button>
+<body class="admin-body" x-data="{ sidebarOpen: false }">
+    <a href="#admin-content" class="skip-link">Lewati ke konten utama</a>
+    <div class="admin-shell">
+        <div class="admin-overlay" x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" aria-hidden="true"></div>
+        <aside class="admin-sidebar" :class="sidebarOpen ? 'open' : ''" aria-label="Navigasi admin">
+            <div class="admin-brand">
+                <a href="{{ route('admin.dashboard') }}" class="brand brand-light"><img src="{{ asset('images/gearora-logo.png') }}" width="34" height="34" alt=""><span class="brand-copy"><strong>GEARORA</strong><small>ADMIN CONSOLE</small></span></a>
+                <button type="button" class="admin-close" @click="sidebarOpen = false" aria-label="Tutup menu admin">×</button>
             </div>
-
-            <nav class="flex-1 overflow-y-auto px-3 py-4">
-                <p class="px-3 pb-2 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-400">Operasional</p>
-                <ul class="space-y-1 text-sm font-semibold">
-                    @foreach ($adminNav as $item)
-                        <li>
-                            @if ($item['ready'])
-                                <span class="block rounded-md bg-white/10 px-3 py-2.5 text-white" aria-current="page">{{ $item['label'] }}</span>
-                            @else
-                                <span class="flex items-center justify-between gap-2 rounded-md px-3 py-2.5 text-slate-400" aria-disabled="true">
-                                    {{ $item['label'] }}
-                                    <span class="rounded-full border border-white/15 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide">Segera</span>
-                                </span>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
+            <nav class="admin-nav">
+                @foreach($adminNav as $item)
+                    <a href="{{ route($item['route']) }}" @if(request()->routeIs($item['match'])) aria-current="page" @endif>{{ $item['label'] }}</a>
+                @endforeach
             </nav>
-
-            <div class="border-t border-white/10 p-4">
-                <a href="{{ route('customer.dashboard') }}" class="block rounded-md px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">Lihat situs pelanggan</a>
-                <p class="mt-2 px-3 text-xs text-slate-400">RBAC aktif pada Phase 2.</p>
+            <div class="admin-foot">
+                <p>{{ $user?->name }} · {{ $user?->primaryStaffRoleLabel() ?? 'Staf' }}</p>
+                <form method="post" action="{{ route('admin.logout') }}">@csrf<button class="text-link" type="submit">Keluar</button></form>
             </div>
         </aside>
-
-        <div class="flex min-w-0 flex-col">
-            <header class="sticky top-0 z-20 border-b border-line bg-cloud/95 backdrop-blur">
-                <div class="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center gap-3">
-                        <button type="button" class="inline-flex size-10 items-center justify-center rounded-md border border-line text-navy lg:hidden" @click="sidebarOpen = true" aria-label="Buka menu admin" aria-controls="admin-sidebar" :aria-expanded="sidebarOpen.toString()">
-                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
-                            </svg>
-                        </button>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-forest">Admin Dashboard</p>
-                            <h1 class="font-heading text-lg font-semibold leading-tight text-navy sm:text-xl">{{ $title }}</h1>
-                        </div>
-                    </div>
-                    <span class="hidden items-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 sm:inline-flex">
-                        <span class="size-2 rounded-full bg-sage" aria-hidden="true"></span>
-                        Skeleton Phase 1
-                    </span>
-                </div>
+        <div class="admin-main">
+            <header class="admin-header">
+                <button type="button" class="admin-toggle" @click="sidebarOpen = true" aria-label="Buka menu admin" aria-controls="admin-sidebar" :aria-expanded="sidebarOpen.toString()">☰</button>
+                <div><p class="admin-kicker">Admin Console</p><h1>{{ $title }}</h1></div>
+                <a class="text-link" href="{{ route('home') }}">Lihat situs publik</a>
             </header>
-
-            <main id="admin-content" class="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-                @if ($subtitle)
-                    <p class="mb-6 max-w-3xl text-sm leading-7 text-slate-600">{{ $subtitle }}</p>
-                @endif
+            <main id="admin-content" class="admin-content">
+                @if(session('status'))<div class="notice" role="status">{{ session('status') }}</div>@endif
+                @if(session('error'))<div class="notice notice-warning" role="alert">{{ session('error') }}</div>@endif
+                @if($subtitle)<p class="page-lead">{{ $subtitle }}</p>@endif
                 {{ $slot }}
             </main>
-
-            <footer class="border-t border-line px-4 py-4 text-xs text-slate-500 sm:px-6 lg:px-8">
-                GEARORA Admin · Layout skeleton. Modul admin dihubungkan pada phase berikutnya.
-            </footer>
         </div>
     </div>
 </body>

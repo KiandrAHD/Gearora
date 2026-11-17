@@ -2,22 +2,23 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Seeder utama. Tidak membuat akun produksi atau password default.
+     * Akun Owner dibuat eksplisit lewat `php artisan gearora:provision-owner`.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            RolePermissionSeeder::class,
+            SettingsSeeder::class,
         ]);
+
+        if (app()->environment('local', 'testing')) {
+            $this->call(DemoCatalogSeeder::class);
+        }
     }
 }
