@@ -31,4 +31,9 @@ class PaymentPolicy
     {
         return $user->hasPermission(PermissionName::PaymentsReject->value);
     }
+
+    public function refund(User $user, Payment $payment): bool
+    {
+        return $user->hasPermission(PermissionName::PaymentsRefund->value);
+    }
 }

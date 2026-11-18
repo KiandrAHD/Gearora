@@ -39,6 +39,17 @@
                 <p class="empty-cell">Belum ada data pembayaran.</p>
             @endforelse
 
+            @if($gatewayAvailable && ! in_array($order->order_status->value, ['cancelled', 'completed'], true))
+                <div class="payment-instructions">
+                    <h3>Bayar otomatis</h3>
+                    <p class="field-hint">Kartu kredit/debit, VA bank, e-wallet, dan QRIS diproses melalui Midtrans. Status terverifikasi otomatis setelah pembayaran berhasil.</p>
+                    <form method="post" action="{{ route('customer.orders.midtrans.start', $order) }}">
+                        @csrf
+                        <button class="btn-primary" type="submit">Bayar sekarang (Midtrans)</button>
+                    </form>
+                </div>
+            @endif
+
             @if($hasTransferInstruction)
                 <div class="payment-instructions">
                     <h3>Instruksi transfer</h3>

@@ -47,6 +47,7 @@ class RentalOrderController extends Controller
             'order' => $order,
             'instructions' => $this->payments->instructions(),
             'hasTransferInstruction' => $this->payments->hasTransferInstruction(),
+            'gatewayAvailable' => $this->payments->gatewayAvailable(),
         ]);
     }
 

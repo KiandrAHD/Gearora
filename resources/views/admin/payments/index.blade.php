@@ -16,7 +16,9 @@
                     <td><x-partials.status-badge :status="$payment->status" /></td>
                     <td>@if($payment->proof_path)<a class="text-link" href="{{ route('admin.payments.proof', $payment) }}">Unduh</a>@else —@endif</td>
                     <td class="text-right">
-                        @if(in_array($payment->status->value, ['waiting_verification', 'unpaid'], true))
+                        @if($payment->method->isGateway())
+                            <span class="field-hint">Diverifikasi otomatis via gateway</span>
+                        @elseif(in_array($payment->status->value, ['waiting_verification', 'unpaid'], true))
                             <form class="inline-form" method="post" action="{{ route('admin.payments.decide', $payment) }}">
                                 @csrf
                                 <input name="note" type="text" placeholder="Catatan" aria-label="Catatan verifikasi">

@@ -7,6 +7,7 @@ use App\Exceptions\InvalidOrderTransitionException;
 use App\Http\Controllers\Controller;
 use App\Models\RentalOrder;
 use App\Services\RentalOrderService;
+use App\Services\RentalOverdueService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -52,7 +53,8 @@ class RentalOrderController extends Controller
 
         return view('admin.rentals.show', [
             'order' => $order,
-            'statuses' => $order->order_status->allowedTransitions(),
+            'statuses' => $order->order_status->manualTransitions(),
+            'overdue' => app(RentalOverdueService::class)->forOrder($order),
         ]);
     }
 
@@ -61,7 +63,7 @@ class RentalOrderController extends Controller
         $this->authorize('update', $order);
 
         $data = $request->validate([
-            'status' => ['required', Rule::in(array_map(fn ($status) => $status->value, $order->order_status->allowedTransitions()))],
+            'status' => ['required', Rule::in(array_map(fn ($status) => $status->value, $order->order_status->manualTransitions()))],
             'reason' => ['nullable', 'string', 'max:255'],
         ]);
 

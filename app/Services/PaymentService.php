@@ -250,12 +250,17 @@ class PaymentService
                 return $payment; // idempotent: jangan gandakan efek
             }
 
+            if ($payment->status === PaymentStatus::Refunded || $payment->status === PaymentStatus::PartiallyRefunded) {
+                throw new RuntimeException('Pembayaran yang sudah direfund tidak dapat diselesaikan ulang.');
+            }
+
             $order = RentalOrder::query()->whereKey($payment->rental_order_id)->lockForUpdate()->firstOrFail();
 
             $late = $order->order_status === RentalOrderStatus::Cancelled;
+            $lateOrFinal = $late || in_array($payment->status, [PaymentStatus::Expired, PaymentStatus::Failed], true);
 
             $payment->forceFill([
-                'status' => $late ? PaymentStatus::Processing : PaymentStatus::Verified,
+                'status' => $lateOrFinal ? PaymentStatus::Processing : PaymentStatus::Verified,
                 'verified_by' => $actor?->getKey(),
                 'verified_at' => now(),
                 'settled_at' => now(),
@@ -264,7 +269,7 @@ class PaymentService
                     : $note,
             ])->save();
 
-            if (! $late) {
+            if (! $lateOrFinal) {
                 // Alokasikan deposit sebagai liabilitas terpisah (bukan pendapatan).
                 $depositAmount = (int) ($payment->deposit_amount ?? Money::toInt($order->deposit_total));
 
@@ -279,8 +284,8 @@ class PaymentService
             $this->logger->log(
                 $late ? 'payment.late_settlement' : 'payment.verified',
                 $payment,
-                $late
-                    ? "Pembayaran order {$order->order_code} masuk setelah order dibatalkan."
+                $lateOrFinal
+                    ? "Pembayaran order {$order->order_code} masuk setelah pembayaran/order berstatus final."
                     : "Pembayaran order {$order->order_code} terverifikasi ({$source}).",
                 array_merge([
                     'payment_id' => $payment->getKey(),
