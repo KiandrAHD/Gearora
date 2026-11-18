@@ -56,6 +56,60 @@ class MySqlCrudIntegrationTest extends TestCase
         $this->assertNotEmpty($foreignKeys);
     }
 
+    public function test_mysql_phase5_payment_and_operations_schema(): void
+    {
+        $tables = [
+            'payments', 'payment_attempts', 'payment_webhook_events', 'payment_proofs',
+            'refunds', 'deposits', 'deposit_transactions',
+            'rental_handovers', 'rental_handover_items', 'rental_returns', 'rental_return_items',
+            'inspections', 'inspection_photos', 'additional_charges',
+        ];
+
+        foreach ($tables as $table) {
+            $engine = DB::selectOne(
+                'select ENGINE from information_schema.TABLES where TABLE_SCHEMA = database() and TABLE_NAME = ?',
+                [$table],
+            );
+
+            $this->assertNotNull($engine, "Tabel {$table} tidak ditemukan.");
+            $this->assertSame('InnoDB', $engine->ENGINE, "Tabel {$table} bukan InnoDB.");
+        }
+
+        // Kolom status/metode kini string (kompatibel MySQL + SQLite), bukan ENUM.
+        $methodType = DB::selectOne(
+            "select DATA_TYPE from information_schema.COLUMNS where TABLE_SCHEMA = database() and TABLE_NAME = 'payments' and COLUMN_NAME = 'method'",
+        );
+        $this->assertSame('varchar', $methodType->DATA_TYPE);
+
+        // Uang disimpan sebagai integer Rupiah penuh.
+        $depositType = DB::selectOne(
+            "select DATA_TYPE from information_schema.COLUMNS where TABLE_SCHEMA = database() and TABLE_NAME = 'deposits' and COLUMN_NAME = 'required_amount'",
+        );
+        $this->assertContains($depositType->DATA_TYPE, ['int', 'bigint']);
+
+        // Deduplikasi webhook dijaga oleh unique index.
+        $unique = DB::select(
+            "select INDEX_NAME from information_schema.STATISTICS
+             where TABLE_SCHEMA = database() and TABLE_NAME = 'payment_webhook_events'
+               and COLUMN_NAME = 'event_hash' and NON_UNIQUE = 0",
+        );
+        $this->assertNotEmpty($unique);
+
+        $payment = DB::table('payments')->insertGetId([
+            'rental_order_id' => \App\Models\RentalOrder::factory()->create()->id,
+            'method' => 'midtrans',
+            'amount' => 150000,
+            'rental_amount' => 100000,
+            'deposit_amount' => 50000,
+            'status' => 'processing',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->assertSame('midtrans', DB::table('payments')->where('id', $payment)->value('method'));
+        $this->assertSame(50000, (int) DB::table('payments')->where('id', $payment)->value('deposit_amount'));
+    }
+
     public function test_mysql_product_and_variant_crud_persists_to_database(): void
     {
         $owner = User::factory()->create();
