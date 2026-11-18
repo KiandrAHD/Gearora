@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentStatus;
 use App\Enums\RentalOrderStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -86,6 +87,54 @@ class RentalOrder extends Model
     }
 
     /**
+     * @return HasOne<Deposit, $this>
+     */
+    public function deposit(): HasOne
+    {
+        return $this->hasOne(Deposit::class);
+    }
+
+    /**
+     * @return HasMany<RentalHandover, $this>
+     */
+    public function handovers(): HasMany
+    {
+        return $this->hasMany(RentalHandover::class);
+    }
+
+    /**
+     * @return HasMany<RentalReturn, $this>
+     */
+    public function rentalReturns(): HasMany
+    {
+        return $this->hasMany(RentalReturn::class);
+    }
+
+    /**
+     * @return HasMany<Inspection, $this>
+     */
+    public function inspections(): HasMany
+    {
+        return $this->hasMany(Inspection::class);
+    }
+
+    /**
+     * @return HasMany<AdditionalCharge, $this>
+     */
+    public function additionalCharges(): HasMany
+    {
+        return $this->hasMany(AdditionalCharge::class);
+    }
+
+    /**
+     * @return HasMany<Refund, $this>
+     */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    /**
      * @param  Builder<RentalOrder>  $query
      */
     public function scopeBlocking(Builder $query): void
@@ -119,5 +168,33 @@ class RentalOrder extends Model
     public function isBlocking(): bool
     {
         return $this->order_status->blocksAvailability();
+    }
+
+    /** Order memiliki pembayaran yang sudah settled (verified atau refund final). */
+    public function hasVerifiedPayment(): bool
+    {
+        return $this->payments()
+            ->where('status', PaymentStatus::Verified->value)
+            ->exists();
+    }
+
+    /** Apakah deposit sudah terkumpul sesuai kewajiban. */
+    public function depositIsCollected(): bool
+    {
+        $deposit = $this->deposit;
+
+        return $deposit !== null
+            && $deposit->collected_amount >= $deposit->required_amount;
+    }
+
+    /** Apakah seluruh unit sudah dikembalikan (setiap assignment memiliki returned_at). */
+    public function allUnitsReturned(): bool
+    {
+        $released = $this->assignments()
+            ->whereNull('released_at')
+            ->whereNotNull('returned_at')
+            ->count();
+
+        return $released === 0 && $this->assignments()->count() > 0;
     }
 }

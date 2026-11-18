@@ -40,12 +40,48 @@ return [
         'proof_mimes' => ['image/jpeg', 'image/png', 'application/pdf'],
         'proof_max_kb' => (int) env('GEARORA_PAYMENT_PROOF_MAX_KB', 5120),
         'proof_disk' => env('GEARORA_PAYMENT_PROOF_DISK', 'local'),
+        'inspection_disk' => env('GEARORA_INSPECTION_PHOTO_DISK', 'local'),
+        'inspection_photo_mimes' => ['image/jpeg', 'image/png', 'image/webp'],
+        'inspection_photo_max_kb' => (int) env('GEARORA_INSPECTION_PHOTO_MAX_KB', 5120),
         'instructions' => [
             'bank_name' => env('GEARORA_BANK_NAME'),
             'bank_account_number' => env('GEARORA_BANK_ACCOUNT_NUMBER'),
             'bank_account_name' => env('GEARORA_BANK_ACCOUNT_NAME'),
             'cash_location' => env('GEARORA_CASH_LOCATION'),
         ],
+        // Metode otomatis (gateway) dinonaktifkan secara default sampai kredensial
+        // Midtrans valid diisi operator. Lihat ADR-5.7.
+        'gateway_enabled' => (bool) env('GEARORA_PAYMENT_GATEWAY_ENABLED', false),
+    ],
+
+    'midtrans' => [
+        'is_production' => (bool) env('MIDTRANS_IS_PRODUCTION', false),
+        'merchant_id' => env('MIDTRANS_MERCHANT_ID'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'sandbox_base_url' => env('MIDTRANS_SANDBOX_BASE_URL', 'https://api.sandbox.midtrans.com'),
+        'production_base_url' => env('MIDTRANS_PRODUCTION_BASE_URL', 'https://api.midtrans.com'),
+        'sandbox_snap_url' => env('MIDTRANS_SNAP_SANDBOX_URL', 'https://app.sandbox.midtrans.com/snap/v2/vtweb'),
+        'production_snap_url' => env('MIDTRANS_SNAP_PRODUCTION_URL', 'https://app.midtrans.com/snap/v2/vtweb'),
+        'expiry_minutes' => (int) env('MIDTRANS_EXPIRY_MINUTES', 60),
+        'notification_url' => env('MIDTRANS_NOTIFICATION_URL'),
+        // Timeout HTTP (detik) untuk request ke Midtrans.
+        'http_timeout' => (int) env('MIDTRANS_HTTP_TIMEOUT', 20),
+        // Gunakan provider tiruan (tanpa jaringan) untuk development tanpa kredensial.
+        'fake' => (bool) env('MIDTRANS_FAKE', false),
+    ],
+
+    'refund' => [
+        // Refund biaya sewa berdasarkan kebijakan (RENTAL_POLICY.md §7).
+        'full_refund_hours' => (int) env('GEARORA_REFUND_FULL_HOURS', 48),
+        'half_refund_hours' => (int) env('GEARORA_REFUND_HALF_HOURS', 24),
+    ],
+
+    'late_fee' => [
+        'grace_minutes' => (int) env('GEARORA_LATE_GRACE_MINUTES', 60),
+        // 100% harga sewa harian per hari keterlambatan.
+        'daily_rate_percent' => (int) env('GEARORA_LATE_RATE_PERCENT', 100),
+        'max_days' => (int) env('GEARORA_LATE_MAX_DAYS', 7),
     ],
 
     'uploads' => [

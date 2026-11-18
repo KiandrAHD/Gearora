@@ -35,6 +35,31 @@ enum PermissionName: string
     case PaymentsView = 'payments.view';
     case PaymentsVerify = 'payments.verify';
     case PaymentsReject = 'payments.reject';
+    case PaymentsRefund = 'payments.refund';
+    case PaymentsSettingsManage = 'payments.settings.manage';
+
+    case RentalsHandover = 'rentals.handover';
+    case RentalsReturn = 'rentals.return';
+    case RentalsComplete = 'rentals.complete';
+
+    case InspectionsView = 'inspections.view';
+    case InspectionsCreate = 'inspections.create';
+    case InspectionsApprove = 'inspections.approve';
+
+    case DepositsView = 'deposits.view';
+    case DepositsManage = 'deposits.manage';
+    case DepositsRefund = 'deposits.refund';
+    case DepositsDeduct = 'deposits.deduct';
+    case DepositsApprove = 'deposits.approve';
+
+    case ChargesView = 'charges.view';
+    case ChargesCreate = 'charges.create';
+    case ChargesApprove = 'charges.approve';
+    case ChargesReject = 'charges.reject';
+
+    case ReportsRentalsView = 'reports.rentals.view';
+    case ReportsPaymentsView = 'reports.payments.view';
+    case ReportsDepositsView = 'reports.deposits.view';
 
     case CustomersView = 'customers.view';
 
@@ -66,6 +91,26 @@ enum PermissionName: string
             self::PaymentsView => 'Melihat pembayaran',
             self::PaymentsVerify => 'Memverifikasi pembayaran',
             self::PaymentsReject => 'Menolak pembayaran',
+            self::PaymentsRefund => 'Memproses refund pembayaran',
+            self::PaymentsSettingsManage => 'Mengelola pengaturan pembayaran',
+            self::RentalsHandover => 'Melakukan serah terima rental',
+            self::RentalsReturn => 'Menerima pengembalian rental',
+            self::RentalsComplete => 'Menyelesaikan rental',
+            self::InspectionsView => 'Melihat inspeksi',
+            self::InspectionsCreate => 'Membuat inspeksi',
+            self::InspectionsApprove => 'Menyetujui hasil inspeksi',
+            self::DepositsView => 'Melihat deposit',
+            self::DepositsManage => 'Mengelola deposit',
+            self::DepositsRefund => 'Mengembalikan deposit',
+            self::DepositsDeduct => 'Memotong deposit',
+            self::DepositsApprove => 'Menyetujui transaksi deposit',
+            self::ChargesView => 'Melihat biaya tambahan',
+            self::ChargesCreate => 'Membuat biaya tambahan',
+            self::ChargesApprove => 'Menyetujui biaya tambahan',
+            self::ChargesReject => 'Menolak biaya tambahan',
+            self::ReportsRentalsView => 'Melihat laporan rental',
+            self::ReportsPaymentsView => 'Melihat laporan pembayaran',
+            self::ReportsDepositsView => 'Melihat laporan deposit',
             self::CustomersView => 'Melihat pelanggan',
         };
     }

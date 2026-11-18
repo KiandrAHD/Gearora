@@ -7,6 +7,7 @@ enum RentalAssetStatus: string
     case Available = 'available';
     case Reserved = 'reserved';
     case Rented = 'rented';
+    case InspectionPending = 'inspection_pending';
     case Maintenance = 'maintenance';
     case Damaged = 'damaged';
     case Lost = 'lost';
@@ -17,6 +18,7 @@ enum RentalAssetStatus: string
             self::Available => 'Tersedia',
             self::Reserved => 'Dipesan',
             self::Rented => 'Disewa',
+            self::InspectionPending => 'Menunggu inspeksi',
             self::Maintenance => 'Perawatan',
             self::Damaged => 'Rusak',
             self::Lost => 'Hilang',
@@ -29,12 +31,24 @@ enum RentalAssetStatus: string
         return in_array($this, [self::Available, self::Reserved], true);
     }
 
+    /** Unit masih dikendalikan proses rental (belum boleh dipesan ulang). */
+    public function isHeld(): bool
+    {
+        return in_array($this, [
+            self::Rented,
+            self::InspectionPending,
+            self::Maintenance,
+            self::Damaged,
+            self::Lost,
+        ], true);
+    }
+
     /** @return array<int, string> */
     public static function rentableValues(): array
     {
         return array_values(array_map(
             fn (self $case) => $case->value,
-            array_filter(self::cases(), fn (self $case) => $case->isRentable())
+            array_filter(self::cases(), fn (self $case) => $case->isRentable()),
         ));
     }
 

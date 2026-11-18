@@ -51,15 +51,20 @@ enum RentalOrderStatus: string
     }
 
     /**
-     * Transisi status yang sah pada Phase 4 (pembuatan order + verifikasi pembayaran).
-     * Transisi pickup/return penuh diimplementasikan pada Phase 5.
+     * Transisi status yang sah secara bisnis.
+     *
+     * Catatan Phase 5:
+     * - `pending_payment → confirmed` dihapus: konfirmasi wajib lewat verifikasi
+     *   pembayaran atau webhook gateway tervalidasi.
+     * - `picked_up`, `returned`, dan `completed` hanya boleh dicapai melalui
+     *   workflow service (handover/return/inspection), bukan dropdown generik.
      *
      * @return array<int, self>
      */
     public function allowedTransitions(): array
     {
         return match ($this) {
-            self::PendingPayment => [self::PaymentReview, self::Cancelled, self::Confirmed],
+            self::PendingPayment => [self::PaymentReview, self::Cancelled],
             self::PaymentReview => [self::Confirmed, self::PendingPayment, self::Cancelled],
             self::Confirmed => [self::ReadyForPickup, self::Cancelled],
             self::ReadyForPickup => [self::PickedUp, self::Cancelled],
@@ -72,6 +77,34 @@ enum RentalOrderStatus: string
     public function canTransitionTo(self $target): bool
     {
         return in_array($target, $this->allowedTransitions(), true);
+    }
+
+    /**
+     * Transisi yang hanya dapat dilakukan via workflow service.
+     *
+     * @return array<int, self>
+     */
+    public static function workflowOnlyTargets(): array
+    {
+        return [self::PickedUp, self::Returned, self::Completed];
+    }
+
+    public function isWorkflowOnlyTarget(): bool
+    {
+        return in_array($this, self::workflowOnlyTargets(), true);
+    }
+
+    /**
+     * Transisi yang aman ditampilkan pada dropdown admin generik.
+     *
+     * @return array<int, self>
+     */
+    public function manualTransitions(): array
+    {
+        return array_values(array_filter(
+            $this->allowedTransitions(),
+            fn (self $target) => ! $target->isWorkflowOnlyTarget(),
+        ));
     }
 
     /** @return array<int, string> */

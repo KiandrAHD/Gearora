@@ -32,6 +32,7 @@ class RentalOrderService
     public function __construct(
         private readonly RentalAvailabilityService $availability,
         private readonly RentalPricingService $pricing,
+        private readonly DepositService $deposits,
         private readonly ActivityLogger $logger,
     ) {}
 
@@ -148,8 +149,12 @@ class RentalOrderService
                     $order->payments()->create([
                         'method' => $method,
                         'amount' => $quote->total,
+                        'rental_amount' => (int) round((float) $quote->subtotal),
+                        'deposit_amount' => (int) round((float) $quote->depositTotal),
                         'status' => PaymentStatus::Unpaid,
                     ]);
+
+                    $this->deposits->ensureForOrder($order);
 
                     $this->logger->log(
                         'rental_order.created',
@@ -179,13 +184,19 @@ class RentalOrderService
     }
 
     /**
-     * Transisi status order dengan validasi transisi yang sah (server-side).
+     * Transisi status order dengan validasi transisi dan precondition (server-side).
+     *
+     * `$viaWorkflow` di-set true hanya oleh workflow service (handover/return) yang
+     * sudah menulis bukti fisik (handover record, return record, inspeksi) sebelum
+     * memindahkan status. Dropdown admin generik tidak boleh mencapai status
+     * picked_up/returned/completed.
      */
     public function transition(
         RentalOrder $order,
         RentalOrderStatus $target,
         ?User $actor = null,
         ?string $reason = null,
+        bool $viaWorkflow = false,
     ): RentalOrder {
         $current = $order->order_status;
 
@@ -199,7 +210,24 @@ class RentalOrderService
             );
         }
 
+        if ($target->isWorkflowOnlyTarget() && ! $viaWorkflow) {
+            throw new InvalidOrderTransitionException(
+                "Status {$target->value} hanya dapat dicapai melalui alur operasional (serah terima/pengembalian/inspeksi)."
+            );
+        }
+
+        $this->assertPreconditions($order, $target);
+
         return DB::transaction(function () use ($order, $current, $target, $actor, $reason) {
+            $order = RentalOrder::query()->whereKey($order->getKey())->lockForUpdate()->firstOrFail();
+
+            // Validasi ulang setelah lock: status bisa berubah oleh request paralel.
+            if ($order->order_status !== $current) {
+                throw new InvalidOrderTransitionException(
+                    "Status order sudah berubah menjadi {$order->order_status->value}; ulangi aksi."
+                );
+            }
+
             $attributes = ['order_status' => $target];
 
             if ($target === RentalOrderStatus::Cancelled) {
@@ -209,7 +237,9 @@ class RentalOrderService
 
             $order->fill($attributes)->save();
 
-            if (in_array($target, [RentalOrderStatus::Cancelled, RentalOrderStatus::Returned, RentalOrderStatus::Completed], true)) {
+            // Pelepasan unit HANYA saat order dibatalkan. Untuk return/completed,
+            // pelepasan dilakukan per unit setelah inspeksi (lihat ADR-5.2).
+            if ($target === RentalOrderStatus::Cancelled) {
                 $this->releaseAssignments($order);
             }
 
@@ -229,6 +259,54 @@ class RentalOrderService
         });
     }
 
+    /**
+     * Precondition transisi status.
+     */
+    private function assertPreconditions(RentalOrder $order, RentalOrderStatus $target): void
+    {
+        switch ($target) {
+            case RentalOrderStatus::Confirmed:
+                $hasSettledPayment = $order->payments()
+                    ->where('status', PaymentStatus::Verified->value)
+                    ->exists();
+
+                if (! $hasSettledPayment) {
+                    throw new InvalidOrderTransitionException('Order hanya dapat dikonfirmasi setelah pembayaran terverifikasi.');
+                }
+                break;
+
+            case RentalOrderStatus::PickedUp:
+                if (! $order->handovers()->where('status', 'completed')->exists()) {
+                    throw new InvalidOrderTransitionException('Status picked_up membutuhkan catatan serah terima.');
+                }
+                break;
+
+            case RentalOrderStatus::Returned:
+                if (! $order->rentalReturns()->where('status', 'completed')->exists()) {
+                    throw new InvalidOrderTransitionException('Status returned membutuhkan catatan pengembalian.');
+                }
+                break;
+
+            case RentalOrderStatus::Completed:
+                $unreleased = $order->assignments()->whereNull('released_at')->count();
+
+                if ($unreleased > 0) {
+                    throw new InvalidOrderTransitionException('Order belum dapat diselesaikan; masih ada unit yang belum selesai diinspeksi.');
+                }
+
+                if ($order->additionalCharges()->whereIn('status', ['pending_approval', 'approved', 'partially_settled'])->exists()) {
+                    throw new InvalidOrderTransitionException('Order belum dapat diselesaikan; masih ada biaya tambahan yang belum selesai.');
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Lepaskan seluruh assignment order (dipakai saat order dibatalkan).
+     */
     public function releaseAssignments(RentalOrder $order): void
     {
         $order->assignments()
