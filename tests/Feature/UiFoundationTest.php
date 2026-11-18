@@ -25,7 +25,7 @@ class UiFoundationTest extends TestCase
         $this->get('/panduan')
             ->assertOk()
             ->assertSee('Panduan sebelum bertualang.')
-            ->assertSee('Segera hadir');
+            ->assertSee('Belum ada panduan dipublikasikan.');
     }
 
     public function test_customer_route_requires_login(): void

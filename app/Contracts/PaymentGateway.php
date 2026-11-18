@@ -3,16 +3,16 @@
 namespace App\Contracts;
 
 use App\Models\PaymentAttempt;
-use App\Models\RentalOrder;
+use App\Models\SalesPaymentAttempt;
 
 interface PaymentGateway
 {
     /** @return array{token:string,redirect_url:string,metadata:array<string,mixed>} */
-    public function createSnap(PaymentAttempt $attempt, RentalOrder $order): array;
+    public function createSnap(PaymentAttempt|SalesPaymentAttempt $attempt, PayableOrder $order): array;
 
     /** @return array<string,mixed> */
-    public function refund(PaymentAttempt $attempt, int $amount, string $refundKey): array;
+    public function refund(PaymentAttempt|SalesPaymentAttempt $attempt, int $amount, string $refundKey): array;
 
     /** @return array<string,mixed> */
-    public function cancel(PaymentAttempt $attempt): array;
+    public function cancel(PaymentAttempt|SalesPaymentAttempt $attempt): array;
 }

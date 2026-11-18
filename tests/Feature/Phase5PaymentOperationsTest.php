@@ -11,6 +11,8 @@ use App\Enums\RentalOrderStatus;
 use App\Enums\RoleName;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\Category;
+use App\Models\Payment;
+use App\Models\PaymentAttempt;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\RentalAsset;
@@ -19,10 +21,10 @@ use App\Models\User;
 use App\Services\DepositService;
 use App\Services\InspectionService;
 use App\Services\PaymentService;
+use App\Services\RefundCalculationService;
 use App\Services\RentalHandoverService;
 use App\Services\RentalOrderService;
 use App\Services\RentalOverdueService;
-use App\Services\RefundCalculationService;
 use App\Support\RentalPeriod;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolePermissionSeeder;
@@ -262,7 +264,7 @@ class Phase5PaymentOperationsTest extends TestCase
     }
 
     /**
-     * @return array{0: RentalOrder, 1: \App\Models\Payment, 2: \App\Models\PaymentAttempt}
+     * @return array{0: RentalOrder, 1: Payment, 2: PaymentAttempt}
      */
     private function midtransOrderWithAttempt(bool $deposit = false): array
     {
@@ -293,7 +295,7 @@ class Phase5PaymentOperationsTest extends TestCase
     /**
      * @return array<string, string>
      */
-    private function payload(\App\Models\PaymentAttempt $attempt, string $transactionStatus): array
+    private function payload(PaymentAttempt $attempt, string $transactionStatus): array
     {
         $statusCode = '200';
         $gross = (string) $attempt->gross_amount;

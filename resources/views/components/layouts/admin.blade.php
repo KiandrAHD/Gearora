@@ -8,6 +8,7 @@
         $can('products.view') ? ['label' => 'Produk & varian', 'route' => 'admin.products.index', 'match' => 'admin.products.*'] : null,
         $can('inventory.view') ? ['label' => 'Inventaris', 'route' => 'admin.inventory.index', 'match' => 'admin.inventory.*'] : null,
         $can('rentals.view') ? ['label' => 'Pesanan rental', 'route' => 'admin.rentals.index', 'match' => 'admin.rentals.*'] : null,
+        $can('sales.view') ? ['label' => 'Penjualan retail', 'route' => 'admin.sales.index', 'match' => 'admin.sales.*'] : null,
         $can('rentals.handover') ? ['label' => 'Pickup', 'route' => 'admin.operations.pickups', 'match' => 'admin.operations.pickups*'] : null,
         $can('rentals.return') ? ['label' => 'Pengembalian', 'route' => 'admin.operations.returns', 'match' => 'admin.operations.returns*'] : null,
         $can('inspections.view') ? ['label' => 'Inspeksi', 'route' => 'admin.operations.inspections', 'match' => 'admin.operations.inspections*'] : null,
@@ -17,6 +18,10 @@
         $can('deposits.view') ? ['label' => 'Deposit', 'route' => 'admin.deposits.index', 'match' => 'admin.deposits.*'] : null,
         $can('charges.view') ? ['label' => 'Biaya tambahan', 'route' => 'admin.charges.index', 'match' => 'admin.charges.*'] : null,
         $can('customers.view') ? ['label' => 'Pelanggan', 'route' => 'admin.customers.index', 'match' => 'admin.customers.*'] : null,
+        $can('guides.view') ? ['label' => 'Panduan', 'route' => 'admin.guides.index', 'match' => 'admin.guides.*'] : null,
+        $can('guide_categories.manage') ? ['label' => 'Kategori panduan', 'route' => 'admin.guide-categories.index', 'match' => 'admin.guide-categories.*'] : null,
+        $can('trip_recommendations.view') ? ['label' => 'Aturan trip', 'route' => 'admin.trip-recommendations.index', 'match' => 'admin.trip-recommendations.*'] : null,
+        ($can('reports.rentals.view') || $can('reports.sales.view')) ? ['label' => 'Laporan', 'route' => 'admin.reports.index', 'match' => 'admin.reports.*'] : null,
         $can('dashboard.view') ? ['label' => 'Log aktivitas', 'route' => 'admin.activity.index', 'match' => 'admin.activity.*'] : null,
     ]));
 @endphp

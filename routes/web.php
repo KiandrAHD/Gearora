@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\ChargeController as AdminChargeController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DepositController as AdminDepositController;
+use App\Http\Controllers\Admin\GuideCategoryController as AdminGuideCategoryController;
+use App\Http\Controllers\Admin\GuideController as AdminGuideController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OperationController as AdminOperationController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
@@ -15,6 +17,9 @@ use App\Http\Controllers\Admin\ProductImageController as AdminProductImageContro
 use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\RentalOrderController as AdminRentalOrderController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\SalesOrderController as AdminSalesOrderController;
+use App\Http\Controllers\Admin\TripRecommendationRuleController as AdminTripRecommendationRuleController;
 use App\Http\Controllers\Auth\CustomerLoginController;
 use App\Http\Controllers\Auth\CustomerRegisterController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
@@ -22,6 +27,10 @@ use App\Http\Controllers\Customer\MidtransCheckoutController;
 use App\Http\Controllers\Customer\PaymentProofController;
 use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Customer\RentalOrderController as CustomerRentalOrderController;
+use App\Http\Controllers\Customer\RetailCheckoutController;
+use App\Http\Controllers\Customer\SalesMidtransController;
+use App\Http\Controllers\Customer\SalesOrderController as CustomerSalesOrderController;
+use App\Http\Controllers\Customer\SalesPaymentProofController;
 use App\Http\Controllers\PublicSite\AvailabilityController;
 use App\Http\Controllers\PublicSite\BookingController;
 use App\Http\Controllers\PublicSite\CatalogController;
@@ -29,6 +38,7 @@ use App\Http\Controllers\PublicSite\GuideController;
 use App\Http\Controllers\PublicSite\HomeController;
 use App\Http\Controllers\PublicSite\MediaController;
 use App\Http\Controllers\PublicSite\ProductController;
+use App\Http\Controllers\PublicSite\RetailCartController;
 use App\Http\Controllers\PublicSite\TripPlannerController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,9 +46,19 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog.index');
 Route::get('/katalog/{product:slug}', [ProductController::class, 'show'])->name('catalog.show');
 Route::get('/panduan', [GuideController::class, 'index'])->name('guides.index');
+Route::get('/panduan/{guide:slug}', [GuideController::class, 'show'])->name('guides.show');
 Route::get('/rekomendasi-trip', [TripPlannerController::class, 'index'])->name('trip-planner.index');
+Route::post('/rekomendasi-trip', [TripPlannerController::class, 'recommend'])
+    ->middleware('throttle:30,1')
+    ->name('trip-planner.recommend');
 Route::get('/media/{path}', [MediaController::class, 'show'])->where('path', '.*')->name('media.show');
 Route::post('/ketersediaan', [AvailabilityController::class, 'check'])->name('availability.check');
+
+Route::get('/keranjang', [RetailCartController::class, 'index'])->name('retail.cart.index');
+Route::post('/keranjang', [RetailCartController::class, 'store'])->name('retail.cart.store');
+Route::put('/keranjang/{variant}', [RetailCartController::class, 'update'])->name('retail.cart.update');
+Route::delete('/keranjang/{variant}', [RetailCartController::class, 'destroy'])->name('retail.cart.destroy');
+Route::delete('/keranjang', [RetailCartController::class, 'clear'])->name('retail.cart.clear');
 
 Route::post('/pesanan/konfirmasi', [BookingController::class, 'store'])->name('booking.store');
 Route::get('/pesanan/konfirmasi', [BookingController::class, 'show'])->name('booking.summary');
@@ -61,6 +81,12 @@ Route::prefix('akun')->middleware('auth')->as('customer.')->group(function (): v
     Route::post('/pesanan/{order}/bukti-pembayaran', [PaymentProofController::class, 'store'])->name('orders.payment-proof.store');
     Route::post('/pesanan/{order}/pembayaran-midtrans', [MidtransCheckoutController::class, 'start'])->name('orders.midtrans.start');
     Route::get('/pesanan/{order}/pembayaran-midtrans/selesai', [MidtransCheckoutController::class, 'finish'])->name('orders.midtrans.finish');
+    Route::post('/keranjang/checkout', [RetailCheckoutController::class, 'store'])->name('sales.checkout');
+    Route::get('/pembelian', [CustomerSalesOrderController::class, 'index'])->name('sales.index');
+    Route::get('/pembelian/{salesOrder}', [CustomerSalesOrderController::class, 'show'])->name('sales.show');
+    Route::post('/pembelian/{salesOrder}/batal', [CustomerSalesOrderController::class, 'cancel'])->name('sales.cancel');
+    Route::post('/pembelian/{salesOrder}/bayar/{payment}/bukti', [SalesPaymentProofController::class, 'store'])->name('sales.proof.store');
+    Route::post('/pembelian/{salesOrder}/bayar-midtrans', [SalesMidtransController::class, 'start'])->name('sales.midtrans.start');
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
 });
@@ -133,6 +159,28 @@ Route::prefix('admin')->as('admin.')->group(function (): void {
         Route::post('/charges/{charge}/pay', [AdminChargeController::class, 'pay'])->name('charges.pay');
         Route::get('/customers', [AdminCustomerController::class, 'index'])->name('customers.index');
         Route::get('/customers/{customer}', [AdminCustomerController::class, 'show'])->name('customers.show');
+
+        Route::resource('trip-recommendations', AdminTripRecommendationRuleController::class)
+            ->except('show')
+            ->parameters(['trip-recommendations' => 'tripRecommendation']);
+
+        Route::resource('guide-categories', AdminGuideCategoryController::class)->except('show');
+        Route::resource('guides', AdminGuideController::class)->except('show');
+        Route::post('/guides/{guide}/publish', [AdminGuideController::class, 'publish'])->name('guides.publish');
+        Route::post('/guides/{guide}/unpublish', [AdminGuideController::class, 'unpublish'])->name('guides.unpublish');
+        Route::post('/guides/{guide}/archive', [AdminGuideController::class, 'archive'])->name('guides.archive');
+
+        Route::get('/sales', [AdminSalesOrderController::class, 'index'])->name('sales.index');
+        Route::get('/sales/{salesOrder}', [AdminSalesOrderController::class, 'show'])->name('sales.show');
+        Route::post('/sales/{salesOrder}/transition', [AdminSalesOrderController::class, 'transition'])->name('sales.transition');
+        Route::post('/sales/payments/{payment}/verify', [AdminSalesOrderController::class, 'verifyPayment'])->name('sales.payments.verify');
+        Route::post('/sales/payments/{payment}/reject', [AdminSalesOrderController::class, 'rejectPayment'])->name('sales.payments.reject');
+        Route::post('/sales/payments/{payment}/cash', [AdminSalesOrderController::class, 'recordCash'])->name('sales.payments.cash');
+        Route::get('/sales/payments/{payment}/proof', [AdminSalesOrderController::class, 'proof'])->name('sales.payments.proof');
+
+        Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/{report}/export', [AdminReportController::class, 'export'])->name('reports.export');
+
         Route::get('/activity', [AdminActivityLogController::class, 'index'])->name('activity.index');
     });
 });

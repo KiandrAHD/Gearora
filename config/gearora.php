@@ -90,6 +90,26 @@ return [
         'public_disk' => env('GEARORA_PUBLIC_DISK', 'public'),
     ],
 
+    'trip' => [
+        'max_results' => (int) env('GEARORA_TRIP_MAX_RESULTS', 12),
+        'max_duration_days' => (int) env('GEARORA_TRIP_MAX_DAYS', 60),
+        'max_participants' => (int) env('GEARORA_TRIP_MAX_PARTICIPANTS', 100),
+    ],
+
+    'guides' => [
+        'cover_mimes' => ['image/jpeg', 'image/png', 'image/webp'],
+        'cover_max_kb' => (int) env('GEARORA_GUIDE_COVER_MAX_KB', 4096),
+        'cover_disk' => env('GEARORA_GUIDE_COVER_DISK', 'public'),
+        'cover_directory' => 'guide-covers',
+        'max_content_kb' => (int) env('GEARORA_GUIDE_CONTENT_MAX_KB', 200),
+    ],
+
+    'sales' => [
+        // Reservasi stok retail kedaluwarsa setelah N menit bila belum dibayar.
+        'reservation_minutes' => (int) env('GEARORA_SALES_RESERVATION_MINUTES', 120),
+        'max_quantity_per_line' => (int) env('GEARORA_SALES_MAX_QTY_PER_LINE', 99),
+    ],
+
     'login' => [
         'max_attempts' => (int) env('GEARORA_LOGIN_MAX_ATTEMPTS', 5),
         'decay_seconds' => (int) env('GEARORA_LOGIN_DECAY_SECONDS', 60),

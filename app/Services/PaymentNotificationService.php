@@ -6,28 +6,38 @@ use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentProvider;
 use App\Enums\PaymentStatus;
 use App\Enums\RentalOrderStatus;
+use App\Enums\SalesOrderStatus;
 use App\Enums\WebhookProcessingStatus;
 use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\PaymentWebhookEvent;
 use App\Models\RentalOrder;
+use App\Models\SalesOrder;
+use App\Models\SalesPayment;
+use App\Models\SalesPaymentAttempt;
+use App\Support\MidtransSignature;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
- * Pemrosesan notifikasi webhook Midtrans.
+ * Pemrosesan notifikasi webhook Midtrans untuk SEMUA domain (rental & retail).
+ *
+ * Satu endpoint menerima seluruh notifikasi merchant. Attempt diresolusi dari
+ * `payment_attempts` (rental) lalu `sales_payment_attempts` (retail) berdasarkan
+ * provider_order_id yang unik antar-tabel.
  *
  * Keamanan & konsistensi:
- * - signature SHA512(order_id + status_code + gross_amount + server_key) diverifikasi;
+ * - signature SHA512 diverifikasi (MidtransSignature, dibagi bersama);
  * - amount & currency divalidasi terhadap attempt;
- * - deduplikasi memakai event_hash unik;
+ * - deduplikasi global via event_hash unik pada payment_webhook_events;
  * - efek finansial idempotent & tidak menurunkan status final.
  */
 class PaymentNotificationService
 {
     public function __construct(
         private readonly PaymentService $payments,
+        private readonly SalesPaymentService $salesPayments,
         private readonly ActivityLogger $logger,
     ) {}
 
@@ -47,24 +57,15 @@ class PaymentNotificationService
         $paymentType = (string) ($payload['payment_type'] ?? '');
         $currency = (string) ($payload['currency'] ?? 'IDR');
 
-        $eventHash = hash('sha256', implode('|', [
-            PaymentProvider::Midtrans->value,
-            $orderId,
-            $transactionId,
-            $transactionStatus,
-            $fraudStatus,
-            $grossAmount,
-        ]));
-
         $event = PaymentWebhookEvent::query()->firstOrCreate(
-            ['event_hash' => $eventHash],
+            ['event_hash' => MidtransSignature::eventHash($payload)],
             [
                 'provider' => PaymentProvider::Midtrans,
                 'provider_order_id' => $orderId ?: null,
                 'provider_transaction_id' => $transactionId ?: null,
                 'notification_status' => $transactionStatus ?: null,
                 'processing_status' => WebhookProcessingStatus::Received,
-                'payload_safe' => $this->safePayload($payload),
+                'payload_safe' => MidtransSignature::safePayload($payload),
                 'received_at' => now(),
             ],
         );
@@ -73,40 +74,49 @@ class PaymentNotificationService
             return ['status' => 'duplicate', 'event_id' => $event->getKey()];
         }
 
-        if (! $this->signatureIsValid($orderId, $statusCode, $grossAmount, $signature)) {
+        if (! MidtransSignature::isValid($orderId, $statusCode, $grossAmount, $signature)) {
             $this->reject($event, 'Signature tidak valid.');
 
             return ['status' => 'invalid_signature', 'event_id' => $event->getKey()];
         }
 
-        $attempt = PaymentAttempt::query()->where('provider_order_id', $orderId)->first();
+        $rentalAttempt = PaymentAttempt::query()->where('provider_order_id', $orderId)->first();
+        $salesAttempt = $rentalAttempt === null
+            ? SalesPaymentAttempt::query()->where('provider_order_id', $orderId)->first()
+            : null;
 
-        if ($attempt === null) {
+        if ($rentalAttempt === null && $salesAttempt === null) {
             $this->reject($event, 'Attempt tidak ditemukan.');
 
             return ['status' => 'unknown_attempt', 'event_id' => $event->getKey()];
         }
 
-        if (Money::toInt($grossAmount) !== (int) $attempt->gross_amount) {
+        $referenceAttempt = $rentalAttempt ?? $salesAttempt;
+
+        if (Money::toInt($grossAmount) !== (int) $referenceAttempt->gross_amount) {
             $this->reject($event, 'Nominal tidak cocok.');
 
             return ['status' => 'amount_mismatch', 'event_id' => $event->getKey()];
         }
 
-        if (strtoupper($currency) !== strtoupper((string) $attempt->currency)) {
+        if (strtoupper($currency) !== strtoupper((string) $referenceAttempt->currency)) {
             $this->reject($event, 'Mata uang tidak cocok.');
 
             return ['status' => 'currency_mismatch', 'event_id' => $event->getKey()];
         }
 
+        $data = [
+            'transaction_status' => $transactionStatus,
+            'fraud_status' => $fraudStatus,
+            'transaction_id' => $transactionId,
+            'payment_type' => $paymentType,
+            'gross_amount' => $grossAmount,
+        ];
+
         try {
-            $result = $this->apply($attempt, [
-                'transaction_status' => $transactionStatus,
-                'fraud_status' => $fraudStatus,
-                'transaction_id' => $transactionId,
-                'payment_type' => $paymentType,
-                'gross_amount' => $grossAmount,
-            ]);
+            $result = $rentalAttempt !== null
+                ? $this->applyRental($rentalAttempt, $data)
+                : $this->applySales($salesAttempt, $data);
         } catch (Throwable $exception) {
             $event->forceFill([
                 'processing_status' => WebhookProcessingStatus::Failed,
@@ -132,7 +142,7 @@ class PaymentNotificationService
     /**
      * @param  array<string, mixed>  $data
      */
-    private function apply(PaymentAttempt $attempt, array $data): string
+    private function applyRental(PaymentAttempt $attempt, array $data): string
     {
         return DB::transaction(function () use ($attempt, $data) {
             $attempt = PaymentAttempt::query()->whereKey($attempt->getKey())->lockForUpdate()->firstOrFail();
@@ -142,22 +152,16 @@ class PaymentNotificationService
             $status = (string) $data['transaction_status'];
             $fraud = (string) $data['fraud_status'];
 
-            // Jangan menurunkan status final akibat notifikasi lama.
             if (in_array($payment->status, [PaymentStatus::Verified, PaymentStatus::Refunded, PaymentStatus::PartiallyRefunded], true)
                 && in_array($status, ['pending', 'deny', 'cancel', 'expire', 'failure'], true)) {
-                $this->logger->log(
-                    'payment.webhook_ignored',
-                    $payment,
-                    "Notifikasi '{$status}' diabaikan karena pembayaran sudah final.",
-                    ['status' => $status, 'provider_order_id' => $attempt->provider_order_id],
-                );
+                $this->logger->log('payment.webhook_ignored', $payment, "Notifikasi '{$status}' diabaikan karena pembayaran sudah final.", ['provider_order_id' => $attempt->provider_order_id]);
 
                 return 'ignored_final';
             }
 
             switch ($status) {
                 case 'settlement':
-                    return $this->settle($attempt, $payment, $order, $data, PaymentAttemptStatus::Settlement);
+                    return $this->settleRental($attempt, $payment, $order, $data, PaymentAttemptStatus::Settlement);
                 case 'capture':
                     if ($fraud === 'challenge') {
                         $attempt->forceFill([
@@ -171,7 +175,7 @@ class PaymentNotificationService
                         return 'capture_challenged';
                     }
 
-                    return $this->settle($attempt, $payment, $order, $data, PaymentAttemptStatus::CaptureAccepted, $fraud);
+                    return $this->settleRental($attempt, $payment, $order, $data, PaymentAttemptStatus::CaptureAccepted, $fraud);
                 case 'pending':
                     $attempt->forceFill([
                         'status' => PaymentAttemptStatus::Pending,
@@ -181,13 +185,13 @@ class PaymentNotificationService
 
                     return 'pending';
                 case 'deny':
-                    return $this->fail($attempt, $payment, $order, PaymentAttemptStatus::Denied, 'Pembayaran ditolak provider.', $data);
+                    return $this->failRental($attempt, $payment, $order, PaymentAttemptStatus::Denied, 'Pembayaran ditolak provider.', $data);
                 case 'cancel':
-                    return $this->fail($attempt, $payment, $order, PaymentAttemptStatus::Cancelled, 'Transaksi dibatalkan.', $data, expire: true);
+                    return $this->failRental($attempt, $payment, $order, PaymentAttemptStatus::Cancelled, 'Transaksi dibatalkan.', $data, expire: true);
                 case 'expire':
-                    return $this->fail($attempt, $payment, $order, PaymentAttemptStatus::Expired, 'Transaksi kedaluwarsa.', $data, expire: true, paymentStatus: PaymentStatus::Expired);
+                    return $this->failRental($attempt, $payment, $order, PaymentAttemptStatus::Expired, 'Transaksi kedaluwarsa.', $data, expire: true, paymentStatus: PaymentStatus::Expired);
                 case 'failure':
-                    return $this->fail($attempt, $payment, $order, PaymentAttemptStatus::Failed, 'Pembayaran gagal.', $data);
+                    return $this->failRental($attempt, $payment, $order, PaymentAttemptStatus::Failed, 'Pembayaran gagal.', $data);
                 case 'refund':
                     $attempt->forceFill(['status' => PaymentAttemptStatus::Refunded])->save();
                     $payment->forceFill(['status' => PaymentStatus::Refunded])->save();
@@ -213,7 +217,82 @@ class PaymentNotificationService
     /**
      * @param  array<string, mixed>  $data
      */
-    private function settle(PaymentAttempt $attempt, Payment $payment, RentalOrder $order, array $data, PaymentAttemptStatus $status, ?string $fraud = null): string
+    private function applySales(SalesPaymentAttempt $attempt, array $data): string
+    {
+        return DB::transaction(function () use ($attempt, $data) {
+            $attempt = SalesPaymentAttempt::query()->whereKey($attempt->getKey())->lockForUpdate()->firstOrFail();
+            $payment = SalesPayment::query()->whereKey($attempt->sales_payment_id)->lockForUpdate()->firstOrFail();
+            $order = SalesOrder::query()->whereKey($payment->sales_order_id)->lockForUpdate()->firstOrFail();
+
+            $status = (string) $data['transaction_status'];
+            $fraud = (string) $data['fraud_status'];
+
+            if (in_array($payment->status, [PaymentStatus::Verified, PaymentStatus::Refunded, PaymentStatus::PartiallyRefunded], true)
+                && in_array($status, ['pending', 'deny', 'cancel', 'expire', 'failure'], true)) {
+                $this->logger->log('sales.webhook_ignored', $payment, "Notifikasi '{$status}' diabaikan karena pembayaran sudah final.", ['provider_order_id' => $attempt->provider_order_id]);
+
+                return 'ignored_final';
+            }
+
+            switch ($status) {
+                case 'settlement':
+                    return $this->settleSales($attempt, $payment, $order, $data, PaymentAttemptStatus::Settlement);
+                case 'capture':
+                    if ($fraud === 'challenge') {
+                        $attempt->forceFill([
+                            'status' => PaymentAttemptStatus::CaptureChallenged,
+                            'fraud_status' => $fraud,
+                            'provider_transaction_id' => $data['transaction_id'] ?: $attempt->provider_transaction_id,
+                            'provider_payment_type' => $data['payment_type'] ?: $attempt->provider_payment_type,
+                        ])->save();
+                        $payment->forceFill(['status' => PaymentStatus::Processing])->save();
+
+                        return 'capture_challenged';
+                    }
+
+                    return $this->settleSales($attempt, $payment, $order, $data, PaymentAttemptStatus::CaptureAccepted, $fraud);
+                case 'pending':
+                    $attempt->forceFill([
+                        'status' => PaymentAttemptStatus::Pending,
+                        'provider_transaction_id' => $data['transaction_id'] ?: $attempt->provider_transaction_id,
+                        'provider_payment_type' => $data['payment_type'] ?: $attempt->provider_payment_type,
+                    ])->save();
+
+                    return 'pending';
+                case 'deny':
+                    return $this->failSales($attempt, $payment, $order, PaymentAttemptStatus::Denied, 'Pembayaran ditolak provider.', $data);
+                case 'cancel':
+                    return $this->failSales($attempt, $payment, $order, PaymentAttemptStatus::Cancelled, 'Transaksi dibatalkan.', $data, expired: true);
+                case 'expire':
+                    return $this->failSales($attempt, $payment, $order, PaymentAttemptStatus::Expired, 'Transaksi kedaluwarsa.', $data, expired: true, paymentStatus: PaymentStatus::Expired);
+                case 'failure':
+                    return $this->failSales($attempt, $payment, $order, PaymentAttemptStatus::Failed, 'Pembayaran gagal.', $data);
+                case 'refund':
+                    $attempt->forceFill(['status' => PaymentAttemptStatus::Refunded])->save();
+                    $payment->forceFill(['status' => PaymentStatus::Refunded])->save();
+
+                    return 'refunded';
+                case 'partial_refund':
+                    $attempt->forceFill(['status' => PaymentAttemptStatus::PartiallyRefunded])->save();
+                    $payment->forceFill(['status' => PaymentStatus::PartiallyRefunded])->save();
+
+                    return 'partially_refunded';
+                case 'chargeback':
+                case 'partial_chargeback':
+                    $attempt->forceFill(['status' => PaymentAttemptStatus::Chargeback])->save();
+                    $this->logger->log('sales.chargeback', $payment, "Chargeback diterima untuk {$attempt->provider_order_id}.", [], null);
+
+                    return 'chargeback';
+                default:
+                    return 'noop';
+            }
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function settleRental(PaymentAttempt $attempt, Payment $payment, RentalOrder $order, array $data, PaymentAttemptStatus $status, ?string $fraud = null): string
     {
         $attempt->forceFill([
             'status' => $status,
@@ -234,16 +313,29 @@ class PaymentNotificationService
     /**
      * @param  array<string, mixed>  $data
      */
-    private function fail(
-        PaymentAttempt $attempt,
-        Payment $payment,
-        RentalOrder $order,
-        PaymentAttemptStatus $status,
-        string $reason,
-        array $data,
-        bool $expire = false,
-        PaymentStatus $paymentStatus = PaymentStatus::Failed,
-    ): string {
+    private function settleSales(SalesPaymentAttempt $attempt, SalesPayment $payment, SalesOrder $order, array $data, PaymentAttemptStatus $status, ?string $fraud = null): string
+    {
+        $attempt->forceFill([
+            'status' => $status,
+            'fraud_status' => $fraud,
+            'provider_transaction_id' => $data['transaction_id'] ?: $attempt->provider_transaction_id,
+            'provider_payment_type' => $data['payment_type'] ?: $attempt->provider_payment_type,
+            'paid_at' => $attempt->paid_at ?? now(),
+        ])->save();
+
+        $this->salesPayments->markSettled($payment, null, 'midtrans', 'Pembayaran gateway terverifikasi.', [
+            'provider_order_id' => $attempt->provider_order_id,
+            'transaction_id' => $data['transaction_id'],
+        ]);
+
+        return 'settled';
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function failRental(PaymentAttempt $attempt, Payment $payment, RentalOrder $order, PaymentAttemptStatus $status, string $reason, array $data, bool $expire = false, PaymentStatus $paymentStatus = PaymentStatus::Failed): string
+    {
         $attempt->forceFill([
             'status' => $status,
             'provider_transaction_id' => $data['transaction_id'] ?: $attempt->provider_transaction_id,
@@ -259,17 +351,24 @@ class PaymentNotificationService
         return $expire ? 'expired' : 'failed';
     }
 
-    private function signatureIsValid(string $orderId, string $statusCode, string $grossAmount, string $signature): bool
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function failSales(SalesPaymentAttempt $attempt, SalesPayment $payment, SalesOrder $order, PaymentAttemptStatus $status, string $reason, array $data, bool $expired = false, PaymentStatus $paymentStatus = PaymentStatus::Failed): string
     {
-        $serverKey = (string) config('gearora.midtrans.server_key');
+        $attempt->forceFill([
+            'status' => $status,
+            'provider_transaction_id' => $data['transaction_id'] ?: $attempt->provider_transaction_id,
+            'failed_at' => now(),
+        ])->save();
 
-        if ($serverKey === '' || $signature === '') {
-            return false;
+        $payment->forceFill(['status' => $paymentStatus])->save();
+
+        if (in_array($order->order_status, [SalesOrderStatus::PendingPayment, SalesOrderStatus::PaymentReview], true)) {
+            $this->salesPayments->cancelForFailure($order, $reason, $expired);
         }
 
-        $expected = hash('sha512', $orderId.$statusCode.$grossAmount.$serverKey);
-
-        return hash_equals($expected, $signature);
+        return $expired ? 'expired' : 'failed';
     }
 
     private function reject(PaymentWebhookEvent $event, string $reason): void
@@ -283,22 +382,5 @@ class PaymentNotificationService
         $this->logger->log('payment.webhook_rejected', null, "Webhook ditolak: {$reason}.", [
             'provider_order_id' => $event->provider_order_id,
         ]);
-    }
-
-    /**
-     * Simpan hanya field non-rahasia yang benar-benar diperlukan.
-     *
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
-     */
-    private function safePayload(array $payload): array
-    {
-        $allowed = [
-            'order_id', 'status_code', 'transaction_status', 'fraud_status',
-            'transaction_id', 'payment_type', 'gross_amount', 'currency',
-            'transaction_time', 'settlement_time',
-        ];
-
-        return array_intersect_key($payload, array_flip($allowed));
     }
 }

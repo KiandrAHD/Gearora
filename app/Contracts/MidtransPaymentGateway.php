@@ -3,7 +3,7 @@
 namespace App\Contracts;
 
 use App\Models\PaymentAttempt;
-use App\Models\RentalOrder;
+use App\Models\SalesPaymentAttempt;
 use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Transaction;
@@ -18,7 +18,7 @@ class MidtransPaymentGateway implements PaymentGateway
         Config::$paymentIdempotencyKey = null;
     }
 
-    public function createSnap(PaymentAttempt $attempt, RentalOrder $order): array
+    public function createSnap(PaymentAttempt|SalesPaymentAttempt $attempt, PayableOrder $order): array
     {
         $result = Snap::createTransaction($this->params($attempt, $order));
 
@@ -31,46 +31,28 @@ class MidtransPaymentGateway implements PaymentGateway
         ];
     }
 
-    public function refund(PaymentAttempt $attempt, int $amount, string $refundKey): array
+    public function refund(PaymentAttempt|SalesPaymentAttempt $attempt, int $amount, string $refundKey): array
     {
         $result = Transaction::refund($attempt->provider_order_id, [
             'refund_key' => $refundKey,
             'amount' => $amount,
-            'reason' => 'GEARORA rental refund',
+            'reason' => 'GEARORA refund',
         ]);
 
-        return is_object($result) ? (array) $result : (array) $result;
+        return (array) $result;
     }
 
-    public function cancel(PaymentAttempt $attempt): array
+    public function cancel(PaymentAttempt|SalesPaymentAttempt $attempt): array
     {
         $result = Transaction::cancel($attempt->provider_order_id);
 
-        return is_object($result) ? (array) $result : (array) $result;
+        return (array) $result;
     }
 
     /** @return array<string,mixed> */
-    private function params(PaymentAttempt $attempt, RentalOrder $order): array
+    private function params(PaymentAttempt|SalesPaymentAttempt $attempt, PayableOrder $order): array
     {
-        $items = [];
-
-        foreach ($order->items as $item) {
-            $items[] = [
-                'id' => 'rental-'.$item->id,
-                'price' => (int) round((float) $item->rental_price_snapshot),
-                'quantity' => (int) $item->quantity * (int) $item->duration_days,
-                'name' => mb_substr($item->product_name_snapshot.' - '.$item->variant_name_snapshot, 0, 50),
-            ];
-        }
-
-        if ((int) $order->deposit_total > 0) {
-            $items[] = [
-                'id' => 'deposit-'.$order->id,
-                'price' => (int) round((float) $order->deposit_total),
-                'quantity' => 1,
-                'name' => 'Deposit jaminan rental',
-            ];
-        }
+        $customer = $order->payableCustomer();
 
         return [
             'transaction_details' => [
@@ -78,11 +60,11 @@ class MidtransPaymentGateway implements PaymentGateway
                 'gross_amount' => $attempt->gross_amount,
             ],
             'customer_details' => [
-                'first_name' => mb_substr($order->customer->name, 0, 50),
-                'email' => $order->customer->email,
-                'phone' => $order->customer->phone,
+                'first_name' => mb_substr((string) $customer?->name, 0, 50),
+                'email' => $customer?->email,
+                'phone' => $customer?->phone,
             ],
-            'item_details' => $items,
+            'item_details' => $order->payableItemDetails(),
             'expiry' => [
                 'unit' => 'minute',
                 'duration' => (int) config('gearora.midtrans.expiry_minutes', 60),

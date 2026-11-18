@@ -60,6 +60,30 @@ enum PermissionName: string
     case ReportsRentalsView = 'reports.rentals.view';
     case ReportsPaymentsView = 'reports.payments.view';
     case ReportsDepositsView = 'reports.deposits.view';
+    case ReportsSalesView = 'reports.sales.view';
+    case ReportsInventoryView = 'reports.inventory.view';
+    case ReportsRentalOperationsView = 'reports.rental_operations.view';
+    case ReportsExport = 'reports.export';
+
+    case TripRecommendationsView = 'trip_recommendations.view';
+    case TripRecommendationsCreate = 'trip_recommendations.create';
+    case TripRecommendationsUpdate = 'trip_recommendations.update';
+    case TripRecommendationsDelete = 'trip_recommendations.delete';
+
+    case GuidesView = 'guides.view';
+    case GuidesCreate = 'guides.create';
+    case GuidesUpdate = 'guides.update';
+    case GuidesPublish = 'guides.publish';
+    case GuidesArchive = 'guides.archive';
+    case GuidesDelete = 'guides.delete';
+    case GuideCategoriesManage = 'guide_categories.manage';
+
+    case SalesView = 'sales.view';
+    case SalesCreate = 'sales.create';
+    case SalesUpdate = 'sales.update';
+    case SalesCancel = 'sales.cancel';
+    case SalesComplete = 'sales.complete';
+    case SalesManage = 'sales.manage';
 
     case CustomersView = 'customers.view';
 
@@ -111,6 +135,27 @@ enum PermissionName: string
             self::ReportsRentalsView => 'Melihat laporan rental',
             self::ReportsPaymentsView => 'Melihat laporan pembayaran',
             self::ReportsDepositsView => 'Melihat laporan deposit',
+            self::ReportsSalesView => 'Melihat laporan penjualan',
+            self::ReportsInventoryView => 'Melihat laporan inventaris',
+            self::ReportsRentalOperationsView => 'Melihat laporan operasional rental',
+            self::ReportsExport => 'Ekspor laporan',
+            self::TripRecommendationsView => 'Melihat aturan rekomendasi trip',
+            self::TripRecommendationsCreate => 'Membuat aturan rekomendasi trip',
+            self::TripRecommendationsUpdate => 'Mengubah aturan rekomendasi trip',
+            self::TripRecommendationsDelete => 'Menghapus aturan rekomendasi trip',
+            self::GuidesView => 'Melihat panduan',
+            self::GuidesCreate => 'Membuat panduan',
+            self::GuidesUpdate => 'Mengubah panduan',
+            self::GuidesPublish => 'Menerbitkan panduan',
+            self::GuidesArchive => 'Mengarsipkan panduan',
+            self::GuidesDelete => 'Menghapus panduan',
+            self::GuideCategoriesManage => 'Mengelola kategori panduan',
+            self::SalesView => 'Melihat sales order',
+            self::SalesCreate => 'Membuat sales order',
+            self::SalesUpdate => 'Mengubah sales order',
+            self::SalesCancel => 'Membatalkan sales order',
+            self::SalesComplete => 'Menyelesaikan sales order',
+            self::SalesManage => 'Mengelola sales order',
             self::CustomersView => 'Melihat pelanggan',
         };
     }

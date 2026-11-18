@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\PayableOrder;
 use App\Enums\PaymentStatus;
 use App\Enums\RentalOrderStatus;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class RentalOrder extends Model
+class RentalOrder extends Model implements PayableOrder
 {
     use HasFactory;
 
@@ -196,5 +197,42 @@ class RentalOrder extends Model
             ->count();
 
         return $released === 0 && $this->assignments()->count() > 0;
+    }
+
+    // -- PayableOrder ---------------------------------------------------------
+
+    public function payableCode(): string
+    {
+        return (string) $this->order_code;
+    }
+
+    public function payableCustomer(): ?User
+    {
+        return $this->customer;
+    }
+
+    public function payableItemDetails(): array
+    {
+        $items = [];
+
+        foreach ($this->items as $item) {
+            $items[] = [
+                'id' => 'rental-'.$item->getKey(),
+                'price' => (int) round((float) $item->rental_price_snapshot),
+                'quantity' => (int) $item->quantity * (int) $item->duration_days,
+                'name' => mb_substr($item->product_name_snapshot.' - '.$item->variant_name_snapshot, 0, 50),
+            ];
+        }
+
+        if ((int) $this->deposit_total > 0) {
+            $items[] = [
+                'id' => 'deposit-'.$this->getKey(),
+                'price' => (int) round((float) $this->deposit_total),
+                'quantity' => 1,
+                'name' => 'Deposit jaminan rental',
+            ];
+        }
+
+        return $items;
     }
 }

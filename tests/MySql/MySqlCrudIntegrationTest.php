@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\RentalAsset;
+use App\Models\RentalOrder;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,7 +97,7 @@ class MySqlCrudIntegrationTest extends TestCase
         $this->assertNotEmpty($unique);
 
         $payment = DB::table('payments')->insertGetId([
-            'rental_order_id' => \App\Models\RentalOrder::factory()->create()->id,
+            'rental_order_id' => RentalOrder::factory()->create()->id,
             'method' => 'midtrans',
             'amount' => 150000,
             'rental_amount' => 100000,
