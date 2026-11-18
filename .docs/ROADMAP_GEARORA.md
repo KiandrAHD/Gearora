@@ -186,18 +186,19 @@ Seluruh test availability lulus, order menyimpan snapshot harga, dan tidak ada s
 
 ### Tasks
 
-- [ ] Implementasikan instruksi pembayaran manual.
-- [ ] Upload bukti pembayaran yang aman.
-- [ ] Buat verifikasi pembayaran admin: verified/rejected + catatan.
-- [ ] Buat deposit record terpisah dari revenue.
-- [ ] Buat pencatatan pickup/handover dan petugas.
-- [ ] Implementasikan asset assignment untuk unit yang diserahkan.
-- [ ] Buat form inspeksi awal dan akhir.
-- [ ] Implementasikan return management dan due/overdue listing.
-- [ ] Buat additional charges dengan alasan, nominal, dan persetujuan admin.
-- [ ] Implementasikan penyelesaian/pengembalian deposit.
-- [ ] Buat dashboard operasional: rental aktif, due today, overdue, barang perawatan.
-- [ ] Buat laporan rental dasar.
+- [x] Implementasikan instruksi pembayaran manual.
+- [x] Upload bukti pembayaran yang aman.
+- [x] Buat verifikasi pembayaran admin: verified/rejected + catatan.
+- [x] Tambahkan Midtrans Snap Redirect + webhook terverifikasi (sandbox siap, verifikasi transaksi nyata BLOCKED tanpa kredensial).
+- [x] Buat deposit record terpisah dari revenue.
+- [x] Buat pencatatan pickup/handover dan petugas.
+- [x] Implementasikan asset assignment untuk unit yang diserahkan.
+- [x] Buat form inspeksi awal dan akhir.
+- [x] Implementasikan return management dan due/overdue listing.
+- [x] Buat additional charges dengan alasan, nominal, dan persetujuan admin.
+- [x] Implementasikan penyelesaian/pengembalian deposit.
+- [x] Buat dashboard operasional: rental aktif, due today, overdue, barang perawatan.
+- [ ] Buat laporan rental dasar (ditunda ke Phase 7 laporan terpisah).
 
 ### Deliverables
 

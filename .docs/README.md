@@ -11,6 +11,22 @@ Dokumen baseline untuk pengembangan **GEARORA — Outdoor Supply**.
 | [RENTAL_POLICY.md](./RENTAL_POLICY.md) | Kebijakan rental baseline MVP yang mengikat implementasi Phase 3–7 |
 | [PHASE_0_1_FINAL_REPORT.md](./PHASE_0_1_FINAL_REPORT.md) | Laporan penyelesaian Phase 0 & 1 (17 November 2026) |
 
+## Phase 5
+
+- [PHASE_5_COMPLETION_REPORT.md](./PHASE_5_COMPLETION_REPORT.md) — hasil Phase 5 dan blocker verifikasi sandbox.
+
+## Dokumen Phase 5
+
+- [PHASE_5_TECHNICAL_DESIGN.md](./PHASE_5_TECHNICAL_DESIGN.md) — desain teknis, requirement map, dan ADR Phase 5.
+- [MIDTRANS_INTEGRATION.md](./MIDTRANS_INTEGRATION.md) — konfigurasi gateway, webhook, keamanan, sandbox setup.
+- [PAYMENT_WORKFLOW.md](./PAYMENT_WORKFLOW.md) — alur pembayaran manual dan gateway.
+- [DEPOSIT_MANAGEMENT.md](./DEPOSIT_MANAGEMENT.md) — ledger, saldo, deduction, refund.
+- [REFUND_POLICY_IMPLEMENTATION.md](./REFUND_POLICY_IMPLEMENTATION.md) — kebijakan kalkulasi refund.
+- [HANDOVER_RETURN_INSPECTION.md](./HANDOVER_RETURN_INSPECTION.md) — pickup, return, inspeksi, pelepasan unit.
+- [RENTAL_OPERATIONS.md](./RENTAL_OPERATIONS.md) — overdue dan transisi order.
+- [ADDITIONAL_CHARGES.md](./ADDITIONAL_CHARGES.md) — biaya tambahan dan persetujuan.
+- [PHASE_5_TEST_PLAN.md](./PHASE_5_TEST_PLAN.md) — test plan dan hasil aktual.
+
 ## Sumber utama
 
 - Proposal konsep: <https://github.com/KiandrAHD/Gearora/blob/main/.Gearora/GEARORA.md>
