@@ -130,20 +130,23 @@ Ketentuan tambahan:
 
 ## 8. Metode Pembayaran
 
-| Metode | Status MVP | Bukti |
+| Metode | Status | Bukti |
 |---|---|---|
 | Transfer bank manual | **Wajib didukung** | Unggah bukti transfer |
 | Tunai di lokasi | **Didukung** | Dicatat oleh Admin saat pembayaran diterima |
-| Payment gateway otomatis | Di luar cakupan MVP | — |
+| Payment gateway otomatis (Midtrans Snap) | **Didukung (Phase 5)** | Verifikasi otomatis via webhook bertanda tangan |
 
 Aturan:
 - Instruksi pembayaran ditampilkan setelah order dibuat.
-- Bukti pembayaran: **JPG, PNG, atau PDF**, maksimal **5 MB**, divalidasi di server.
-- Bukti pembayaran **tidak otomatis** berarti lunas; status pembayaran berubah hanya setelah verifikasi Admin.
-- Status pembayaran (`unpaid`, `waiting_verification`, `verified`, `rejected`, `refunded`) terpisah dari status order.
+- Bukti pembayaran manual: **JPG, PNG, atau PDF**, maksimal **5 MB**, divalidasi di server.
+- Bukti pembayaran manual **tidak otomatis** berarti lunas; status pembayaran berubah hanya setelah verifikasi Admin.
+- Status pembayaran (`unpaid`, `waiting_verification`, `processing`, `verified`, `rejected`, `expired`, `failed`, `refunded`, `partially_refunded`) terpisah dari status order.
 - Order dengan metode tunai dapat dikonfirmasi setelah Admin mencatat penerimaan uang.
-- Verifikasi pembayaran hanya boleh dilakukan role **Owner/Admin**.
+- Verifikasi pembayaran manual hanya boleh dilakukan role **Owner/Admin**.
+- Pembayaran gateway diverifikasi otomatis melalui webhook Midtrans yang diverifikasi tanda tangan SHA512; pembayaran gateway **tidak dapat** diverifikasi manual (lihat `.docs/MIDTRANS_INTEGRATION.md`).
+- Setiap notifikasi webhook divalidasi terhadap nominal, mata uang, dan dideduplikasi berdasarkan hash event; efek finansial idempotent.
 - Data rekening usaha berada di konfigurasi/DB, bukan di source control atau dokumentasi publik.
+- `MIDTRANS_SERVER_KEY` hanya ada di server; tidak pernah dikirim ke browser atau ditulis ke log.
 
 ---
 
