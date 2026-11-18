@@ -472,7 +472,10 @@ class ReportService
             ->whereBetween('created_at', [$f['start'], $f['end']])
             ->count();
 
-        $table = ProductVariantQuery::rows();
+        $table = ProductVariantQuery::rows([
+            'product_id' => $f['product_id'],
+            'category_id' => $f['category_id'],
+        ]);
 
         return [
             'metrics' => [

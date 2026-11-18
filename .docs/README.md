@@ -27,6 +27,24 @@ Dokumen baseline untuk pengembangan **GEARORA — Outdoor Supply**.
 - [ADDITIONAL_CHARGES.md](./ADDITIONAL_CHARGES.md) — biaya tambahan dan persetujuan.
 - [PHASE_5_TEST_PLAN.md](./PHASE_5_TEST_PLAN.md) — test plan dan hasil aktual.
 
+## Dokumen Phase 6
+
+- [PHASE_6_TECHNICAL_DESIGN.md](./PHASE_6_TECHNICAL_DESIGN.md) — desain teknis Trip Planner, aturan, CMS panduan, keamanan konten.
+- [TRIP_RECOMMENDATION_ENGINE.md](./TRIP_RECOMMENDATION_ENGINE.md) — pipeline rekomendasi deterministik dan kontraknya.
+- [TRIP_RECOMMENDATION_RULES.md](./TRIP_RECOMMENDATION_RULES.md) — panduan penyusunan aturan, prioritas, dan contoh.
+- [EQUIPMENT_GUIDES_CMS.md](./EQUIPMENT_GUIDES_CMS.md) — lifecycle panduan, kategori, sumber, upload, XSS.
+- [PHASE_6_TEST_PLAN.md](./PHASE_6_TEST_PLAN.md) — test plan Phase 6.
+
+## Dokumen Phase 7
+
+- [PHASE_7_TECHNICAL_DESIGN.md](./PHASE_7_TECHNICAL_DESIGN.md) — desain retail sales dan laporan expanded.
+- [ADR_SHARED_PAYMENT_FOR_RETAIL.md](./ADR_SHARED_PAYMENT_FOR_RETAIL.md) — keputusan gateway pembayaran bersama.
+- [RETAIL_SALES_WORKFLOW.md](./RETAIL_SALES_WORKFLOW.md) — alur customer dan admin retail.
+- [SALES_STOCK_RESERVATION.md](./SALES_STOCK_RESERVATION.md) — reservasi stok, konsumsi, anti-overselling.
+- [REPORT_DEFINITIONS.md](./REPORT_DEFINITIONS.md) — definisi metrik laporan dan CSV.
+- [PHASE_7_TEST_PLAN.md](./PHASE_7_TEST_PLAN.md) — test plan Phase 7 dan blocker verifikasi.
+- [PHASE_6_7_COMPLETION_REPORT.md](./PHASE_6_7_COMPLETION_REPORT.md) — laporan penyelesaian Phase 6/7 (18 November 2026).
+
 ## Sumber utama
 
 - Proposal konsep: <https://github.com/KiandrAHD/Gearora/blob/main/.Gearora/GEARORA.md>

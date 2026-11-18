@@ -11,12 +11,17 @@ use Illuminate\Support\Facades\DB;
 final class ProductVariantQuery
 {
     /**
+     * @param  array<string, mixed>  $filters  product_id/category_id opsional.
      * @return array<int, array<string, mixed>>
      */
-    public static function rows(): array
+    public static function rows(array $filters = []): array
     {
-        return DB::table('product_variants as variants')
+        $variants = DB::table('product_variants as variants')
             ->join('products', 'products.id', '=', 'variants.product_id')
+            ->when($filters['product_id'] ?? null, fn ($query, $productId) => $query->where('variants.product_id', $productId))
+            ->when($filters['category_id'] ?? null, fn ($query, $categoryId) => $query->where('products.category_id', $categoryId));
+
+        return $variants
             ->leftJoin('sales_stock_reservations as reservations', function ($join) {
                 $join->on('reservations.product_variant_id', '=', 'variants.id')
                     ->where('reservations.status', '=', SalesReservationStatus::Reserved->value);

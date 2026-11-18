@@ -4,16 +4,16 @@
 
 GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perlengkapan outdoor** (hiking, trekking, camping, dan aktivitas alam lainnya). Platform menyatukan pencarian gear, pemeriksaan ketersediaan, reservasi, panduan penggunaan, serta pengelolaan inventaris dan transaksi.
 
-> Status: **Phase 0–4 selesai lokal** untuk foundation, auth/RBAC, katalog/inventaris, dan rental MVP; bugfix UI/UX serta Admin Product/Variant CRUD selesai dan diuji lokal. Verifikasi akun hosting AeonFree masih **BLOCKED** (butuh akses cPanel). Laporan bugfix: [`.docs/BUGFIX_ADMIN_UX_REPORT.md`](.docs/BUGFIX_ADMIN_UX_REPORT.md).
+> Status: **Phase 0–7 selesai lokal** untuk foundation, auth/RBAC, katalog/inventaris, rental MVP, pembayaran & operasional, Trip Planner & Equipment Guides, serta retail sales & laporan expanded. Automated suite: **174 tests / 495 assertions lulus**, `vendor/bin/pint --test` bersih. Verifikasi akun hosting AeonFree, MySQL `gearora_test`, dan Midtrans Sandbox masih **BLOCKED/PENDING**.
 >
-> Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_0_1_FINAL_REPORT.md`](.docs/PHASE_0_1_FINAL_REPORT.md).
+> Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_6_7_COMPLETION_REPORT.md`](.docs/PHASE_6_7_COMPLETION_REPORT.md).
 
 ---
 
 ## 1. Ringkasan Proyek
 
-- Website publik (Blade, server-rendered): Homepage, katalog SEWA/BELI, detail produk, akun, trip planner, panduan.
-- Admin Console (fase berikutnya): dashboard, katalog/inventaris, rental order, pembayaran, deposit, inspeksi, pengembalian, sales, laporan.
+- Website publik (Blade, server-rendered): Homepage, katalog SEWA/BELI, detail produk, akun, Trip Planner, panduan, keranjang & checkout retail.
+- Admin Console: dashboard, katalog/inventaris, rental order, pembayaran, deposit, inspeksi, pengembalian, sales order retail, aturan trip, panduan, laporan + ekspor CSV.
 - Arsitektur: **modular monolith**, MVC + Service Layer, satu database MySQL.
 - Dirancang **hosting-aware**: tidak bergantung pada Node.js, Composer, SSH, queue worker, WebSocket, atau proses daemon di server.
 
@@ -90,7 +90,7 @@ php artisan migrate
 
 **SQLite (tanpa install MySQL):** ubah `.env` menjadi `DB_CONNECTION=sqlite` (dan pastikan `database/database.sqlite` ada), lalu `php artisan migrate`.
 
-> Phase 1 hanya memuat migration **baseline** bawaan Laravel (`users`, `sessions`, `cache`, `jobs`). Tabel bisnis (produk, rental order, dsb.) dibuat pada fase berikutnya.
+> Migration mencakup seluruh domain Phase 0–7 (katalog, rental, pembayaran/deposit, operasional, trip planner, guides, retail sales). Tidak ada seeder akun produksi; akun Owner dibuat via `php artisan gearora:provision-owner`. Seeder demo hanya berjalan di `local`/`testing`.
 
 ## 7. Running Development Server
 
@@ -116,6 +116,14 @@ php artisan test
 # atau
 ./vendor/bin/phpunit
 ```
+
+Hasil terakhir: **174 tests, 495 assertions** (SQLite in-memory). Untuk parity MySQL (butuh database terpisah `gearora_test`):
+
+```bash
+php artisan test --configuration=phpunit.mysql.xml
+```
+
+Jangan pernah memakai `migrate:fresh`, `db:wipe`, atau `migrate:reset` pada database `gearora`.
 
 ## 10. Build Production
 
@@ -153,6 +161,26 @@ rupiah(1250000);        // "Rp 1.250.000"
 rupiah('1250000.50', 2); // "Rp 1.250.000,50"
 ```
 
+## 10.2 Fitur Phase 6 (Trip Planner & Guides)
+
+- **Trip Planner** `/rekomendasi-trip`: input aktivitas, destinasi, durasi, peserta, kebutuhan khusus, mode sewa/beli, tanggal opsional. Rekomendasi dihasilkan `TripRecommendationService` dari tabel `trip_recommendation_rules` — deterministik, tanpa LLM, tanpa daftar produk hardcoded.
+- **Admin aturan trip** `/admin/trip-recommendations`: CRUD rule, target kategori/produk/varian, prioritas, kuantitas per peserta, template alasan.
+- **Panduan publik** `/panduan`: pencarian, filter kategori, halaman detail.
+- **CMS panduan** `/admin/guides`: konten Markdown aman (escape-first), kategori, sumber, cover upload tervalidasi, lifecycle `draft → published → archived`.
+- Disclaimer keselamatan selalu tampil di Trip Planner.
+
+## 10.3 Fitur Phase 7 (Retail Sales & Reports)
+
+- **Keranjang retail** `/keranjang`: session terpisah dari draft rental; harga & stok dihitung ulang server.
+- **Checkout retail**: order `sales_orders` terpisah, reservasi stok, anti-overselling dengan row lock.
+- **Pembayaran**: transfer manual + bukti, tunai dicatat admin, atau Midtrans (adaptor gateway bersama rental).
+- **Stok**: stok fisik berkurang **hanya** saat pembayaran settle, tepat satu kali; pembatalan/expiry melepas reservasi.
+- **Admin sales** `/admin/sales`: daftar, filter, detail, transisi status, verifikasi/tolak pembayaran.
+- **Laporan** `/admin/reports`: rental, sales, payments, deposits, charges, inventory, operations; filter periode; ekspor CSV dengan UTF-8 BOM dan proteksi formula injection.
+- Deposit **tidak** dihitung sebagai revenue.
+
+Dokumentasi: [`PHASE_6_TECHNICAL_DESIGN.md`](.docs/PHASE_6_TECHNICAL_DESIGN.md), [`PHASE_7_TECHNICAL_DESIGN.md`](.docs/PHASE_7_TECHNICAL_DESIGN.md), [`REPORT_DEFINITIONS.md`](.docs/REPORT_DEFINITIONS.md).
+
 ## 11. AeonFree Deployment Strategy
 
 Ringkas (detail + langkah lengkap: `.docs/DEPLOYMENT_AEONFREE.md`):
@@ -183,7 +211,19 @@ Ringkas (detail + langkah lengkap: `.docs/DEPLOYMENT_AEONFREE.md`):
 | [`.docs/DEPLOYMENT_AEONFREE.md`](.docs/DEPLOYMENT_AEONFREE.md) | Prosedur deployment |
 | [`.docs/PHASE_0_1_FINAL_REPORT.md`](.docs/PHASE_0_1_FINAL_REPORT.md) | Laporan penyelesaian Phase 0 & 1 terbaru |
 | [`.docs/PHASE_0_1_COMPLETION_REPORT.md`](.docs/PHASE_0_1_COMPLETION_REPORT.md) | Laporan penyelesaian Phase 0 & 1 (16 Nov 2026) |
-| [`.docs/PHASE_0_1_COMPLETION_REPORT.md`](.docs/PHASE_0_1_COMPLETION_REPORT.md) | Laporan penyelesaian Phase 0 & 1 (16 Nov 2026) |
+| [`.docs/PHASE_5_COMPLETION_REPORT.md`](.docs/PHASE_5_COMPLETION_REPORT.md) | Laporan Phase 5 (payments & rental operations) |
+| [`.docs/PHASE_6_TECHNICAL_DESIGN.md`](.docs/PHASE_6_TECHNICAL_DESIGN.md) | Desain Trip Planner & Equipment Guides |
+| [`.docs/TRIP_RECOMMENDATION_ENGINE.md`](.docs/TRIP_RECOMMENDATION_ENGINE.md) | Pipeline rekomendasi deterministik |
+| [`.docs/TRIP_RECOMMENDATION_RULES.md`](.docs/TRIP_RECOMMENDATION_RULES.md) | Panduan aturan rekomendasi |
+| [`.docs/EQUIPMENT_GUIDES_CMS.md`](.docs/EQUIPMENT_GUIDES_CMS.md) | CMS panduan & keamanan konten |
+| [`.docs/PHASE_6_TEST_PLAN.md`](.docs/PHASE_6_TEST_PLAN.md) | Test plan Phase 6 |
+| [`.docs/PHASE_7_TECHNICAL_DESIGN.md`](.docs/PHASE_7_TECHNICAL_DESIGN.md) | Desain retail sales & laporan |
+| [`.docs/ADR_SHARED_PAYMENT_FOR_RETAIL.md`](.docs/ADR_SHARED_PAYMENT_FOR_RETAIL.md) | ADR gateway bersama rental/retail |
+| [`.docs/RETAIL_SALES_WORKFLOW.md`](.docs/RETAIL_SALES_WORKFLOW.md) | Alur retail customer & admin |
+| [`.docs/SALES_STOCK_RESERVATION.md`](.docs/SALES_STOCK_RESERVATION.md) | Reservasi stok & anti-overselling |
+| [`.docs/REPORT_DEFINITIONS.md`](.docs/REPORT_DEFINITIONS.md) | Definisi metrik laporan |
+| [`.docs/PHASE_7_TEST_PLAN.md`](.docs/PHASE_7_TEST_PLAN.md) | Test plan Phase 7 |
+| [`.docs/PHASE_6_7_COMPLETION_REPORT.md`](.docs/PHASE_6_7_COMPLETION_REPORT.md) | Laporan penyelesaian Phase 6/7 |
 | [`.Gearora/GEARORA.md`](.Gearora/GEARORA.md) | Proposal konsep |
 
 ---

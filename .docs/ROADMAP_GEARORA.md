@@ -216,14 +216,14 @@ Order hanya selesai setelah proses return ditangani; unit rusak tidak kembali te
 
 ### Tasks
 
-- [ ] Buat input trip planner: aktivitas, tujuan, durasi, peserta, kebutuhan khusus.
-- [ ] Definisikan rule set rekomendasi berdasarkan kategori/varian produk.
-- [ ] Buat service rekomendasi deterministik dan dapat diuji.
-- [ ] Tampilkan rekomendasi beserta alasan/label kategori.
-- [ ] Buat CRUD equipment guides untuk admin/editor.
-- [ ] Buat kategori panduan, slug, status draft/published, dan metadata sumber.
-- [ ] Buat halaman panduan publik.
-- [ ] Tambahkan disclaimer bahwa daftar rekomendasi bukan jaminan keselamatan perjalanan.
+- [x] Buat input trip planner: aktivitas, tujuan, durasi, peserta, kebutuhan khusus. — `TripPlanData`, `TripPlannerRequest`, `/rekomendasi-trip`.
+- [x] Definisikan rule set rekomendasi berdasarkan kategori/varian produk. — `trip_recommendation_rules` + admin CRUD.
+- [x] Buat service rekomendasi deterministik dan dapat diuji. — `TripRecommendationService`, `TripRecommendationRuleTest`.
+- [x] Tampilkan rekomendasi beserta alasan/label kategori. — hasil `reason`, qty, mode, status ketersediaan.
+- [x] Buat CRUD equipment guides untuk admin/editor. — `admin/guides` + `GuideService`.
+- [x] Buat kategori panduan, slug, status draft/published, dan metadata sumber. — `guide_categories`, `equipment_guides`, `guide_sources`.
+- [x] Buat halaman panduan publik. — `/panduan`, `/panduan/{slug}`, pencarian + filter kategori.
+- [x] Tambahkan disclaimer bahwa daftar rekomendasi bukan jaminan keselamatan perjalanan. — blok "Catatan keselamatan" di halaman Trip Planner.
 
 ### Deliverables
 
@@ -235,21 +235,23 @@ Order hanya selesai setelah proses return ditangani; unit rusak tidak kembali te
 
 Setiap rekomendasi dapat ditelusuri ke aturan yang jelas; produk nonaktif tidak direkomendasikan; artikel draft tidak tampil ke publik; konten keselamatan menyertakan sumber tepercaya.
 
+**Status (18 Nov 2026): SELESAI untuk implementasi + automated tests.** Bukti: 174 tests lulus (495 assertions), termasuk 40 test Phase 6. Verifikasi visual browser dan MySQL integration belum dicatat. Laporan: `.docs/PHASE_6_7_COMPLETION_REPORT.md`.
+
 ## 10. Phase 7 — Retail Sales & Expanded Reports
 
 **Tujuan:** melengkapi jalur penjualan produk serta laporan manajemen.
 
 ### Tasks
 
-- [ ] Buat keranjang/pemesanan produk jual.
-- [ ] Pisahkan sales order dari rental order.
-- [ ] Terapkan pengurangan stok jual pada status transaksi yang ditetapkan.
-- [ ] Buat verifikasi pembayaran/konfirmasi penjualan sesuai metode yang tersedia.
-- [ ] Buat Admin Sales Order Management.
-- [ ] Tambahkan laporan pendapatan sewa vs penjualan.
-- [ ] Tambahkan laporan pembayaran, deposit, keterlambatan, kerusakan, dan stock movement.
-- [ ] Buat filter periode dan export CSV.
-- [ ] Validasi semua total laporan terhadap transaksi sumber.
+- [x] Buat keranjang/pemesanan produk jual. — `SalesCartService`, session `retail_cart`, `/keranjang`.
+- [x] Pisahkan sales order dari rental order. — `sales_orders`/`sales_order_items` terpisah.
+- [x] Terapkan pengurangan stok jual pada status transaksi yang ditetapkan. — `SalesStockService`: reserve saat checkout, consume saat settlement.
+- [x] Buat verifikasi pembayaran/konfirmasi penjualan sesuai metode yang tersedia. — transfer/cash/Midtrans + admin verify/reject/cash.
+- [x] Buat Admin Sales Order Management. — `admin/sales` daftar, detail, transisi, pembayaran.
+- [x] Tambahkan laporan pendapatan sewa vs penjualan. — `ReportService` key `rental` dan `sales`.
+- [x] Tambahkan laporan pembayaran, deposit, keterlambatan, kerusakan, dan stock movement. — key `payments`, `deposits`, `charges`, `inventory`, `operations`.
+- [x] Buat filter periode dan export CSV. — `ReportFilterRequest`, `CsvExporter` dengan proteksi formula injection.
+- [x] Validasi semua total laporan terhadap transaksi sumber. — `ExpandedReportsTest`, `CsvReportExportTest`.
 
 ### Deliverables
 
@@ -260,6 +262,8 @@ Setiap rekomendasi dapat ditelusuri ke aturan yang jelas; produk nonaktif tidak 
 ### Exit Criteria
 
 Sales tidak mengubah data rental; stok berkurang sesuai kebijakan; laporan dapat direkonsiliasi dengan transaksi yang sudah diverifikasi.
+
+**Status (18 Nov 2026): SELESAI untuk implementasi + automated tests.** Bukti: 50 test Phase 7 hijau, `vendor/bin/pint --test` bersih. Blocker: verifikasi Midtrans Sandbox nyata dan MySQL `gearora_test` belum tersedia. Laporan: `.docs/PHASE_6_7_COMPLETION_REPORT.md`.
 
 ## 11. Phase 8 — Quality, Security & Release Readiness
 

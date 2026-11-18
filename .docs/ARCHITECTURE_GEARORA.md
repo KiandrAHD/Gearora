@@ -195,13 +195,17 @@ Produk rental idealnya dilacak sampai unit fisik supaya serah-terima dan inspeks
 
 Pembayaran dan deposit harus terpisah dari rental order agar pelacakan uang muka, pelunasan, pengembalian dana, dan uang jaminan tidak tercampur.
 
-### 7.5 Sales & Content
+### 7.5 Sales, Payment Gateway & Content
 
-- `sales_orders`, `sales_order_items`: transaksi pembelian dan snapshot produk/harga.
-- `trip_plans` (opsional): input rencana perjalanan jika riwayat rekomendasi ingin disimpan.
-- `trip_recommendation_rules`: aturan mapping aktivitas/durasi/jumlah peserta ke produk atau kategori.
-- `guides`: artikel panduan dan metadata publikasi.
+- `sales_orders`, `sales_order_items`: transaksi pembelian, snapshot produk/harga, status order terpisah dari rental.
+- `sales_stock_reservations`: reservasi stok jual per item; status `reserved|consumed|released|expired`.
+- `sales_payments`, `sales_payment_attempts`: kewajiban bayar retail dan percobaan provider; tabel terpisah dari `payments` rental.
+- `payment_webhook_events`: dedup notifikasi provider untuk rental dan retail.
+- `trip_recommendation_rules`: aturan mapping aktivitas/durasi/jumlah peserta/kebutuhan khusus ke kategori/produk/varian.
+- `guide_categories`, `equipment_guides`, `guide_sources`: CMS panduan dengan lifecycle publikasi dan sumber.
 - `activity_logs` (direkomendasikan): audit untuk aksi sensitif.
+
+`rental_orders` dan `sales_orders` sama-sama mengimplementasikan kontrak `PayableOrder`, sehingga satu adaptor `PaymentGateway` dipakai untuk keduanya. Detail keputusan: `ADR_SHARED_PAYMENT_FOR_RETAIL.md`.
 
 ### 7.6 Relasi tingkat tinggi
 
@@ -221,6 +225,14 @@ erDiagram
     RENTAL_ORDERS ||--o{ RENTAL_RETURNS : returned
     SALES_ORDERS ||--|{ SALES_ORDER_ITEMS : contains
     PRODUCTS ||--o{ SALES_ORDER_ITEMS : sold_as
+    SALES_ORDER_ITEMS ||--o{ SALES_STOCK_RESERVATIONS : reserves
+    SALES_ORDERS ||--o{ SALES_PAYMENTS : paid_by
+    SALES_PAYMENTS ||--o{ SALES_PAYMENT_ATTEMPTS : attempts
+    PAYMENTS ||--o{ PAYMENT_ATTEMPTS : attempts
+    GUIDE_CATEGORIES ||--o{ EQUIPMENT_GUIDES : groups
+    EQUIPMENT_GUIDES ||--o{ GUIDE_SOURCES : cites
+    CATEGORIES ||--o{ TRIP_RECOMMENDATION_RULES : targets
+    PRODUCTS ||--o{ TRIP_RECOMMENDATION_RULES : targets
 ```
 
 Diagram ini menunjukkan relasi inti secara konseptual, bukan seluruh kolom atau constraint final.
@@ -252,6 +264,18 @@ Alternatif: `rejected`, `refunded`, `partially_refunded`.
 `available`, `reserved`, `rented`, `maintenance`, `damaged`, `lost`.
 
 Jangan menyamakan status pesanan dengan status unit fisik. Satu order dapat berisi beberapa unit dengan kondisi/status berbeda.
+
+### 8.4 Sales Order (retail)
+
+`pending_payment` → `payment_review` → `confirmed` → `ready_for_pickup` → `completed`
+
+Alternatif: `cancelled`, `expired`. Transisi divalidasi `SalesOrderStatus::canTransitionTo()`. `confirmed` mensyaratkan pembayaran terverifikasi. Status final tidak dapat diubah.
+
+Reservasi stok jual terpisah (`sales_stock_reservations`): `reserved` menahan stok, `consumed` mengurangi stok fisik sekali, `released`/`expired` melepas tanpa mengubah stok fisik.
+
+### 8.5 Equipment Guide
+
+`draft` → `published` → `archived`. Hanya `published` dengan `published_at <= now()` yang tampil publik. `unpublish` mengembalikan ke `draft`.
 
 ## 9. Availability & Anti-Overbooking
 

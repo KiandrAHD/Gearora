@@ -322,7 +322,19 @@ Fitur tersebut dapat dinilai kembali setelah alur rental, stok, pembayaran, dan 
 | Hak akses | Siapa boleh mengelola staf, pembayaran, dan deposit? | Owner memegang kewenangan tertinggi |
 | Hosting | Apakah PHP 8.2/8.3, ekstensi, public root, dan permission tersedia? | Harus diverifikasi sebelum deployment |
 
-## 15. Referensi Produk
+## 15. Status Implementasi (18 November 2026)
+
+Phase 0–7 telah diimplementasikan di repository. Ringkasan yang relevan dengan PRD:
+
+- Katalog, varian, stok, rental order, availability, pembayaran manual, deposit, inspeksi, biaya tambahan, dan operasional rental: selesai (Phase 0–5).
+- Trip Planner deterministik berbasis aturan DB + Equipment Guides CMS: selesai (Phase 6).
+- Retail sales terpisah (cart, order, reservasi stok, pembayaran, admin) dan laporan expanded + CSV: selesai (Phase 7).
+- Payment gateway Midtrans tersedia sebagai adaptor opsional; default nonaktif sampai kredensial valid diisi. Keputusan ini memperbarui butir "payment gateway otomatis" pada §13 untuk domain implementasi, bukan mengubah requirement bisnis.
+- Bukti otomatis: 174 tests lulus (495 assertions); `vendor/bin/pint --test` bersih.
+
+Verifikasi yang masih tertahan: Midtrans Sandbox nyata (tanpa kredensial), MySQL 8 test database `gearora_test`, dan visual QA browser. Detail: `.docs/PHASE_6_7_COMPLETION_REPORT.md`.
+
+## 16. Referensi Produk
 
 - Proposal konsep: [`.Gearora/GEARORA.md`](https://github.com/KiandrAHD/Gearora/blob/main/.Gearora/GEARORA.md)
 - Master design reference Homepage: [`.docs/Desain_Gearora.md`](https://github.com/KiandrAHD/Gearora/blob/main/.docs/Desain_Gearora.md)
