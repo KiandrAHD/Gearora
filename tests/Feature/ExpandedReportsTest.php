@@ -2,13 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Enums\ProductType;
 use App\Enums\RoleName;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use App\Models\User;
+use App\Services\ReportService;
+use Carbon\CarbonImmutable;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -87,6 +92,71 @@ class ExpandedReportsTest extends TestCase
         $customer->assignRole(RoleName::Customer);
 
         $this->actingAs($customer)->get(route('admin.reports.index'))->assertForbidden();
+    }
+
+    public function test_deposit_is_not_counted_as_rental_revenue(): void
+    {
+        Payment::factory()->create([
+            'method' => PaymentMethod::Transfer,
+            'status' => PaymentStatus::Verified,
+            'amount' => 150000,
+            'rental_amount' => 100000,
+            'deposit_amount' => 50000,
+            'settled_at' => now(),
+        ]);
+
+        $metrics = app(ReportService::class)->rentalRevenue($this->filters())['metrics'];
+
+        $this->assertSame(100000, $metrics['net_rental_revenue']);
+        $this->assertSame(50000, $metrics['deposit_collected']);
+    }
+
+    public function test_pending_payment_is_not_collected(): void
+    {
+        Payment::factory()->create([
+            'status' => PaymentStatus::WaitingVerification,
+            'amount' => 200000,
+            'rental_amount' => 200000,
+            'settled_at' => null,
+        ]);
+
+        $metrics = app(ReportService::class)->payments($this->filters())['metrics'];
+
+        $this->assertSame(0, $metrics['collected']);
+    }
+
+    public function test_retail_refund_metric_is_not_fabricated(): void
+    {
+        $this->confirmedSales(100000, 1);
+
+        $metrics = app(ReportService::class)->retailSales($this->filters())['metrics'];
+
+        $this->assertNull($metrics['refunded_sales']);
+        $this->assertFalse($metrics['refunded_sales_available']);
+    }
+
+    public function test_inventory_report_respects_product_filter(): void
+    {
+        $target = Product::factory()->create(['type' => ProductType::Sale]);
+        ProductVariant::factory()->for($target)->create(['is_active' => true, 'stock_quantity' => 4]);
+        $other = Product::factory()->create(['type' => ProductType::Sale]);
+        ProductVariant::factory()->for($other)->create(['is_active' => true, 'stock_quantity' => 9]);
+
+        $report = app(ReportService::class)->inventory($this->filters(['product_id' => $target->id]));
+
+        $this->assertNotEmpty($report['table']);
+        foreach ($report['table'] as $row) {
+            $this->assertSame($target->name, $row['product']);
+        }
+    }
+
+    private function filters(array $overrides = []): array
+    {
+        return app(ReportService::class)->filters(
+            CarbonImmutable::now(config('app.timezone'))->startOfYear(),
+            CarbonImmutable::now(config('app.timezone'))->endOfDay(),
+            $overrides,
+        );
     }
 
     private function confirmedSales(int $price, int $quantity): SalesOrder

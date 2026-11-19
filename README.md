@@ -4,16 +4,16 @@
 
 GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perlengkapan outdoor** (hiking, trekking, camping, dan aktivitas alam lainnya). Platform menyatukan pencarian gear, pemeriksaan ketersediaan, reservasi, panduan penggunaan, serta pengelolaan inventaris dan transaksi.
 
-> Status: **Phase 0–7 selesai lokal** untuk foundation, auth/RBAC, katalog/inventaris, rental MVP, pembayaran & operasional, Trip Planner & Equipment Guides, serta retail sales & laporan expanded. Automated suite: **174 tests / 495 assertions lulus**, `vendor/bin/pint --test` bersih. Verifikasi akun hosting AeonFree, MySQL `gearora_test`, dan Midtrans Sandbox masih **BLOCKED/PENDING**.
+> Status: **Phase 0–7.5 selesai lokal** untuk foundation, auth/RBAC, katalog/inventaris, rental MVP, pembayaran & operasional, Trip Planner & Equipment Guides, retail sales, serta optimasi admin dan ekspor laporan PDF/XLSX/CSV. Automated suite: **206 tests / 624 assertions lulus**. Verifikasi hosting AeonFree, MySQL `gearora_test`, Midtrans Sandbox, dan browser visual QA masih **BLOCKED/PENDING**.
 >
-> Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_6_7_COMPLETION_REPORT.md`](.docs/PHASE_6_7_COMPLETION_REPORT.md).
+> Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_7_5_COMPLETION_REPORT.md`](.docs/PHASE_7_5_COMPLETION_REPORT.md).
 
 ---
 
 ## 1. Ringkasan Proyek
 
 - Website publik (Blade, server-rendered): Homepage, katalog SEWA/BELI, detail produk, akun, Trip Planner, panduan, keranjang & checkout retail.
-- Admin Console: dashboard, katalog/inventaris, rental order, pembayaran, deposit, inspeksi, pengembalian, sales order retail, aturan trip, panduan, laporan + ekspor CSV.
+- Admin Console: dashboard adaptif per role, navigasi bertingkat, katalog/inventaris, rental order, pembayaran, deposit, inspeksi, pengembalian, sales order retail, aturan trip, panduan, laporan granular + ekspor PDF/XLSX/CSV.
 - Arsitektur: **modular monolith**, MVC + Service Layer, satu database MySQL.
 - Dirancang **hosting-aware**: tidak bergantung pada Node.js, Composer, SSH, queue worker, WebSocket, atau proses daemon di server.
 
@@ -31,7 +31,18 @@ GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perleng
 | Version control | Git + GitHub |
 | Hosting | AeonFree (shared hosting) |
 
-## 3. System Requirements
+## 3. Status Implementasi & Dokumen
+
+Phase 7.5 selesai di source dan test lokal. Rincian desain, akses laporan, ekspor, navigasi, dan hasil verifikasi:
+
+- [Phase 7.5 Completion Report](.docs/PHASE_7_5_COMPLETION_REPORT.md)
+- [Technical Design](.docs/PHASE_7_5_TECHNICAL_DESIGN.md)
+- [Admin Navigation Architecture](.docs/ADMIN_NAVIGATION_ARCHITECTURE.md)
+- [Report Export Guide](.docs/REPORT_EXPORT_GUIDE.md)
+- [Report Access Control](.docs/REPORT_ACCESS_CONTROL.md)
+- [Test Plan](.docs/PHASE_7_5_TEST_PLAN.md)
+
+## 4. System Requirements
 
 ### Development lokal
 - PHP **8.2+** (diuji pada 8.5.9) dengan ekstensi: `pdo_mysql`, `mbstring`, `fileinfo`, `openssl`, `ctype`, `curl`, `dom`, `xml`, `tokenizer`, `json`, `bcmath`, `sqlite3` (untuk test).

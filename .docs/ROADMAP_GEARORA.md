@@ -32,6 +32,7 @@ Prinsip delivery:
 | M5 — Rental Operations | Pickup, return, inspection, deposit, biaya tambahan, dan laporan dasar |
 | M6 — Customer Value Features | Trip recommendation dan equipment guides |
 | M7 — Retail + Reporting | Sales order, dashboard/report yang lebih lengkap, ekspor CSV |
+| M7.5 — Admin Optimization | Navigasi admin bertingkat, dashboard role-aware, otorisasi laporan granular, filter, ekspor PDF/XLSX/CSV, test & dokumentasi |
 | M8 — Release Ready | Security, QA, backup, deployment smoke test, dan dokumentasi pengguna |
 
 ## 3. Phase 0 — Requirement Freeze & Hosting Validation

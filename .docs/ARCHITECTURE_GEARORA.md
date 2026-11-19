@@ -437,7 +437,20 @@ Implikasi arsitektur:
 - Verifikasi apakah cron tersedia; sistem inti tetap tidak bergantung padanya.
 - Finalisasi ERD, aturan overlap tanggal rental, jadwal operasional, deposit, denda, pembatalan, dan metode pengambilan.
 
-## 18. Referensi
+## 18. Phase 7.5 — Admin & Reporting Architecture
+
+Phase 7.5 mempertahankan modular monolith dan menambah layer terpisah untuk konfigurasi navigasi, indikator pending, dashboard role-aware, otorisasi laporan granular, serta renderer ekspor.
+
+- `AdminNavigation` menjadi sumber tunggal menu admin dan filter permission.
+- `PendingIndicators` menghitung badge pending hanya untuk item yang boleh dilihat.
+- `ReportService` menjadi sumber tunggal angka; renderer PDF/XLSX hanya memformat.
+- CSV tetap backward compatible; PDF/XLSX dikirim streaming dan `Cache-Control: no-store`.
+- Ekspor membutuhkan permission view laporan terkait + `reports.export`; Owner bypass.
+- Deposit tetap dipisahkan dari revenue.
+
+Rujukan detail: [Phase 7.5 Technical Design](./PHASE_7_5_TECHNICAL_DESIGN.md), [Report Access Control](./REPORT_ACCESS_CONTROL.md), dan [Report Export Guide](./REPORT_EXPORT_GUIDE.md).
+
+## 19. Referensi
 
 - [Proposal GEARORA](https://github.com/KiandrAHD/Gearora/blob/main/.Gearora/GEARORA.md)
 - [Homepage Master Design Reference](https://github.com/KiandrAHD/Gearora/blob/main/.docs/Desain_Gearora.md)
