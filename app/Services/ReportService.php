@@ -26,6 +26,7 @@ use App\Models\SalesPayment;
 use App\Models\SalesStockReservation;
 use App\Models\StockMovement;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -34,6 +35,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ReportService
 {
+    private const EXPORT_ROW_LIMIT = 50000;
+
     /** @return array<string, mixed> */
     public function filters(CarbonImmutable $start, CarbonImmutable $end, array $options = []): array
     {
@@ -47,6 +50,7 @@ class ReportService
             'method' => $options['method'] ?? null,
             'product_id' => $options['product_id'] ?? null,
             'category_id' => $options['category_id'] ?? null,
+            'transaction_type' => $options['transaction_type'] ?? null,
         ];
     }
 
@@ -54,32 +58,19 @@ class ReportService
      * @param  array<string, mixed>  $f
      * @return array<string, mixed>
      */
-    public function dashboard(array $f): array
+    public function dashboard(array $f, ?array $allowed = null): array
     {
-        $rental = $this->rentalRevenue($f);
-        $sales = $this->retailSales($f);
-        $payments = $this->payments($f);
-        $deposits = $this->deposits($f);
-        $charges = $this->additionalCharges($f);
-        $inventory = $this->inventory($f);
-        $operations = $this->rentalOperations($f);
+        $allowed ??= ['rental', 'sales', 'payments', 'deposits', 'charges', 'inventory', 'operations'];
+        $dashboard = [];
+        foreach ($allowed as $key) {
+            $dashboard[$key] = $this->report($key, $f)['metrics'];
+        }
 
-        return [
-            'rental' => $rental['metrics'],
-            'sales' => $sales['metrics'],
-            'payments' => $payments['metrics'],
-            'deposits' => $deposits['metrics'],
-            'charges' => $charges['metrics'],
-            'inventory' => $inventory['metrics'],
-            'operations' => $operations['metrics'],
-        ];
+        return $dashboard;
     }
 
-    /**
-     * @param  array<string, mixed>  $f
-     * @return array{metrics:array<string,int|float>,table:array<int,array<string,mixed>>}
-     */
-    public function rentalRevenue(array $f): array
+    /** @param array<string, mixed> $f @return array{metrics:array<string,int|float>,table:array<int,array<string,mixed>>} */
+    public function rentalRevenue(array $f, bool $export = false): array
     {
         $paymentQuery = Payment::query()
             ->where('status', PaymentStatus::Verified->value)
@@ -93,491 +84,222 @@ class ReportService
             ->where('status', RefundStatus::Succeeded->value)
             ->whereBetween('processed_at', [$f['start'], $f['end']])
             ->when($f['method'], fn ($query, $method) => $query->whereHas('payment', fn ($p) => $p->where('method', $method)));
-
         $rentalRefund = (int) $refundQuery->clone()->sum('rental_amount');
 
         $orders = RentalOrder::query()
             ->whereBetween('created_at', [$f['start'], $f['end']])
             ->when($f['status'], fn ($query, $status) => $query->where('order_status', $status));
-
         $orderCount = (clone $orders)->count();
         $completed = (clone $orders)->where('order_status', RentalOrderStatus::Completed->value)->count();
         $cancelled = (clone $orders)->where('order_status', RentalOrderStatus::Cancelled->value)->count();
         $subtotal = (int) (clone $orders)->sum('subtotal');
 
-        $table = (clone $orders)
-            ->with(['customer', 'payments'])
-            ->latest('created_at')
-            ->limit(500)
-            ->get()
-            ->map(function (RentalOrder $order) {
-                $paidRental = $order->payments
-                    ->where('status', PaymentStatus::Verified)
-                    ->sum(fn ($payment) => (int) $payment->rental_amount);
+        $query = (clone $orders)->with(['customer', 'payments'])->latest('created_at');
+        $rows = $export ? $this->guardedRows(clone $query) : $query->limit(500)->get();
+        $table = collect($rows)->map(function (RentalOrder $order) {
+            $paidRental = $order->payments->where('status', PaymentStatus::Verified)->sum(fn ($payment) => (int) $payment->rental_amount);
 
-                return [
-                    'order_code' => $order->order_code,
-                    'customer' => $order->customer?->name,
-                    'start_date' => $order->start_date?->toDateString(),
-                    'end_date' => $order->end_date?->toDateString(),
-                    'duration_days' => (int) $order->duration_days,
-                    'status' => $order->order_status->value,
-                    'subtotal' => (int) $order->subtotal,
-                    'deposit_total' => (int) $order->deposit_total,
-                    'total' => (int) $order->total,
-                    'rental_paid' => $paidRental,
-                ];
-            })
-            ->all();
+            return [
+                'order_code' => $order->order_code, 'customer' => $order->customer?->name,
+                'start_date' => $order->start_date?->toDateString(), 'end_date' => $order->end_date?->toDateString(),
+                'duration_days' => (int) $order->duration_days, 'status' => $order->order_status->value,
+                'subtotal' => (int) $order->subtotal, 'deposit_total' => (int) $order->deposit_total,
+                'total' => (int) $order->total, 'rental_paid' => $paidRental,
+            ];
+        })->all();
 
-        return [
-            'metrics' => [
-                'rental_subtotal' => $subtotal,
-                'rental_gross' => $rentalGross,
-                'rental_refund' => $rentalRefund,
-                'net_rental_revenue' => $rentalGross - $rentalRefund,
-                'deposit_collected' => $depositCollected,
-                'order_count' => $orderCount,
-                'completed_orders' => $completed,
-                'cancelled_orders' => $cancelled,
-                'average_order_value' => $orderCount > 0 ? (int) round($subtotal / $orderCount) : 0,
-            ],
-            'table' => $table,
-        ];
+        return ['metrics' => [
+            'rental_subtotal' => $subtotal, 'rental_gross' => $rentalGross, 'rental_refund' => $rentalRefund,
+            'net_rental_revenue' => $rentalGross - $rentalRefund, 'deposit_collected' => $depositCollected,
+            'order_count' => $orderCount, 'completed_orders' => $completed, 'cancelled_orders' => $cancelled,
+            'average_order_value' => $orderCount > 0 ? (int) round($subtotal / $orderCount) : 0,
+        ], 'table' => $table];
     }
 
-    /**
-     * @param  array<string, mixed>  $f
-     * @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>}
-     */
-    public function retailSales(array $f): array
+    /** @param array<string, mixed> $f @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>} */
+    public function retailSales(array $f, bool $export = false): array
     {
         $orders = SalesOrder::query()
-            ->where('payment_status', PaymentStatus::Verified->value)
-            ->whereNotNull('confirmed_at')
+            ->where('payment_status', PaymentStatus::Verified->value)->whereNotNull('confirmed_at')
             ->whereBetween('confirmed_at', [$f['start'], $f['end']])
             ->when($f['status'], fn ($query, $status) => $query->where('order_status', $status));
-
         $orderCount = (clone $orders)->count();
         $gross = (int) (clone $orders)->sum('subtotal');
         $discounts = (int) (clone $orders)->sum('discount_total');
         $net = (int) (clone $orders)->sum('total');
+        $itemsSold = (int) SalesOrderItem::query()->whereIn('sales_order_id', (clone $orders)->select('id'))->sum('quantity');
 
-        $itemsSold = (int) SalesOrderItem::query()
-            ->whereIn('sales_order_id', (clone $orders)->select('id'))
-            ->sum('quantity');
-
-        $topProducts = SalesOrderItem::query()
-            ->whereIn('sales_order_id', (clone $orders)->select('id'))
+        $topProducts = SalesOrderItem::query()->whereIn('sales_order_id', (clone $orders)->select('id'))
             ->selectRaw('product_name_snapshot, SUM(quantity) as qty, SUM(line_total) as revenue')
-            ->groupBy('product_name_snapshot')
-            ->orderByDesc('qty')
-            ->limit(10)
-            ->get()
-            ->map(fn ($row) => [
-                'product' => $row->product_name_snapshot,
-                'quantity' => (int) $row->qty,
-                'revenue' => (int) $row->revenue,
-            ])
-            ->all();
-
-        $topVariants = SalesOrderItem::query()
-            ->whereIn('sales_order_id', (clone $orders)->select('id'))
+            ->groupBy('product_name_snapshot')->orderByDesc('qty')->limit(10)->get()
+            ->map(fn ($row) => ['product' => $row->product_name_snapshot, 'quantity' => (int) $row->qty, 'revenue' => (int) $row->revenue])->all();
+        $topVariants = SalesOrderItem::query()->whereIn('sales_order_id', (clone $orders)->select('id'))
             ->selectRaw('product_name_snapshot, variant_name_snapshot, sku_snapshot, SUM(quantity) as qty, SUM(line_total) as revenue')
-            ->groupBy('product_name_snapshot', 'variant_name_snapshot', 'sku_snapshot')
-            ->orderByDesc('qty')
-            ->limit(10)
-            ->get()
-            ->map(fn ($row) => [
-                'product' => $row->product_name_snapshot,
-                'variant' => $row->variant_name_snapshot,
-                'sku' => $row->sku_snapshot,
-                'quantity' => (int) $row->qty,
-                'revenue' => (int) $row->revenue,
-            ])
-            ->all();
+            ->groupBy('product_name_snapshot', 'variant_name_snapshot', 'sku_snapshot')->orderByDesc('qty')->limit(10)->get()
+            ->map(fn ($row) => ['product' => $row->product_name_snapshot, 'variant' => $row->variant_name_snapshot, 'sku' => $row->sku_snapshot, 'quantity' => (int) $row->qty, 'revenue' => (int) $row->revenue])->all();
 
-        $table = (clone $orders)
-            ->with(['customer', 'items'])
-            ->latest('confirmed_at')
-            ->limit(500)
-            ->get()
-            ->map(fn (SalesOrder $order) => [
-                'order_code' => $order->order_code,
-                'customer' => $order->customer?->name,
-                'confirmed_at' => $order->confirmed_at?->toDateTimeString(),
-                'status' => $order->order_status->value,
-                'subtotal' => (int) $order->subtotal,
-                'discount_total' => (int) $order->discount_total,
-                'total' => (int) $order->total,
-                'items' => (int) $order->items->sum('quantity'),
-            ])
-            ->all();
+        $query = (clone $orders)->with(['customer', 'items'])->latest('confirmed_at');
+        $rows = $export ? $this->guardedRows(clone $query) : $query->limit(500)->get();
+        $table = collect($rows)->map(fn (SalesOrder $order) => [
+            'order_code' => $order->order_code, 'customer' => $order->customer?->name,
+            'confirmed_at' => $order->confirmed_at?->toDateTimeString(), 'status' => $order->order_status->value,
+            'subtotal' => (int) $order->subtotal, 'discount_total' => (int) $order->discount_total,
+            'total' => (int) $order->total, 'items' => (int) $order->items->sum('quantity'),
+        ])->all();
 
-        return [
-            'metrics' => [
-                'gross_sales' => $gross,
-                'discount_total' => $discounts,
-                'net_sales' => $net,
-                'refunded_sales' => 0,
-                'order_count' => $orderCount,
-                'items_sold' => $itemsSold,
-                'average_order_value' => $orderCount > 0 ? (int) round($net / $orderCount) : 0,
-                'top_products' => $topProducts,
-                'top_variants' => $topVariants,
-            ],
-            'table' => $table,
-        ];
+        return ['metrics' => [
+            'gross_sales' => $gross, 'discount_total' => $discounts, 'net_sales' => $net,
+            'refunded_sales' => null, 'refunded_sales_available' => false,
+            'order_count' => $orderCount, 'items_sold' => $itemsSold,
+            'average_order_value' => $orderCount > 0 ? (int) round($net / $orderCount) : 0,
+            'top_products' => $topProducts, 'top_variants' => $topVariants,
+        ], 'table' => $table];
     }
 
-    /**
-     * @param  array<string, mixed>  $f
-     * @return array{metrics:array<string,int|array<string,int>>,table:array<int,array<string,mixed>>}
-     */
-    public function payments(array $f): array
+    /** @param array<string, mixed> $f @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>} */
+    public function payments(array $f, bool $export = false): array
     {
-        $rental = Payment::query()
-            ->whereBetween('created_at', [$f['start'], $f['end']])
-            ->when($f['method'], fn ($query, $method) => $query->where('method', $method));
+        $transactionType = $f['transaction_type'] ?? null;
+        $includeRental = in_array($transactionType, [null, '', 'all', 'rental'], true);
+        $includeSales = in_array($transactionType, [null, '', 'all', 'sales'], true);
 
-        $sales = SalesPayment::query()
-            ->whereBetween('created_at', [$f['start'], $f['end']])
-            ->when($f['method'], fn ($query, $method) => $query->where('method', $method));
+        $rental = Payment::query()->whereBetween('created_at', [$f['start'], $f['end']])
+            ->when(! $includeRental, fn ($query) => $query->whereRaw('1 = 0'))
+            ->when($f['method'], fn ($query, $method) => $query->where('method', $method))
+            ->when($f['status'], fn ($query, $status) => $query->where('status', $status));
+        $sales = SalesPayment::query()->whereBetween('created_at', [$f['start'], $f['end']])
+            ->when(! $includeSales, fn ($query) => $query->whereRaw('1 = 0'))
+            ->when($f['method'], fn ($query, $method) => $query->where('method', $method))
+            ->when($f['status'], fn ($query, $status) => $query->where('status', $status));
 
         $byMethod = [];
         foreach (PaymentMethod::cases() as $method) {
-            $byMethod[$method->value] = (int) (clone $rental)->where('method', $method->value)->sum('amount')
-                + (int) (clone $sales)->where('method', $method->value)->sum('amount');
+            $byMethod[$method->value] = (int) (clone $rental)->where('method', $method->value)->sum('amount') + (int) (clone $sales)->where('method', $method->value)->sum('amount');
         }
-
         $byStatus = [];
-        foreach ([
-            PaymentStatus::Verified, PaymentStatus::WaitingVerification, PaymentStatus::Processing,
-            PaymentStatus::Failed, PaymentStatus::Expired, PaymentStatus::Refunded, PaymentStatus::PartiallyRefunded,
-            PaymentStatus::Unpaid, PaymentStatus::Rejected,
-        ] as $status) {
-            $byStatus[$status->value] = (clone $rental)->where('status', $status->value)->count()
-                + (clone $sales)->where('status', $status->value)->count();
+        foreach (PaymentStatus::cases() as $status) {
+            $byStatus[$status->value] = (clone $rental)->where('status', $status->value)->count() + (clone $sales)->where('status', $status->value)->count();
         }
+        $collected = (int) Payment::query()->where('status', PaymentStatus::Verified->value)->whereBetween('settled_at', [$f['start'], $f['end']])
+            ->when(! $includeRental, fn ($query) => $query->whereRaw('1 = 0'))
+            ->when($f['method'], fn ($query, $method) => $query->where('method', $method))->sum('amount')
+            + (int) SalesPayment::query()->where('status', PaymentStatus::Verified->value)->whereBetween('settled_at', [$f['start'], $f['end']])
+                ->when(! $includeSales, fn ($query) => $query->whereRaw('1 = 0'))
+                ->when($f['method'], fn ($query, $method) => $query->where('method', $method))->sum('amount');
 
-        $collected = (int) Payment::query()
-            ->where('status', PaymentStatus::Verified->value)
-            ->whereBetween('settled_at', [$f['start'], $f['end']])
-            ->sum('amount')
-            + (int) SalesPayment::query()
-                ->where('status', PaymentStatus::Verified->value)
-                ->whereBetween('settled_at', [$f['start'], $f['end']])
-                ->sum('amount');
-
-        $table = [];
-
-        Payment::query()
-            ->with(['order.customer'])
-            ->whereBetween('created_at', [$f['start'], $f['end']])
-            ->when($f['method'], fn ($query, $method) => $query->where('method', $method))
-            ->latest('created_at')
-            ->limit(300)
-            ->get()
-            ->each(function (Payment $payment) use (&$table) {
-                $table[] = [
-                    'type' => 'rental',
-                    'reference' => $payment->order?->order_code,
-                    'customer' => $payment->order?->customer?->name,
-                    'method' => $payment->method->value,
-                    'status' => $payment->status->value,
-                    'amount' => (int) $payment->amount,
-                    'created_at' => $payment->created_at?->toDateTimeString(),
-                    'settled_at' => $payment->settled_at?->toDateTimeString(),
-                ];
-            });
-
-        SalesPayment::query()
-            ->with(['order.customer'])
-            ->whereBetween('created_at', [$f['start'], $f['end']])
-            ->when($f['method'], fn ($query, $method) => $query->where('method', $method))
-            ->latest('created_at')
-            ->limit(300)
-            ->get()
-            ->each(function (SalesPayment $payment) use (&$table) {
-                $table[] = [
-                    'type' => 'sales',
-                    'reference' => $payment->order?->order_code,
-                    'customer' => $payment->order?->customer?->name,
-                    'method' => $payment->method->value,
-                    'status' => $payment->status->value,
-                    'amount' => (int) $payment->amount,
-                    'created_at' => $payment->created_at?->toDateTimeString(),
-                    'settled_at' => $payment->settled_at?->toDateTimeString(),
-                ];
-            });
-
+        $paymentRows = $this->paymentTable(Payment::query()->with(['order.customer'])->whereBetween('created_at', [$f['start'], $f['end']])->when(! $includeRental, fn ($q) => $q->whereRaw('1 = 0'))->when($f['method'], fn ($q, $m) => $q->where('method', $m))->when($f['status'], fn ($q, $s) => $q->where('status', $s))->latest('created_at'), 'rental', $export);
+        $salesRows = $this->paymentTable(SalesPayment::query()->with(['order.customer'])->whereBetween('created_at', [$f['start'], $f['end']])->when(! $includeSales, fn ($q) => $q->whereRaw('1 = 0'))->when($f['method'], fn ($q, $m) => $q->where('method', $m))->when($f['status'], fn ($q, $s) => $q->where('status', $s))->latest('created_at'), 'sales', $export);
+        $table = array_merge($paymentRows, $salesRows);
         usort($table, fn (array $a, array $b) => strcmp((string) $b['created_at'], (string) $a['created_at']));
 
-        return [
-            'metrics' => [
-                'by_method' => $byMethod,
-                'by_status' => $byStatus,
-                'collected' => $collected,
-            ],
-            'table' => array_slice($table, 0, 500),
-        ];
+        return ['metrics' => ['by_method' => $byMethod, 'by_status' => $byStatus, 'collected' => $collected], 'table' => $export ? $table : array_slice($table, 0, 500)];
     }
 
-    /**
-     * @param  array<string, mixed>  $f
-     * @return array{metrics:array<string,int|array<string,int>>,table:array<int,array<string,mixed>>}
-     */
-    public function deposits(array $f): array
+    /** @param array<string, mixed> $f @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>} */
+    public function deposits(array $f, bool $export = false): array
     {
-        $inRange = Deposit::query()->whereBetween('created_at', [$f['start'], $f['end']]);
-
+        $inRange = Deposit::query()->whereBetween('created_at', [$f['start'], $f['end']])->when($f['status'], fn ($q, $s) => $q->where('status', $s));
         $required = (int) (clone $inRange)->sum('required_amount');
         $collected = (int) (clone $inRange)->sum('collected_amount');
         $deducted = (int) (clone $inRange)->sum('deducted_amount');
         $refunded = (int) (clone $inRange)->sum('refunded_amount');
         $forfeited = (int) (clone $inRange)->sum('forfeited_amount');
         $outstanding = (int) (clone $inRange)->sum('outstanding_amount');
-
-        $held = (int) Deposit::query()
-            ->selectRaw('COALESCE(SUM(collected_amount - deducted_amount - refunded_amount - forfeited_amount), 0) as balance')
-            ->value('balance');
-
+        $held = (int) Deposit::query()->selectRaw('COALESCE(SUM(collected_amount - deducted_amount - refunded_amount - forfeited_amount), 0) as balance')->value('balance');
         $flows = [];
         foreach (DepositTransactionType::cases() as $type) {
-            $flows[$type->value] = (int) DepositTransaction::query()
-                ->where('type', $type->value)
-                ->whereBetween('created_at', [$f['start'], $f['end']])
-                ->sum('amount');
+            $flows[$type->value] = (int) DepositTransaction::query()->where('type', $type->value)->whereBetween('created_at', [$f['start'], $f['end']])->sum('amount');
         }
+        $query = (clone $inRange)->with(['order', 'customer'])->latest('created_at');
+        $rows = $export ? $this->guardedRows(clone $query) : $query->limit(500)->get();
+        $table = collect($rows)->map(fn (Deposit $deposit) => [
+            'order_code' => $deposit->order?->order_code, 'customer' => $deposit->customer?->name,
+            'required' => (int) $deposit->required_amount, 'collected' => (int) $deposit->collected_amount,
+            'deducted' => (int) $deposit->deducted_amount, 'refunded' => (int) $deposit->refunded_amount,
+            'forfeited' => (int) $deposit->forfeited_amount, 'balance' => $deposit->balance(), 'status' => $deposit->status->value,
+        ])->all();
 
-        $table = (clone $inRange)
-            ->with(['order', 'customer'])
-            ->latest('created_at')
-            ->limit(500)
-            ->get()
-            ->map(fn (Deposit $deposit) => [
-                'order_code' => $deposit->order?->order_code,
-                'customer' => $deposit->customer?->name,
-                'required' => (int) $deposit->required_amount,
-                'collected' => (int) $deposit->collected_amount,
-                'deducted' => (int) $deposit->deducted_amount,
-                'refunded' => (int) $deposit->refunded_amount,
-                'forfeited' => (int) $deposit->forfeited_amount,
-                'balance' => $deposit->balance(),
-                'status' => $deposit->status->value,
-            ])
-            ->all();
-
-        return [
-            'metrics' => [
-                'required' => $required,
-                'collected' => $collected,
-                'held_balance' => $held,
-                'deducted' => $deducted,
-                'refunded' => $refunded,
-                'forfeited' => $forfeited,
-                'outstanding' => $outstanding,
-                'flows' => $flows,
-            ],
-            'table' => $table,
-        ];
+        return ['metrics' => compact('required', 'collected', 'held', 'deducted', 'refunded', 'forfeited', 'outstanding') + ['held_balance' => $held, 'flows' => $flows], 'table' => $table];
     }
 
-    /**
-     * @param  array<string, mixed>  $f
-     * @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>}
-     */
-    public function additionalCharges(array $f): array
+    /** @param array<string, mixed> $f @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>} */
+    public function additionalCharges(array $f, bool $export = false): array
     {
-        $query = AdditionalCharge::query()->whereBetween('created_at', [$f['start'], $f['end']]);
-
+        $query = AdditionalCharge::query()->whereBetween('created_at', [$f['start'], $f['end']])->when($f['status'], fn ($q, $s) => $q->where('status', $s));
         $byType = [];
         foreach (AdditionalChargeType::cases() as $type) {
             $byType[$type->value] = (int) (clone $query)->where('type', $type->value)->sum('amount');
         }
-
         $pending = (clone $query)->where('status', AdditionalChargeStatus::PendingApproval->value)->count();
         $approved = (clone $query)->where('status', AdditionalChargeStatus::Approved->value)->count();
         $rejected = (clone $query)->where('status', AdditionalChargeStatus::Rejected->value)->count();
         $paid = (clone $query)->whereIn('status', [AdditionalChargeStatus::Paid->value, AdditionalChargeStatus::OffsetFromDeposit->value])->count();
-        $outstanding = (int) (clone $query)->whereIn('status', [
-            AdditionalChargeStatus::Approved->value,
-            AdditionalChargeStatus::PartiallySettled->value,
-        ])->sum('outstanding_amount');
+        $outstanding = (int) (clone $query)->whereIn('status', [AdditionalChargeStatus::Approved->value, AdditionalChargeStatus::PartiallySettled->value])->sum('outstanding_amount');
+        $rows = $export ? $this->guardedRows((clone $query)->with('order')->latest('created_at')) : (clone $query)->with('order')->latest('created_at')->limit(500)->get();
+        $table = collect($rows)->map(fn (AdditionalCharge $charge) => [
+            'charge_code' => $charge->charge_code, 'order_code' => $charge->order?->order_code,
+            'type' => $charge->type->value, 'amount' => (int) $charge->amount,
+            'outstanding' => (int) $charge->outstanding_amount, 'status' => $charge->status->value, 'payment_status' => $charge->payment_status,
+        ])->all();
 
-        $table = (clone $query)
-            ->with('order')
-            ->latest('created_at')
-            ->limit(500)
-            ->get()
-            ->map(fn (AdditionalCharge $charge) => [
-                'charge_code' => $charge->charge_code,
-                'order_code' => $charge->order?->order_code,
-                'type' => $charge->type->value,
-                'amount' => (int) $charge->amount,
-                'outstanding' => (int) $charge->outstanding_amount,
-                'status' => $charge->status->value,
-                'payment_status' => $charge->payment_status,
-            ])
-            ->all();
-
-        return [
-            'metrics' => [
-                'by_type' => $byType,
-                'total' => array_sum($byType),
-                'pending_approval' => $pending,
-                'approved' => $approved,
-                'rejected' => $rejected,
-                'paid' => $paid,
-                'outstanding' => $outstanding,
-            ],
-            'table' => $table,
-        ];
+        return ['metrics' => ['by_type' => $byType, 'total' => array_sum($byType), 'pending_approval' => $pending, 'approved' => $approved, 'rejected' => $rejected, 'paid' => $paid, 'outstanding' => $outstanding], 'table' => $table];
     }
 
-    /**
-     * @param  array<string, mixed>  $f
-     * @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>}
-     */
-    public function inventory(array $f): array
+    /** @param array<string, mixed> $f @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>} */
+    public function inventory(array $f, bool $export = false): array
     {
         $saleStock = (int) DB::table('product_variants')->sum('stock_quantity');
-        $reserved = (int) SalesStockReservation::query()
-            ->where('status', SalesReservationStatus::Reserved->value)
-            ->sum('quantity');
-        $soldQuantity = (int) StockMovement::query()
-            ->where('type', StockMovementType::Sale->value)
-            ->whereBetween('created_at', [$f['start'], $f['end']])
-            ->selectRaw('COALESCE(SUM(quantity_before - quantity_after), 0) as sold')
-            ->value('sold');
-
+        $reserved = (int) SalesStockReservation::query()->where('status', SalesReservationStatus::Reserved->value)->sum('quantity');
+        $soldQuantity = (int) StockMovement::query()->where('type', StockMovementType::Sale->value)->whereBetween('created_at', [$f['start'], $f['end']])->selectRaw('COALESCE(SUM(quantity_before - quantity_after), 0) as sold')->value('sold');
         $assetsByStatus = [];
         foreach (RentalAssetStatus::cases() as $status) {
             $assetsByStatus[$status->value] = RentalAsset::query()->where('status', $status->value)->count();
         }
+        $movements = StockMovement::query()->whereBetween('created_at', [$f['start'], $f['end']])->selectRaw('type, COUNT(*) as total')->groupBy('type')->pluck('total', 'type')->all();
+        $damage = (int) AdditionalCharge::query()->where('type', AdditionalChargeType::Damage->value)->whereBetween('created_at', [$f['start'], $f['end']])->count();
+        $lost = (int) AdditionalCharge::query()->where('type', AdditionalChargeType::Lost->value)->whereBetween('created_at', [$f['start'], $f['end']])->count();
+        $table = ProductVariantQuery::rows(['product_id' => $f['product_id'], 'category_id' => $f['category_id']]);
+        abort_if($export && count($table) > self::EXPORT_ROW_LIMIT, 422, 'Ekspor inventaris dibatasi '.self::EXPORT_ROW_LIMIT.' baris. Persempit filter produk/kategori.');
 
-        $movements = StockMovement::query()
-            ->whereBetween('created_at', [$f['start'], $f['end']])
-            ->selectRaw('type, COUNT(*) as total')
-            ->groupBy('type')
-            ->pluck('total', 'type')
-            ->all();
-
-        $damage = (int) AdditionalCharge::query()
-            ->where('type', AdditionalChargeType::Damage->value)
-            ->whereBetween('created_at', [$f['start'], $f['end']])
-            ->count();
-        $lost = (int) AdditionalCharge::query()
-            ->where('type', AdditionalChargeType::Lost->value)
-            ->whereBetween('created_at', [$f['start'], $f['end']])
-            ->count();
-
-        $table = ProductVariantQuery::rows([
-            'product_id' => $f['product_id'],
-            'category_id' => $f['category_id'],
-        ]);
-
-        return [
-            'metrics' => [
-                'sale_stock' => $saleStock,
-                'reserved_sale_stock' => $reserved,
-                'available_sale_stock' => max(0, $saleStock - $reserved),
-                'sold_quantity' => $soldQuantity,
-                'assets_by_status' => $assetsByStatus,
-                'stock_movements' => $movements,
-                'damage_incidents' => $damage,
-                'lost_incidents' => $lost,
-            ],
-            'table' => $table,
-        ];
+        return ['metrics' => ['sale_stock' => $saleStock, 'reserved_sale_stock' => $reserved, 'available_sale_stock' => max(0, $saleStock - $reserved), 'sold_quantity' => $soldQuantity, 'assets_by_status' => $assetsByStatus, 'stock_movements' => $movements, 'damage_incidents' => $damage, 'lost_incidents' => $lost], 'table' => $table];
     }
 
-    /**
-     * @param  array<string, mixed>  $f
-     * @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>}
-     */
-    public function rentalOperations(array $f): array
+    /** @param array<string, mixed> $f @return array{metrics:array<string,mixed>,table:array<int,array<string,mixed>>} */
+    public function rentalOperations(array $f, bool $export = false): array
     {
-        $orders = RentalOrder::query()->whereBetween('created_at', [$f['start'], $f['end']]);
-
+        $orders = RentalOrder::query()->whereBetween('created_at', [$f['start'], $f['end']])->when($f['status'], fn ($q, $s) => $q->where('order_status', $s));
         $byStatus = [];
         foreach (RentalOrderStatus::cases() as $status) {
             $byStatus[$status->value] = (clone $orders)->where('order_status', $status->value)->count();
         }
-
         $averageDuration = (float) (clone $orders)->avg('duration_days');
-        $overdue = RentalOrder::query()
-            ->whereIn('order_status', [
-                RentalOrderStatus::Confirmed->value,
-                RentalOrderStatus::ReadyForPickup->value,
-                RentalOrderStatus::PickedUp->value,
-            ])
-            ->whereDate('end_date', '<', now(config('app.timezone'))->toDateString())
-            ->count();
-
+        $overdue = RentalOrder::query()->whereIn('order_status', [RentalOrderStatus::Confirmed->value, RentalOrderStatus::ReadyForPickup->value, RentalOrderStatus::PickedUp->value])->whereDate('end_date', '<', now(config('app.timezone'))->toDateString())->count();
         $inspections = Inspection::query()->whereBetween('created_at', [$f['start'], $f['end']])->count();
         $lostAssets = RentalAsset::query()->where('status', RentalAssetStatus::Lost->value)->count();
-        $damageIncidents = (int) AdditionalCharge::query()
-            ->where('type', AdditionalChargeType::Damage->value)
-            ->whereBetween('created_at', [$f['start'], $f['end']])
-            ->count();
+        $damageIncidents = (int) AdditionalCharge::query()->where('type', AdditionalChargeType::Damage->value)->whereBetween('created_at', [$f['start'], $f['end']])->count();
+        $query = (clone $orders)->with('customer')->latest('created_at');
+        $rows = $export ? $this->guardedRows(clone $query) : $query->limit(500)->get();
+        $table = collect($rows)->map(fn (RentalOrder $order) => [
+            'order_code' => $order->order_code, 'customer' => $order->customer?->name,
+            'start_date' => $order->start_date?->toDateString(), 'end_date' => $order->end_date?->toDateString(),
+            'duration_days' => (int) $order->duration_days, 'status' => $order->order_status->value,
+        ])->all();
 
-        $table = (clone $orders)
-            ->with('customer')
-            ->latest('created_at')
-            ->limit(500)
-            ->get()
-            ->map(fn (RentalOrder $order) => [
-                'order_code' => $order->order_code,
-                'customer' => $order->customer?->name,
-                'start_date' => $order->start_date?->toDateString(),
-                'end_date' => $order->end_date?->toDateString(),
-                'duration_days' => (int) $order->duration_days,
-                'status' => $order->order_status->value,
-            ])
-            ->all();
-
-        return [
-            'metrics' => [
-                'total_orders' => array_sum($byStatus),
-                'by_status' => $byStatus,
-                'active_rental' => $byStatus[RentalOrderStatus::PickedUp->value] ?? 0,
-                'completed' => $byStatus[RentalOrderStatus::Completed->value] ?? 0,
-                'cancelled' => $byStatus[RentalOrderStatus::Cancelled->value] ?? 0,
-                'overdue' => $overdue,
-                'average_duration_days' => round($averageDuration, 1),
-                'inspections' => $inspections,
-                'damage_incidents' => $damageIncidents,
-                'lost_assets' => $lostAssets,
-            ],
-            'table' => $table,
-        ];
+        return ['metrics' => ['total_orders' => array_sum($byStatus), 'by_status' => $byStatus, 'active_rental' => $byStatus[RentalOrderStatus::PickedUp->value] ?? 0, 'completed' => $byStatus[RentalOrderStatus::Completed->value] ?? 0, 'cancelled' => $byStatus[RentalOrderStatus::Cancelled->value] ?? 0, 'overdue' => $overdue, 'average_duration_days' => round($averageDuration, 1), 'inspections' => $inspections, 'damage_incidents' => $damageIncidents, 'lost_assets' => $lostAssets], 'table' => $table];
     }
 
-    /**
-     * @param  array<string, mixed>  $f
-     * @return array<string, mixed>
-     */
-    public function report(string $key, array $f): array
+    /** @param array<string, mixed> $f @return array<string, mixed> */
+    public function report(string $key, array $f, bool $export = false): array
     {
         return match ($key) {
-            'rental' => $this->rentalRevenue($f),
-            'sales' => $this->retailSales($f),
-            'payments' => $this->payments($f),
-            'deposits' => $this->deposits($f),
-            'charges' => $this->additionalCharges($f),
-            'inventory' => $this->inventory($f),
-            'operations' => $this->rentalOperations($f),
-            default => ['metrics' => $this->dashboard($f), 'table' => []],
+            'rental' => $this->rentalRevenue($f, $export), 'sales' => $this->retailSales($f, $export),
+            'payments' => $this->payments($f, $export), 'deposits' => $this->deposits($f, $export),
+            'charges' => $this->additionalCharges($f, $export), 'inventory' => $this->inventory($f, $export),
+            'operations' => $this->rentalOperations($f, $export), default => ['metrics' => $this->dashboard($f), 'table' => []],
         };
     }
 
-    /**
-     * Baris CSV untuk laporan tertentu (filter sama dengan layar).
-     *
-     * @param  array<string, mixed>  $f
-     * @return array<int, string>
-     */
+    /** @return array<int, string> */
     public function csvHeaders(string $key): array
     {
         return match ($key) {
@@ -586,34 +308,56 @@ class ReportService
             'payments' => ['Tipe', 'Referensi', 'Pelanggan', 'Metode', 'Status', 'Nominal', 'Dibuat', 'Settled'],
             'deposits' => ['Kode Order', 'Pelanggan', 'Wajib', 'Terkumpul', 'Dipotong', 'Direfund', 'Hangus', 'Saldo', 'Status'],
             'charges' => ['Kode Biaya', 'Kode Order', 'Tipe', 'Nominal', 'Outstanding', 'Status', 'Status Bayar'],
-            'inventory' => ['Produk', 'SKU', 'Stok', 'Reservasi', 'Tersedia'],
+            'inventory' => ['Produk', 'Varian', 'SKU', 'Stok', 'Reservasi', 'Tersedia'],
             'operations' => ['Kode Order', 'Pelanggan', 'Mulai', 'Selesai', 'Durasi (hari)', 'Status'],
             default => ['Metrik', 'Nilai'],
         };
     }
 
-    /**
-     * @param  array<string, mixed>  $f
-     * @return \Generator<int, array<int, mixed>>
-     */
-    public function csvRows(string $key, array $f): \Generator
+    /** @param array<string, mixed> $f @return \Generator<int, array<int, mixed>> */
+    public function csvRows(string $key, array $f, ?array $allowed = null): \Generator
     {
         if ($key === 'summary') {
-            $summary = $this->dashboard($f);
-            yield ['Rental net revenue', $summary['rental']['net_rental_revenue']];
-            yield ['Retail net sales', $summary['sales']['net_sales']];
-            yield ['Payment collected', $summary['payments']['collected']];
-            yield ['Deposit held balance', $summary['deposits']['held_balance']];
-            yield ['Additional charges outstanding', $summary['charges']['outstanding']];
-            yield ['Overdue rentals', $summary['operations']['overdue']];
+            $metrics = $this->dashboard($f, $allowed);
+            $labels = [
+                'rental' => ['Rental net revenue', 'net_rental_revenue'], 'sales' => ['Retail net sales', 'net_sales'],
+                'payments' => ['Payment collected', 'collected'], 'deposits' => ['Deposit held balance', 'held_balance'],
+                'charges' => ['Additional charges outstanding', 'outstanding'], 'operations' => ['Overdue rentals', 'overdue'],
+                'inventory' => ['Available sale stock', 'available_sale_stock'],
+            ];
+            foreach ($labels as $group => [$label, $metric]) {
+                if (isset($metrics[$group][$metric])) {
+                    yield [$label, $metrics[$group][$metric]];
+                }
+            }
 
             return;
         }
 
-        $report = $this->report($key, $f);
-
+        $report = $this->report($key, $f, true);
         foreach ($report['table'] as $row) {
             yield array_values($row);
         }
+    }
+
+    /** @return array<int, object> */
+    private function guardedRows(Builder $query): array
+    {
+        $count = (clone $query)->count();
+        abort_if($count > self::EXPORT_ROW_LIMIT, 422, 'Ekspor dibatasi '.self::EXPORT_ROW_LIMIT.' baris. Persempit filter tanggal atau filter laporan.');
+
+        return $query->get()->all();
+    }
+
+    /** @return array<int, array<string,mixed>> */
+    private function paymentTable(Builder $query, string $type, bool $export): array
+    {
+        $rows = $export ? $this->guardedRows(clone $query) : $query->limit(300)->get()->all();
+
+        return array_map(fn ($payment) => [
+            'type' => $type, 'reference' => $payment->order?->order_code, 'customer' => $payment->order?->customer?->name,
+            'method' => $payment->method->value, 'status' => $payment->status->value, 'amount' => (int) $payment->amount,
+            'created_at' => $payment->created_at?->toDateTimeString(), 'settled_at' => $payment->settled_at?->toDateTimeString(),
+        ], $rows);
     }
 }

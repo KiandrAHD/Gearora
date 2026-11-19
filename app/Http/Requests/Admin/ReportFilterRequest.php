@@ -31,10 +31,28 @@ class ReportFilterRequest extends FormRequest
             'start_date' => ['required', 'date_format:Y-m-d'],
             'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
             'status' => ['nullable', 'string', 'max:32'],
+            'transaction_type' => ['nullable', 'string', 'max:32'],
             'type' => ['nullable', 'string', Rule::in(['rental', 'sales', 'all'])],
             'method' => ['nullable', 'string', Rule::in(PaymentMethod::values())],
             'product_id' => ['nullable', 'integer', 'exists:products,id'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+        ];
+    }
+
+    /**
+     * Opsi filter yang lolos validasi, dipakai seragam oleh layar dan ekspor.
+     *
+     * @return array<string, mixed>
+     */
+    public function options(): array
+    {
+        return [
+            'status' => $this->validated('status'),
+            'type' => $this->validated('type'),
+            'method' => $this->validated('method'),
+            'product_id' => $this->validated('product_id'),
+            'category_id' => $this->validated('category_id'),
+            'transaction_type' => $this->validated('transaction_type'),
         ];
     }
 
