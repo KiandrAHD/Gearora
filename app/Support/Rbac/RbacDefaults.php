@@ -81,6 +81,7 @@ final class RbacDefaults
                     PermissionName::ReportsSalesView->value,
                     PermissionName::ReportsInventoryView->value,
                     PermissionName::ReportsRentalOperationsView->value,
+                    PermissionName::ReportsChargesView->value,
                     PermissionName::ReportsExport->value,
                     PermissionName::TripRecommendationsView->value,
                     PermissionName::TripRecommendationsCreate->value,

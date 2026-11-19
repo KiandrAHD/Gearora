@@ -63,6 +63,7 @@ enum PermissionName: string
     case ReportsSalesView = 'reports.sales.view';
     case ReportsInventoryView = 'reports.inventory.view';
     case ReportsRentalOperationsView = 'reports.rental_operations.view';
+    case ReportsChargesView = 'reports.charges.view';
     case ReportsExport = 'reports.export';
 
     case TripRecommendationsView = 'trip_recommendations.view';
@@ -138,6 +139,7 @@ enum PermissionName: string
             self::ReportsSalesView => 'Melihat laporan penjualan',
             self::ReportsInventoryView => 'Melihat laporan inventaris',
             self::ReportsRentalOperationsView => 'Melihat laporan operasional rental',
+            self::ReportsChargesView => 'Melihat laporan biaya tambahan',
             self::ReportsExport => 'Ekspor laporan',
             self::TripRecommendationsView => 'Melihat aturan rekomendasi trip',
             self::TripRecommendationsCreate => 'Membuat aturan rekomendasi trip',
