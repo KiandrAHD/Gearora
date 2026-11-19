@@ -9,6 +9,7 @@ use App\Models\SalesOrder;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class CsvReportExportTest extends TestCase
@@ -85,6 +86,52 @@ class CsvReportExportTest extends TestCase
         $this->actingAs($customer)
             ->get(route('admin.reports.export', ['report' => 'sales']))
             ->assertForbidden();
+    }
+
+    public function test_csv_export_includes_all_filtered_rows_beyond_page_limit(): void
+    {
+        $customer = User::factory()->create();
+        $customer->assignRole(RoleName::Customer);
+        $now = now();
+        $rows = [];
+
+        for ($i = 0; $i < 520; $i++) {
+            $rows[] = [
+                'order_code' => 'CSVBULK-'.$i,
+                'customer_id' => $customer->id,
+                'subtotal' => 50000,
+                'discount_total' => 0,
+                'total' => 50000,
+                'payment_status' => PaymentStatus::Verified->value,
+                'order_status' => SalesOrderStatus::Confirmed->value,
+                'confirmed_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        DB::table('sales_orders')->insert($rows);
+
+        $content = $this->actingAs($this->staff(RoleName::Owner))
+            ->get(route('admin.reports.export', ['report' => 'sales']))
+            ->streamedContent();
+
+        $this->assertSame(520, substr_count($content, 'CSVBULK-'));
+    }
+
+    public function test_csv_export_name_includes_report_and_period(): void
+    {
+        $this->confirmedOrder();
+
+        $disposition = (string) $this->actingAs($this->staff(RoleName::Owner))
+            ->get(route('admin.reports.export', [
+                'report' => 'sales',
+                'start_date' => '2026-11-01',
+                'end_date' => '2026-11-30',
+            ]))
+            ->headers->get('content-disposition');
+
+        $this->assertStringContainsString('gearora-sales-2026-11-01_2026-11-30.csv', $disposition);
     }
 
     private function confirmedOrder(string $customerName = 'Pelanggan CSV'): SalesOrder
