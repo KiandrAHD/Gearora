@@ -179,7 +179,9 @@ Route::prefix('admin')->as('admin.')->group(function (): void {
         Route::get('/sales/payments/{payment}/proof', [AdminSalesOrderController::class, 'proof'])->name('sales.payments.proof');
 
         Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
-        Route::get('/reports/{report}/export', [AdminReportController::class, 'export'])->name('reports.export');
+        Route::get('/reports/{report}/export/{format?}', [AdminReportController::class, 'export'])
+            ->where('format', 'csv|pdf|xlsx')
+            ->name('reports.export');
 
         Route::get('/activity', [AdminActivityLogController::class, 'index'])->name('activity.index');
     });

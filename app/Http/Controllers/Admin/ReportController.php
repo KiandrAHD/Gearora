@@ -2,12 +2,22 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AdditionalChargeStatus;
+use App\Enums\DepositStatus;
 use App\Enums\PaymentMethod;
-use App\Enums\PermissionName;
+use App\Enums\PaymentStatus;
+use App\Enums\RentalOrderStatus;
+use App\Enums\SalesOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ReportFilterRequest;
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\User;
+use App\Services\ReportExportService;
 use App\Services\ReportService;
 use App\Support\CsvExporter;
+use App\Support\Navigation\AdminNavigation;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -16,80 +26,184 @@ class ReportController extends Controller
     /** @var array<int, string> */
     private const TYPES = ['summary', 'rental', 'sales', 'payments', 'deposits', 'charges', 'inventory', 'operations'];
 
-    public function __construct(private readonly ReportService $reports) {}
+    /** @var array<int, string> */
+    private const FORMATS = ['csv', 'pdf', 'xlsx'];
+
+    public function __construct(
+        private readonly ReportService $reports,
+        private readonly ReportExportService $exports,
+    ) {}
 
     public function index(ReportFilterRequest $request): View
     {
-        $this->authorizeView();
+        $user = $request->user();
+        $key = $this->resolveType((string) $request->query('report', 'summary'));
 
-        $filters = $this->reports->filters($request->start(), $request->end(), [
-            'status' => $request->validated('status'),
-            'type' => $request->validated('type'),
-            'method' => $request->validated('method'),
-            'product_id' => $request->validated('product_id'),
-            'category_id' => $request->validated('category_id'),
-        ]);
+        $this->authorizeReportView($user, $key);
 
-        $key = (string) ($request->query('report') ?: 'summary');
+        $filters = $this->reports->filters($request->start(), $request->end(), $request->options());
+        $allowedTypes = $this->allowedTypes($user);
+        $allowedGroups = $this->allowedGroups($user);
 
-        if (! in_array($key, self::TYPES, true)) {
-            $key = 'summary';
-        }
+        $current = $key === 'summary'
+            ? ['metrics' => $this->reports->dashboard($filters, $allowedGroups), 'table' => []]
+            : $this->reports->report($key, $filters);
 
         return view('admin.reports.index', [
             'filters' => $filters,
             'active' => $key,
-            'types' => self::TYPES,
-            'dashboard' => $this->reports->dashboard($filters),
-            'current' => $this->reports->report($key, $filters),
+            'types' => $allowedTypes,
+            'typeLabels' => $this->typeLabels(),
+            'dashboard' => $this->reports->dashboard($filters, $allowedGroups),
+            'current' => $current,
             'methods' => PaymentMethod::cases(),
+            'statuses' => $this->statusesFor($key),
+            'transactionTypes' => $this->transactionTypes(),
+            'products' => $key === 'inventory' ? Product::query()->orderBy('name')->get(['id', 'name']) : collect(),
+            'categories' => $key === 'inventory' ? Category::query()->orderBy('name')->get(['id', 'name']) : collect(),
+            'canExport' => $this->canExport($user),
         ]);
     }
 
-    public function export(ReportFilterRequest $request, string $report): StreamedResponse
+    public function export(ReportFilterRequest $request, string $report, string $format = 'csv'): Response|StreamedResponse
     {
-        $this->authorizeExport();
+        $user = $request->user();
+        $key = $report;
+        $format = strtolower($format);
 
-        if (! in_array($report, self::TYPES, true)) {
-            abort(404);
+        abort_unless(in_array($key, self::TYPES, true), 404);
+        abort_unless(in_array($format, self::FORMATS, true), 404);
+
+        $this->authorizeReportView($user, $key);
+        $this->authorizeExport($user);
+
+        $filters = $this->reports->filters($request->start(), $request->end(), $request->options());
+
+        if ($format === 'csv') {
+            $filename = "gearora-{$key}-{$filters['start_date']}_{$filters['end_date']}.csv";
+
+            return CsvExporter::stream($filename, $this->reports->csvHeaders($key), $this->reports->csvRows($key, $filters, $this->allowedGroups($user)));
         }
 
-        $filters = $this->reports->filters($request->start(), $request->end(), [
-            'status' => $request->validated('status'),
-            'type' => $request->validated('type'),
-            'method' => $request->validated('method'),
-            'product_id' => $request->validated('product_id'),
-            'category_id' => $request->validated('category_id'),
-        ]);
+        $reportData = $key === 'summary'
+            ? ['metrics' => $this->reports->dashboard($filters, $this->allowedGroups($user)), 'table' => []]
+            : $this->reports->report($key, $filters, true);
 
-        $filename = 'gearora-'.$report.'-'.$filters['start_date'].'_'.$filters['end_date'].'.csv';
+        if ($format === 'pdf') {
+            return $this->exports->pdf($key, $filters, $reportData, (string) $user?->name);
+        }
 
-        return CsvExporter::stream(
-            $filename,
-            $this->reports->csvHeaders($report),
-            $this->reports->csvRows($report, $filters),
-        );
+        return $this->exports->xlsx($key, $filters, $reportData);
     }
 
-    private function authorizeView(): void
+    private function resolveType(string $key): string
     {
-        $user = request()->user();
-
-        abort_unless(
-            $user !== null && ($user->isOwner()
-                || $user->hasPermission(PermissionName::ReportsRentalsView->value)
-                || $user->hasPermission(PermissionName::ReportsSalesView->value)),
-            403,
-        );
+        return in_array($key, self::TYPES, true) ? $key : 'summary';
     }
 
-    private function authorizeExport(): void
+    private function permissionFor(string $key): ?string
     {
-        $user = request()->user();
+        return AdminNavigation::reportPermissionsByName()[$key] ?? null;
+    }
 
-        abort_unless(
-            $user !== null && ($user->isOwner() || $user->hasPermission(PermissionName::ReportsExport->value)),
-            403,
-        );
+    private function authorizeReportView(?User $user, string $key): void
+    {
+        if ($user === null) {
+            abort(403);
+        }
+
+        if ($user->isOwner()) {
+            return;
+        }
+
+        if ($key === 'summary') {
+            abort_unless($user->hasAnyPermission(AdminNavigation::reportPermissions()), 403);
+
+            return;
+        }
+
+        $permission = $this->permissionFor($key);
+        abort_unless($permission !== null && $user->hasPermission($permission), 403);
+    }
+
+    private function authorizeExport(?User $user): void
+    {
+        abort_unless($user !== null && ($user->isOwner() || $user->hasPermission('reports.export')), 403);
+    }
+
+    private function canExport(?User $user): bool
+    {
+        return $user !== null && ($user->isOwner() || $user->hasPermission('reports.export'));
+    }
+
+    /** @return array<int, string> */
+    private function allowedTypes(?User $user): array
+    {
+        if ($user === null) {
+            return [];
+        }
+
+        return array_values(array_filter(self::TYPES, function (string $type) use ($user): bool {
+            if ($user->isOwner()) {
+                return true;
+            }
+
+            if ($type === 'summary') {
+                return $user->hasAnyPermission(AdminNavigation::reportPermissions());
+            }
+
+            $permission = $this->permissionFor($type);
+
+            return $permission !== null && $user->hasPermission($permission);
+        }));
+    }
+
+    /** @return array<int, string> */
+    private function allowedGroups(?User $user): array
+    {
+        if ($user === null) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            ['rental', 'sales', 'payments', 'deposits', 'charges', 'inventory', 'operations'],
+            fn (string $group) => $user->isOwner() || $user->hasPermission($this->permissionFor($group) ?? ''),
+        ));
+    }
+
+    /** @return array<string, string> */
+    private function typeLabels(): array
+    {
+        return [
+            'summary' => 'Ringkasan', 'rental' => 'Rental', 'sales' => 'Retail', 'payments' => 'Pembayaran',
+            'deposits' => 'Deposit', 'charges' => 'Biaya Tambahan', 'inventory' => 'Inventaris', 'operations' => 'Operasional',
+        ];
+    }
+
+    /** @return array<string, string> */
+    private function statusesFor(string $key): array
+    {
+        $options = fn (array $cases) => collect($cases)->mapWithKeys(fn ($case) => [$case->value => $case->label()])->all();
+
+        return match ($key) {
+            'rental', 'operations' => $options(RentalOrderStatus::cases()),
+            'sales' => $options(SalesOrderStatus::cases()),
+            'payments' => $options(PaymentStatus::cases()),
+            'deposits' => $options(DepositStatus::cases()),
+            'charges' => $options(AdditionalChargeStatus::cases()),
+            default => [],
+        };
+    }
+
+    /** @return array<int, string> */
+    private function transactionTypes(): array
+    {
+        return ['rental', 'sales'];
+    }
+
+    /** @return array<string, string> */
+    private function transactionTypeOptions(): array
+    {
+        return ['rental' => 'Rental', 'sales' => 'Penjualan retail'];
     }
 }
