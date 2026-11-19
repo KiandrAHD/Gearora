@@ -1,29 +1,20 @@
 @props(['title' => 'Dashboard', 'subtitle' => null])
 @php
+    use App\Support\Navigation\AdminNavigation;
+    use App\Support\Navigation\PendingIndicators;
+
     $user = auth()->user();
-    $can = fn (string $permission) => $user !== null && ($user->isOwner() || $user->hasPermission($permission));
-    $adminNav = array_values(array_filter([
-        $can('dashboard.view') ? ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'match' => 'admin.dashboard'] : null,
-        $can('categories.view') ? ['label' => 'Kategori', 'route' => 'admin.categories.index', 'match' => 'admin.categories.*'] : null,
-        $can('products.view') ? ['label' => 'Produk & varian', 'route' => 'admin.products.index', 'match' => 'admin.products.*'] : null,
-        $can('inventory.view') ? ['label' => 'Inventaris', 'route' => 'admin.inventory.index', 'match' => 'admin.inventory.*'] : null,
-        $can('rentals.view') ? ['label' => 'Pesanan rental', 'route' => 'admin.rentals.index', 'match' => 'admin.rentals.*'] : null,
-        $can('sales.view') ? ['label' => 'Penjualan retail', 'route' => 'admin.sales.index', 'match' => 'admin.sales.*'] : null,
-        $can('rentals.handover') ? ['label' => 'Pickup', 'route' => 'admin.operations.pickups', 'match' => 'admin.operations.pickups*'] : null,
-        $can('rentals.return') ? ['label' => 'Pengembalian', 'route' => 'admin.operations.returns', 'match' => 'admin.operations.returns*'] : null,
-        $can('inspections.view') ? ['label' => 'Inspeksi', 'route' => 'admin.operations.inspections', 'match' => 'admin.operations.inspections*'] : null,
-        $can('rentals.view') ? ['label' => 'Overdue', 'route' => 'admin.operations.overdue', 'match' => 'admin.operations.overdue*'] : null,
-        $can('payments.view') ? ['label' => 'Pembayaran', 'route' => 'admin.payments.index', 'match' => 'admin.payments.*'] : null,
-        $can('payments.refund') ? ['label' => 'Refund', 'route' => 'admin.refunds.index', 'match' => 'admin.refunds.*'] : null,
-        $can('deposits.view') ? ['label' => 'Deposit', 'route' => 'admin.deposits.index', 'match' => 'admin.deposits.*'] : null,
-        $can('charges.view') ? ['label' => 'Biaya tambahan', 'route' => 'admin.charges.index', 'match' => 'admin.charges.*'] : null,
-        $can('customers.view') ? ['label' => 'Pelanggan', 'route' => 'admin.customers.index', 'match' => 'admin.customers.*'] : null,
-        $can('guides.view') ? ['label' => 'Panduan', 'route' => 'admin.guides.index', 'match' => 'admin.guides.*'] : null,
-        $can('guide_categories.manage') ? ['label' => 'Kategori panduan', 'route' => 'admin.guide-categories.index', 'match' => 'admin.guide-categories.*'] : null,
-        $can('trip_recommendations.view') ? ['label' => 'Aturan trip', 'route' => 'admin.trip-recommendations.index', 'match' => 'admin.trip-recommendations.*'] : null,
-        ($can('reports.rentals.view') || $can('reports.sales.view')) ? ['label' => 'Laporan', 'route' => 'admin.reports.index', 'match' => 'admin.reports.*'] : null,
-        $can('dashboard.view') ? ['label' => 'Log aktivitas', 'route' => 'admin.activity.index', 'match' => 'admin.activity.*'] : null,
-    ]));
+    $navGroups = AdminNavigation::forUser($user);
+    $pendingBadges = PendingIndicators::forUser($user);
+    $activeGroups = [];
+
+    foreach ($navGroups as $group) {
+        if (! empty($group['standalone'])) {
+            continue;
+        }
+
+        $activeGroups[$group['id']] = AdminNavigation::isGroupActive($group);
+    }
 @endphp
 <!doctype html>
 <html lang="id">
@@ -38,18 +29,54 @@
     <title>{{ $title }} — Admin GEARORA</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="admin-body" x-data="{ sidebarOpen: false }">
+<body class="admin-body"
+      x-data="{ sidebarOpen: false, openGroups: @js($activeGroups), openSidebar() { this.sidebarOpen = true; this.$nextTick(() => this.$refs.sidebarClose?.focus()); }, closeSidebar() { this.sidebarOpen = false; this.$nextTick(() => this.$refs.sidebarToggle?.focus()); } }"
+      x-effect="document.body.classList.toggle('nav-open', sidebarOpen)"
+      @keydown.escape.window="sidebarOpen = false">
     <a href="#admin-content" class="skip-link">Lewati ke konten utama</a>
     <div class="admin-shell">
         <div class="admin-overlay" x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" aria-hidden="true"></div>
-        <aside class="admin-sidebar" :class="sidebarOpen ? 'open' : ''" aria-label="Navigasi admin">
+        <aside id="admin-sidebar" class="admin-sidebar" :class="sidebarOpen ? 'open' : ''" aria-label="Navigasi admin" x-ref="sidebar">
             <div class="admin-brand">
                 <a href="{{ route('admin.dashboard') }}" class="brand brand-light"><img src="{{ asset('images/gearora-logo.png') }}" width="34" height="34" alt=""><span class="brand-copy"><strong>GEARORA</strong><small>ADMIN CONSOLE</small></span></a>
-                <button type="button" class="admin-close" @click="sidebarOpen = false" aria-label="Tutup menu admin">×</button>
+                <button type="button" class="admin-close" x-ref="sidebarClose" @click="closeSidebar()" aria-label="Tutup menu admin">×</button>
             </div>
-            <nav class="admin-nav">
-                @foreach($adminNav as $item)
-                    <a href="{{ route($item['route']) }}" @if(request()->routeIs($item['match'])) aria-current="page" @endif>{{ $item['label'] }}</a>
+            <nav class="admin-nav" aria-label="Menu utama">
+                @foreach($navGroups as $group)
+                    @if(! empty($group['standalone']))
+                        <a class="admin-nav-standalone" href="{{ route($group['route']) }}" @if(AdminNavigation::isActive($group)) aria-current="page" @endif>
+                            <x-admin.nav-icon :name="$group['icon']" />
+                            <span>{{ $group['label'] }}</span>
+                        </a>
+                        @continue
+                    @endif
+                    @php
+                        $groupId = $group['id'];
+                        $panelId = 'admin-nav-'.$groupId;
+                    @endphp
+                    <div class="admin-nav-group" :class="openGroups['{{ $groupId }}'] ? 'is-open' : ''">
+                        <button type="button"
+                                class="admin-nav-group-toggle"
+                                @click="openGroups['{{ $groupId }}'] = !openGroups['{{ $groupId }}']"
+                                :aria-expanded="openGroups['{{ $groupId }}'].toString()"
+                                aria-controls="{{ $panelId }}"
+                                @if(AdminNavigation::isGroupActive($group)) data-group-active="true" @endif>
+                            <x-admin.nav-icon :name="$group['icon']" />
+                            <span class="admin-nav-label">{{ $group['label'] }}</span>
+                            <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        <div id="{{ $panelId }}" class="admin-nav-sub" x-show="openGroups['{{ $groupId }}']" x-cloak>
+                            @foreach($group['children'] as $child)
+                                <a href="{{ route($child['route'], array_filter(['report' => $child['report'] ?? null])) }}"
+                                   @if(AdminNavigation::isActive($child)) aria-current="page" @endif>
+                                    <span>{{ $child['label'] }}</span>
+                                    @if(! empty($child['badge']) && ($pendingBadges[$child['badge']] ?? 0) > 0)
+                                        <span class="admin-nav-badge" aria-label="{{ $pendingBadges[$child['badge']] }} item menunggu">{{ $pendingBadges[$child['badge']] }}</span>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
                 @endforeach
             </nav>
             <div class="admin-foot">
@@ -59,11 +86,11 @@
         </aside>
         <div class="admin-main">
             <header class="admin-header">
-                <button type="button" class="admin-toggle" @click="sidebarOpen = true" aria-label="Buka menu admin" aria-controls="admin-sidebar" :aria-expanded="sidebarOpen.toString()">☰</button>
+                <button type="button" class="admin-toggle" x-ref="sidebarToggle" @click="openSidebar()" aria-label="Buka menu admin" aria-controls="admin-sidebar" :aria-expanded="sidebarOpen.toString()">☰</button>
                 <div><p class="admin-kicker">Admin Console</p><h1>{{ $title }}</h1></div>
                 <a class="text-link" href="{{ route('home') }}">Lihat situs publik</a>
             </header>
-            <main id="admin-content" class="admin-content">
+            <main id="admin-content" class="admin-content" tabindex="-1">
                 @if(session('status'))<div class="notice" role="status">{{ session('status') }}</div>@endif
                 @if(session('error'))<div class="notice notice-warning" role="alert">{{ session('error') }}</div>@endif
                 @if($subtitle)<p class="page-lead">{{ $subtitle }}</p>@endif
