@@ -177,6 +177,7 @@ Route::prefix('admin')->as('admin.')->group(function (): void {
             ->parameters(['trip-recommendations' => 'tripRecommendation']);
 
         Route::resource('guide-categories', AdminGuideCategoryController::class)->except('show');
+        Route::post('/guides/preview', [AdminGuideController::class, 'preview'])->name('guides.preview');
         Route::resource('guides', AdminGuideController::class)->except('show');
         Route::post('/guides/{guide}/publish', [AdminGuideController::class, 'publish'])->name('guides.publish');
         Route::post('/guides/{guide}/unpublish', [AdminGuideController::class, 'unpublish'])->name('guides.unpublish');

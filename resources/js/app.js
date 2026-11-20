@@ -219,6 +219,96 @@ Alpine.data('tripWizard', (config = {}) => ({
     },
 }));
 
+// Guide Studio preview uses server-rendered safe Markdown; client inserts returned
+// HTML from the trusted same-origin endpoint only.
+Alpine.data('guideEditor', (config = {}) => ({
+    previewUrl: config.previewUrl,
+    content: config.initial || '',
+    html: '<p class="field-hint">Ketik konten untuk melihat pratinjau.</p>',
+    minutes: 1,
+    loading: false,
+    requestId: 0,
+
+    init() {
+        this.loadPreview();
+    },
+
+    wrap(before, after, placeholder) {
+        const input = this.$refs.content;
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const selected = this.content.slice(start, end) || placeholder;
+
+        this.content = this.content.slice(0, start) + before + selected + after + this.content.slice(end);
+        this.$nextTick(() => {
+            input.focus();
+            input.setSelectionRange(start + before.length, start + before.length + selected.length);
+            this.loadPreview();
+        });
+    },
+
+    prefix(marker, placeholder) {
+        const input = this.$refs.content;
+        const start = input.selectionStart;
+        const lineStart = this.content.lastIndexOf('\\n', Math.max(0, start - 1)) + 1;
+        const selected = this.content.slice(lineStart, input.selectionEnd) || placeholder;
+
+        this.content = this.content.slice(0, lineStart) + marker + selected + this.content.slice(input.selectionEnd);
+        this.$nextTick(() => {
+            input.focus();
+            this.loadPreview();
+        });
+    },
+
+    insert(text) {
+        const input = this.$refs.content;
+        const start = input.selectionStart;
+        this.content = this.content.slice(0, start) + text + this.content.slice(input.selectionEnd);
+        this.$nextTick(() => {
+            input.focus();
+            input.setSelectionRange(start + text.length, start + text.length);
+            this.loadPreview();
+        });
+    },
+
+    async loadPreview() {
+        const current = ++this.requestId;
+        this.loading = true;
+
+        try {
+            const response = await fetch(this.previewUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+                body: JSON.stringify({ content: this.content }),
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) {
+                throw new Error('Pratinjau gagal dimuat.');
+            }
+
+            const data = await response.json();
+
+            if (current === this.requestId) {
+                this.html = data.html;
+                this.minutes = data.minutes;
+            }
+        } catch (error) {
+            if (current === this.requestId) {
+                this.html = `<p class="field-hint">${String(error.message || 'Pratinjau tidak tersedia.')}</p>`;
+            }
+        } finally {
+            if (current === this.requestId) {
+                this.loading = false;
+            }
+        }
+    },
+}));
+
 window.Alpine = Alpine;
 
 Alpine.start();

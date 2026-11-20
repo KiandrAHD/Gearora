@@ -8,9 +8,22 @@ namespace App\Support;
  * Seluruh HTML di-escape terlebih dahulu, lalu hanya sintaks terbatas yang
  * diubah menjadi markup. Dengan demikian konten yang diketik Admin tidak dapat
  * menyuntikkan script/HTML berbahaya (stored XSS).
+ *
+ * Sintaks didukung: `#`/`##`/`###`, daftar `-`/`1.`, blockquote `>`, pemisah
+ * `---`, **tebal**, *miring*, `kode`, [tautan](url), gambar inline lokal
+ * `![alt](path)`, dan embed aman `@youtube[VIDEO_ID]`.
+ *
+ * Keamanan:
+ * - Tidak ada HTML mentah/iframe arbitrer; hanya iframe YouTube yang dibentuk
+ *   dari ID tervalidasi ke `https://www.youtube-nocookie.com/embed/{id}`.
+ * - Gambar inline hanya untuk aset lokal (`/media/...` atau path relatif aplikasi),
+ *   bukan hotlink eksternal.
+ * - Tautan hanya skema `http(s)`, `mailto:`, atau path internal.
  */
 final class GuideContentRenderer
 {
+    private const YOUTUBE_ID = '[A-Za-z0-9_-]{11}';
+
     public static function render(?string $content): string
     {
         $content = trim((string) $content);
@@ -32,7 +45,11 @@ final class GuideContentRenderer
                 continue;
             }
 
-            $lines = explode("\n", $block);
+            if (preg_match('~^(?:-{3,}|\*{3,}|_{3,})$~', $block) === 1) {
+                $html[] = '<hr>';
+
+                continue;
+            }
 
             if (preg_match('~^###[ \t]+(.+)$~', $block, $matches) === 1) {
                 $html[] = '<h4>'.self::inline($matches[1]).'</h4>';
@@ -48,6 +65,18 @@ final class GuideContentRenderer
 
             if (preg_match('~^#[ \t]+(.+)$~', $block, $matches) === 1) {
                 $html[] = '<h2>'.self::inline($matches[1]).'</h2>';
+
+                continue;
+            }
+
+            $lines = explode("\n", $block);
+
+            if (self::isList($lines, '~^&gt;[ \t]?~')) {
+                $items = array_map(
+                    fn (string $line) => self::inline(preg_replace('~^&gt;[ \t]?~', '', $line, 1) ?? $line),
+                    $lines,
+                );
+                $html[] = '<blockquote><p>'.implode('<br>', $items).'</p></blockquote>';
 
                 continue;
             }
@@ -103,9 +132,74 @@ final class GuideContentRenderer
     {
         // Teks sudah di-escape; hanya penanda aman yang diubah.
         $text = preg_replace('~[*]{2}(.+?)[*]{2}~s', '<strong>$1</strong>', $text) ?? $text;
+
+        // Gambar inline: hanya aset lokal, bukan hotlink eksternal.
+        $text = preg_replace_callback(
+            '~!\[([^\]]*)\]\(([^)\s]+)\)~',
+            static function (array $matches): string {
+                if (! self::isLocalMedia($matches[2])) {
+                    return $matches[1];
+                }
+
+                return '<img src="'.$matches[2].'" alt="'.$matches[1].'" loading="lazy" decoding="async">';
+            },
+            $text,
+        ) ?? $text;
+
+        // Embed YouTube aman (nocookie, ID tervalidasi).
+        $text = preg_replace_callback(
+            '~@youtube\['.self::YOUTUBE_ID.'\]~',
+            static function (array $matches): string {
+                if (preg_match('~^@youtube\[('.self::YOUTUBE_ID.')\]$~', $matches[0], $id) !== 1) {
+                    return '';
+                }
+
+                return '<span class="guide-embed"><iframe src="https://www.youtube-nocookie.com/embed/'.$id[1]
+                    .'" title="Video panduan" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></span>';
+            },
+            $text,
+        ) ?? $text;
+
+        // Tautan aman.
+        $text = preg_replace_callback(
+            '~\[([^\]]+)\]\(([^)\s]+)\)~',
+            static function (array $matches): string {
+                if (! self::isSafeUrl($matches[2])) {
+                    return $matches[1];
+                }
+
+                $external = ! str_starts_with($matches[2], '/') && ! str_starts_with($matches[2], 'mailto:');
+
+                return '<a href="'.$matches[2].'"'
+                    .($external ? ' target="_blank" rel="noopener noreferrer nofollow"' : '')
+                    .'>'.$matches[1].'</a>';
+            },
+            $text,
+        ) ?? $text;
+
+        $text = preg_replace('~[*]([^*\n]+)[*]~', '<em>$1</em>', $text) ?? $text;
         $text = preg_replace('~`(.+?)`~s', '<code>$1</code>', $text) ?? $text;
 
         return $text;
+    }
+
+    /** Path media internal aplikasi (bukan URL absolut eksternal). */
+    private static function isLocalMedia(string $url): bool
+    {
+        if (preg_match('~^[a-z][a-z0-9+.-]*:~i', $url) === 1 || str_starts_with($url, '//')) {
+            return false;
+        }
+
+        return str_starts_with($url, '/media/') || str_starts_with($url, 'media/');
+    }
+
+    private static function isSafeUrl(string $url): bool
+    {
+        if (str_starts_with($url, '/')) {
+            return true;
+        }
+
+        return preg_match('~^(?:https?://|mailto:)~i', $url) === 1;
     }
 
     /** Teks polos untuk meta description / ringkasan. */
@@ -114,5 +208,14 @@ final class GuideContentRenderer
         $text = trim(preg_replace("/[ \t\n\r]+/", ' ', strip_tags((string) $content)) ?? '');
 
         return mb_strlen($text) > $limit ? mb_substr($text, 0, $limit - 1).'...' : $text;
+    }
+
+    /** Estimasi waktu baca dalam menit (>= 1). */
+    public static function readingMinutes(?string $content, int $wordsPerMinute = 200): int
+    {
+        $text = trim(preg_replace("/\s+/", ' ', strip_tags((string) $content)) ?? '');
+        $words = $text === '' ? 0 : count(preg_split('/\s+/', $text) ?: []);
+
+        return max(1, (int) ceil($words / max(1, $wordsPerMinute)));
     }
 }

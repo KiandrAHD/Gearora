@@ -1,15 +1,24 @@
-<x-layout :title="$guide->seo_title ?: $guide->title">
-    <article class="page-block">
-        <div class="page-container prose-container">
+<x-layout :title="$guide->seo_title ?: $guide->title" :description="$guide->seo_description ?: ($guide->excerpt ?: \App\Support\GuideContentRenderer::plain($guide->content))">
+    <section class="guide-hero guide-hero-detail">
+        <div class="page-container guide-hero-inner">
             <p class="eyebrow">{{ $guide->category?->name ?? 'Panduan' }}</p>
             <h1 class="page-title">{{ $guide->title }}</h1>
             <p class="field-hint">
                 @if($guide->author) Oleh {{ $guide->author->name }} · @endif
-                @if($guide->published_at) {{ $guide->published_at->translatedFormat('d F Y') }} @endif
+                @if($guide->published_at) {{ $guide->published_at->translatedFormat('d F Y') }} · @endif
+                {{ $guide->readingMinutes() }} menit baca
             </p>
+        </div>
+    </section>
 
+    <article class="page-block">
+        <div class="page-container prose-container">
             @if($guide->cover_image_path)
-                <img class="guide-cover" src="{{ media_url($guide->cover_image_path) }}" alt="">
+                <img class="guide-cover" src="{{ media_url($guide->cover_image_path) }}" alt="" width="960" height="540">
+            @endif
+
+            @if($guide->excerpt)
+                <p class="guide-lede">{{ $guide->excerpt }}</p>
             @endif
 
             <div class="guide-content">
@@ -37,9 +46,15 @@
             @if($related->isNotEmpty())
                 <section class="guide-related">
                     <h2>Panduan terkait</h2>
-                    <div class="card-grid">
+                    <div class="guide-grid">
                         @foreach($related as $item)
-                            <article class="info-card"><h3><a class="text-link" href="{{ route('guides.show', $item) }}">{{ $item->title }}</a></h3></article>
+                            <article class="guide-card">
+                                <div class="guide-card-body">
+                                    <p class="product-category">{{ $item->category?->name ?? 'Panduan' }}</p>
+                                    <h3><a href="{{ route('guides.show', $item) }}">{{ $item->title }}</a></h3>
+                                    <p class="field-hint">{{ $item->readingMinutes() }} menit baca</p>
+                                </div>
+                            </article>
                         @endforeach
                     </div>
                 </section>

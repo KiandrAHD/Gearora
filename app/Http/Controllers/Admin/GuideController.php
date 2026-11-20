@@ -8,6 +8,8 @@ use App\Http\Requests\Admin\GuideRequest;
 use App\Models\EquipmentGuide;
 use App\Models\GuideCategory;
 use App\Services\GuideService;
+use App\Support\GuideContentRenderer;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -108,6 +110,22 @@ class GuideController extends Controller
         $this->guides->archive($guide, $request->user());
 
         return back()->with('status', 'Panduan diarsipkan.');
+    }
+
+    public function preview(Request $request): JsonResponse
+    {
+        $this->authorize('create', EquipmentGuide::class);
+
+        $validated = $request->validate([
+            'content' => ['nullable', 'string', 'max:'.(int) config('gearora.guides.max_content_kb', 200) * 1024],
+        ]);
+
+        $content = (string) ($validated['content'] ?? '');
+
+        return response()->json([
+            'html' => GuideContentRenderer::render($content),
+            'minutes' => GuideContentRenderer::readingMinutes($content),
+        ]);
     }
 
     public function destroy(Request $request, EquipmentGuide $guide): RedirectResponse

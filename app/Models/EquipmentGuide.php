@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\GuideStatus;
+use App\Support\GuideContentRenderer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,7 @@ class EquipmentGuide extends Model
         'content_format',
         'cover_image_path',
         'status',
+        'is_featured',
         'author_id',
         'publisher_id',
         'published_at',
@@ -33,6 +35,7 @@ class EquipmentGuide extends Model
     {
         return [
             'status' => GuideStatus::class,
+            'is_featured' => 'boolean',
             'published_at' => 'datetime',
         ];
     }
@@ -82,6 +85,14 @@ class EquipmentGuide extends Model
     /**
      * @param  Builder<EquipmentGuide>  $query
      */
+    public function scopeFeatured(Builder $query): void
+    {
+        $query->where('is_featured', true);
+    }
+
+    /**
+     * @param  Builder<EquipmentGuide>  $query
+     */
     public function scopeSearch(Builder $query, ?string $keyword): void
     {
         $keyword = trim((string) $keyword);
@@ -105,5 +116,10 @@ class EquipmentGuide extends Model
     public function displayCoverPath(): ?string
     {
         return $this->cover_image_path;
+    }
+
+    public function readingMinutes(): int
+    {
+        return GuideContentRenderer::readingMinutes($this->content);
     }
 }

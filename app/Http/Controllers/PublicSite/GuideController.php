@@ -23,8 +23,17 @@ class GuideController extends Controller
             ->paginate(9)
             ->withQueryString();
 
+        $featured = EquipmentGuide::query()
+            ->published()
+            ->featured()
+            ->with('category')
+            ->latest('published_at')
+            ->limit(3)
+            ->get();
+
         return view('guides.index', [
             'guides' => $guides,
+            'featured' => $featured,
             'categories' => GuideCategory::query()->active()->orderBy('sort_order')->get(),
             'keyword' => $request->string('q')->toString(),
             'activeCategory' => $request->string('kategori')->toString(),

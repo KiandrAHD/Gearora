@@ -29,6 +29,7 @@ class EquipmentGuideFactory extends Factory
             'content_format' => 'markdown',
             'cover_image_path' => null,
             'status' => GuideStatus::Draft,
+            'is_featured' => false,
             'author_id' => User::factory(),
             'publisher_id' => null,
             'published_at' => null,
@@ -48,5 +49,10 @@ class EquipmentGuideFactory extends Factory
     public function archived(): static
     {
         return $this->state(fn () => ['status' => GuideStatus::Archived]);
+    }
+
+    public function featured(): static
+    {
+        return $this->state(fn () => ['is_featured' => true]);
     }
 }

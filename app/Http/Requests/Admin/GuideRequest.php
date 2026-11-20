@@ -24,7 +24,10 @@ class GuideRequest extends FormRequest
             ? Str::slug((string) $this->slug)
             : ($existing?->slug ?? Str::slug((string) $this->title));
 
-        $this->merge(['slug' => $slug]);
+        $this->merge([
+            'slug' => $slug,
+            'is_featured' => $this->boolean('is_featured'),
+        ]);
     }
 
     /**
@@ -44,6 +47,7 @@ class GuideRequest extends FormRequest
             'content' => ['required', 'string', 'max:'.$maxContent],
             'cover' => ['nullable', 'image', 'mimetypes:'.$coverMimes, 'max:'.(int) config('gearora.guides.cover_max_kb', 4096)],
             'status' => ['required', 'string', Rule::in([GuideStatus::Draft->value, GuideStatus::Published->value])],
+            'is_featured' => ['nullable', 'boolean'],
             'seo_title' => ['nullable', 'string', 'max:200'],
             'seo_description' => ['nullable', 'string', 'max:320'],
             'sources' => ['nullable', 'array', 'max:20'],

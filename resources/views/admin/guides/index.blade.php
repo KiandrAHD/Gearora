@@ -21,7 +21,7 @@
             <tbody>
                 @forelse($guides as $guide)
                     <tr>
-                        <td>{{ $guide->title }}</td>
+                        <td>{{ $guide->title }} @if($guide->is_featured)<span class="status-badge status-warn">Unggulan</span>@endif</td>
                         <td>{{ $guide->category?->name }}</td>
                         <td><span class="status-badge status-{{ $guide->status->value === 'published' ? 'ok' : ($guide->status->value === 'archived' ? 'neutral' : 'warn') }}">{{ $guide->status->label() }}</span></td>
                         <td>{{ $guide->published_at?->translatedFormat('d M Y') }}</td>

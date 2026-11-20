@@ -1,10 +1,14 @@
 <x-layout title="Panduan">
-    <section class="page-block">
-        <div class="page-container">
+    <section class="guide-hero">
+        <div class="page-container guide-hero-inner">
             <p class="eyebrow">PANDUAN GEARORA</p>
             <h1 class="page-title">Panduan sebelum bertualang.</h1>
-            <p class="page-lead">Catatan praktis untuk memilih, menyiapkan, dan merawat perlengkapan outdoor-mu.</p>
+            <p class="page-lead">Catatan praktis untuk memilih, menyiapkan, dan merawat perlengkapan outdoor-mu — disusun ringkas oleh tim GEARORA.</p>
+        </div>
+    </section>
 
+    <section class="page-block">
+        <div class="page-container">
             <form method="GET" action="{{ route('guides.index') }}" class="filter-bar">
                 <input type="search" name="q" value="{{ $keyword }}" placeholder="Cari panduan..." aria-label="Cari panduan">
                 <select name="kategori" aria-label="Kategori">
@@ -16,22 +20,48 @@
                 <button class="button button-secondary" type="submit">Filter</button>
             </form>
 
-            <div class="card-grid">
+            @if($featured->isNotEmpty() && $keyword === '' && $activeCategory === '')
+                <section class="guide-featured" aria-label="Panduan unggulan">
+                    @foreach($featured as $index => $item)
+                        <article class="guide-featured-card {{ $index === 0 ? 'is-lead' : '' }}">
+                            @if($item->cover_image_path)
+                                <img class="guide-featured-cover" src="{{ media_url($item->cover_image_path) }}" alt="" loading="lazy" width="640" height="400">
+                            @endif
+                            <div class="guide-featured-body">
+                                <p class="product-category">{{ $item->category?->name ?? 'Panduan' }} · {{ $item->readingMinutes() }} menit baca</p>
+                                <h2><a href="{{ route('guides.show', $item) }}">{{ $item->title }}</a></h2>
+                                <p>{{ \Illuminate\Support\Str::limit($item->excerpt ?: \App\Support\GuideContentRenderer::plain($item->content), 180) }}</p>
+                            </div>
+                        </article>
+                    @endforeach
+                </section>
+            @endif
+
+            <div class="section-heading"><h2>Semua panduan</h2></div>
+
+            <div class="guide-grid">
                 @forelse($guides as $guide)
-                    <article class="info-card">
-                        @if($guide->cover_image_path)
-                            <img class="card-image" src="{{ media_url($guide->cover_image_path) }}" alt="" loading="lazy">
-                        @endif
-                        <p class="product-category">{{ $guide->category?->name ?? 'Panduan' }}</p>
-                        <h2><a class="text-link" href="{{ route('guides.show', $guide) }}">{{ $guide->title }}</a></h2>
-                        <p>{{ \Illuminate\Support\Str::limit($guide->excerpt ?: \App\Support\GuideContentRenderer::plain($guide->content), 160) }}</p>
+                    <article class="guide-card">
+                        <a class="guide-card-photo" href="{{ route('guides.show', $guide) }}" aria-label="Baca {{ $guide->title }}">
+                            @if($guide->cover_image_path)
+                                <img src="{{ media_url($guide->cover_image_path) }}" alt="" loading="lazy" decoding="async" width="400" height="260">
+                            @else
+                                <span class="guide-card-photo-fallback" aria-hidden="true">Panduan</span>
+                            @endif
+                        </a>
+                        <div class="guide-card-body">
+                            <p class="product-category">{{ $guide->category?->name ?? 'Panduan' }}</p>
+                            <h3><a href="{{ route('guides.show', $guide) }}">{{ $guide->title }}</a></h3>
+                            <p>{{ \Illuminate\Support\Str::limit($guide->excerpt ?: \App\Support\GuideContentRenderer::plain($guide->content), 140) }}</p>
+                            <p class="field-hint">{{ $guide->readingMinutes() }} menit baca @if($guide->published_at) · {{ $guide->published_at->translatedFormat('d M Y') }} @endif</p>
+                        </div>
                     </article>
                 @empty
                     <p class="field-hint">Belum ada panduan dipublikasikan.</p>
                 @endforelse
             </div>
 
-            {{ $guides->links() }}
+            <div class="pagination-wrap">{{ $guides->links() }}</div>
         </div>
     </section>
 </x-layout>

@@ -1,2 +1,2 @@
-@props(['title' => ''])
-<x-layouts.public :title="$title">{{ $slot }}</x-layouts.public>
+@props(['title' => '', 'description' => null])
+<x-layouts.public :title="$title" :description="$description">{{ $slot }}</x-layouts.public>

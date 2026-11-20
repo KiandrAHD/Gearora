@@ -143,6 +143,7 @@ class GuideService
             'seo_description',
         ]);
 
+        $attributes['is_featured'] = (bool) ($data['is_featured'] ?? false);
         $attributes['content_format'] = 'markdown';
 
         if (($data['cover'] ?? null) instanceof UploadedFile) {
