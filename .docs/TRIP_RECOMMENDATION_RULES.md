@@ -18,6 +18,7 @@ Dokumen ini adalah panduan operasional untuk menyusun aturan rekomendasi. Semua 
 | `min_duration_days` / `max_duration_days` | Rentang durasi | `max` kosong = tanpa batas |
 | `min_participants` / `max_participants` | Rentang peserta | `max` kosong = tanpa batas |
 | `required_special_needs` | Kebutuhan wajib | Semua nilai harus dipilih pelanggan |
+| `required_experience_levels` | Level pengalaman yang cocok (Phase 9) | JSON array `pemula`/`menengah`/`mahir`; kosong = semua level |
 | `product_category_id` | Target kategori | Paling fleksibel untuk katalog yang berubah |
 | `product_id` | Target produk | Untuk produk unggulan spesifik |
 | `product_variant_id` | Target varian | Paling spesifik (ukuran/tipe tertentu) |

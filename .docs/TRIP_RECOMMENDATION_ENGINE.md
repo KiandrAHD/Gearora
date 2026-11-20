@@ -18,6 +18,12 @@ Engine tidak:
 - menebak cuaca/kondisi jalur;
 - mengklaim ketersediaan tanpa tanggal sewa yang valid.
 
+## 1.1 Update Phase 9 — Level pengalaman dan paket
+
+Sejak Phase 9, engine juga memfilter berdasarkan `experience` (`pemula`, `menengah`, `mahir`) terhadap kolom `required_experience_levels` (JSON, nullable) pada `trip_recommendation_rules`. Array kosong/null berarti aturan cocok untuk semua level. Output setiap hasil kini membawa `supports_rental`, `supports_sale`, `rental_price`, dan `sale_price` agar wizard dapat menawarkan fulfillment `sewa`/`beli` tanpa harga hardcoded di Blade.
+
+Pemilihan gear dari hasil rekomendasi disimpan sementara di session (`trip_package_draft`) dan dihitung ulang server-side oleh `TripPackageCheckoutService` saat checkout. Detail transaksi: [ADR Paket Trip](./ADR_PHASE_9_TRIP_PACKAGE.md).
+
 Engine hanya membaca:
 
 - `trip_recommendation_rules` yang `is_active = true`;

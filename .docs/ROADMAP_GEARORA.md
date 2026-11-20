@@ -302,6 +302,28 @@ Laporan: `.docs/PHASE_8_COMPLETION_REPORT.md`. Rincian: [Baseline Audit](./PHASE
 
 Tidak ada blocker security atau data integrity; alur utama lulus test; file sensitif tidak publik; backup dapat diuji; aplikasi dapat digunakan pada environment target tanpa fitur yang memerlukan daemon.
 
+## 11.1 Phase 9 — Gearora Experience (UX + Transaksi)
+
+**Tujuan:** menyatukan pengalaman publik — navbar, katalog rental/retail, Trip Planner sampai pembayaran/dokumen paket, dan editorial Equipment Guides + Admin Studio.
+
+**Status (20 Nov 2026): PARTIALLY COMPLETED.** Implementasi dan automated tests lulus; browser smoke disposable SQLite lulus. Authenticated checkout/payment browser walkthrough, Midtrans Sandbox, dan deployment belum dijalankan.
+
+### Tasks
+
+- [x] Navbar publik tiga kolom seimbang + perilaku mobile. — commit `2660227`.
+- [x] Katalog responsive: sidebar filter sticky, filter rental (kategori/harga/tanggal/availability), filter retail (harga/stok), card mode-aware, image fallback. — commit `620d2b5`, `738c028`.
+- [x] Trip Planner lima langkah + level pengalaman pada rule engine. — commit `9346f70`.
+- [x] Paket trip mixed sewa/beli dengan dua order tertaut, dokumen HTML, dan PDF. — commit `9346f70`, ADR `.docs/ADR_PHASE_9_TRIP_PACKAGE.md`.
+- [x] Guide editorial: featured, reading time, related, inline image lokal, YouTube nocookie tervalidasi, preview aman. — commit `01a4df6`.
+- [x] SQLite suite + MySQL integration + Vite build + Pint. — lihat `.docs/PHASE_9_TEST_PLAN.md`.
+- [x] Browser smoke homepage, wizard, hasil rekomendasi, panduan pada `storage/phase9-e2e.sqlite`.
+- [ ] Authenticated checkout/payment browser walkthrough dan Midtrans Sandbox. — **PENDING**.
+- [ ] Deployment dan merge ke `main`. — menunggu keputusan owner.
+
+### Exit Criteria
+
+Alur publik dan paket trip dapat dipakai end-to-end tanpa bypass aturan harga/stok/pembayaran; regression Phase 8 tetap hijau; dokumentasi diperbarui. Laporan: `.docs/PHASE_9_COMPLETION_REPORT.md`.
+
 ## 12. Cross-Phase Definition of Done
 
 Setiap fitur dianggap selesai jika:

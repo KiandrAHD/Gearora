@@ -148,6 +148,7 @@ app/
     ├── DepositService.php
     ├── SalesOrderService.php
     ├── TripRecommendationService.php
+    ├── TripPackageCheckoutService.php
     └── ReportService.php
 ```
 
@@ -275,7 +276,11 @@ Reservasi stok jual terpisah (`sales_stock_reservations`): `reserved` menahan st
 
 ### 8.5 Equipment Guide
 
-`draft` → `published` → `archived`. Hanya `published` dengan `published_at <= now()` yang tampil publik. `unpublish` mengembalikan ke `draft`.
+`draft` → `published` → `archived`. Hanya `published` dengan `published_at <= now()` yang tampil publik. `unpublish` mengembalikan ke `draft`. Konten dirender escape-first oleh `GuideContentRenderer`; embed hanya YouTube `youtube-nocookie.com` dengan ID tervalidasi. `is_featured` menandai panduan unggulan tanpa mengubah lifecycle.
+
+### 8.6 Trip Package
+
+`TripPackage` menautkan satu `RentalOrder` dan/atau satu `SalesOrder` (keduanya nullable) plus `plan_snapshot`. Status paket adalah agregasi status order, bukan sumber kebenaran pembayaran. `TripPackageCheckoutService` membuka satu `DB::transaction`, lalu memanggil service domain order yang sudah ada (nested transaction = savepoint). Harga, deposit, dan stok dihitung ulang server-side. Detail keputusan: [ADR Paket Trip](./ADR_PHASE_9_TRIP_PACKAGE.md).
 
 ## 9. Availability & Anti-Overbooking
 

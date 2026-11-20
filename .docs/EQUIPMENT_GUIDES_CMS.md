@@ -22,7 +22,9 @@ Menyediakan artikel panduan perlengkapan yang:
 
 ### 2.1 Panduan (`equipment_guides`)
 
-Field utama: `title`, `slug`, `guide_category_id`, `excerpt`, `content`, `content_format`, `cover_image_path`, `status`, `author_id`, `publisher_id`, `published_at`, `seo_title`, `seo_description`.
+Field utama: `title`, `slug`, `guide_category_id`, `excerpt`, `content`, `content_format`, `cover_image_path`, `status`, `is_featured`, `author_id`, `publisher_id`, `published_at`, `seo_title`, `seo_description`.
+
+`is_featured` (Phase 9) menandai panduan unggulan di landing publik. Tidak mengubah lifecycle.
 
 ### 2.2 Kategori (`guide_categories`)
 
@@ -42,7 +44,10 @@ Field utama: `title`, `slug`, `guide_category_id`, `excerpt`, `content`, `conten
 2. Isi judul, kategori, ringkasan, konten Markdown.
 3. Opsional: unggah cover JPG/PNG/WEBP (≤ `gearora.guides.cover_max_kb`).
 4. Opsional: isi metadata SEO dan sumber.
-5. Pilih status `draft` atau `published`, simpan.
+5. Centang **Tampilkan sebagai panduan unggulan** bila perlu.
+6. Pilih status `draft` atau `published`, simpan.
+
+Sejak Phase 9, editor menyediakan toolbar format dan pratinjau langsung (`admin.guides.preview`). Pratinjau memakai `GuideContentRenderer` yang sama dengan halaman publik, jadi hasil pratinjau identik dengan tampilan publik dan tetap aman.
 
 ### 3.2 Mengubah Panduan
 
@@ -75,12 +80,14 @@ Panduan memakai soft delete (`deleted_at`). Cover dihapus dari disk saat panduan
 - Pencarian: `?q={kata}` pada judul dan konten.
 - Urut: `published_at DESC`, tie-break `id DESC`.
 - Kategori aktif ditampilkan sebagai chip filter.
+- Sejak Phase 9: hero editorial, section **Panduan unggulan** (maks. 3, `is_featured`), grid kartu dengan fallback cover, dan estimasi waktu baca.
 
 ### 4.2 Detail (`GET /panduan/{slug}`)
 
 - 404 untuk draft, archived, atau `published_at` di masa depan.
 - Menampilkan cover, judul, kategori, tanggal publikasi, konten, dan daftar sumber.
 - Sumber dengan URL dirender sebagai tautan `target="_blank"` + `rel="noopener noreferrer nofollow"`.
+- Sejak Phase 9: lede ringkasan, waktu baca, panduan terkait (kategori sama), meta description/SEO dari `seo_title`/`seo_description`, dan embed/gambar aman dari renderer.
 
 ---
 
@@ -91,10 +98,17 @@ Panduan memakai soft delete (`deleted_at`). Cover dihapus dari disk saat panduan
 `App\Support\GuideContentRenderer`:
 
 1. Escape seluruh HTML (`htmlspecialchars`).
-2. Baru mengenali subset Markdown: heading, daftar, paragraf, bold, inline code.
-3. Tidak ada HTML mentah yang lolos.
+2. Baru mengenali subset Markdown: heading, daftar, blockquote, divider, paragraf, bold, italic, inline code.
+3. Tautan hanya `http(s)`, `mailto:`, atau path internal; skema lain dibuang (teks tetap tampil).
+4. Gambar inline hanya aset lokal `media/...`; URL eksternal/hotlink dibuang.
+5. Embed hanya `@youtube[VIDEO_ID]` (ID 11 karakter) → `https://www.youtube-nocookie.com/embed/{id}`.
+6. Tidak ada HTML mentah atau iframe arbitrer yang lolos.
 
 Dengan pendekatan escape-first, payload seperti `<script>alert(1)</script>` tampil sebagai teks, bukan dieksekusi.
+
+### 5.1.1 Pratinjau Admin
+
+`POST /admin/panduan/pratinjau` (`admin.guides.preview`) mengembalikan `{ html, minutes }` dari renderer yang sama. Endpoint dilindungi permission create panduan dan hanya mengembalikan HTML hasil render aman.
 
 ### 5.2 Upload
 
