@@ -157,6 +157,68 @@ Alpine.data('mobileNav', () => ({
     },
 }));
 
+// Trip Planner: 5-step wizard. Progress is client-side only; the server
+// recomputes every recommendation and package price. No pricing in JS.
+Alpine.data('tripWizard', (config = {}) => ({
+    step: Number(config.step) || 1,
+    steps: ['Aktivitas', 'Durasi & peserta', 'Mode & tanggal', 'Ringkasan', 'Pilih gear'],
+    picked: {},
+    summary: { activity: '', destination: '', duration: '', participants: '', experience: '', mode: '', dates: '' },
+
+    init() {
+        this.capture();
+    },
+
+    next() {
+        this.capture();
+
+        if (this.step < 4) {
+            this.step += 1;
+        }
+    },
+
+    prev() {
+        if (this.step > 1) {
+            this.step -= 1;
+        }
+    },
+
+    capture() {
+        const form = this.$root.querySelector('form.trip-form');
+
+        if (!form) {
+            return;
+        }
+
+        const value = (name) => {
+            const element = form.querySelector(`[name="${name}"]`);
+
+            return element ? String(element.value || '').trim() : '';
+        };
+
+        const checkedValue = (name) => {
+            const element = form.querySelector(`[name="${name}"]:checked`);
+
+            return element ? element.value : '';
+        };
+
+        const capitalise = (word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : '');
+
+        const start = value('start_date');
+        const end = value('end_date');
+
+        this.summary = {
+            activity: capitalise(value('activity')),
+            destination: value('destination'),
+            duration: value('duration_days'),
+            participants: value('participants'),
+            experience: capitalise(checkedValue('experience') || 'pemula'),
+            mode: capitalise(value('mode')),
+            dates: start && end ? `${start} → ${end}` : '',
+        };
+    },
+}));
+
 window.Alpine = Alpine;
 
 Alpine.start();

@@ -39,6 +39,7 @@ use App\Http\Controllers\PublicSite\HomeController;
 use App\Http\Controllers\PublicSite\MediaController;
 use App\Http\Controllers\PublicSite\ProductController;
 use App\Http\Controllers\PublicSite\RetailCartController;
+use App\Http\Controllers\PublicSite\TripPackageController;
 use App\Http\Controllers\PublicSite\TripPlannerController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +52,14 @@ Route::get('/rekomendasi-trip', [TripPlannerController::class, 'index'])->name('
 Route::post('/rekomendasi-trip', [TripPlannerController::class, 'recommend'])
     ->middleware('throttle:30,1')
     ->name('trip-planner.recommend');
+Route::post('/rekomendasi-trip/paket', [TripPackageController::class, 'store'])
+    ->middleware('throttle:30,1')
+    ->name('trip-planner.package.store');
+Route::get('/rekomendasi-trip/paket', [TripPackageController::class, 'review'])->name('trip-planner.package.review');
+Route::delete('/rekomendasi-trip/paket', [TripPackageController::class, 'destroy'])->name('trip-planner.package.destroy');
+Route::post('/rekomendasi-trip/paket/checkout', [TripPackageController::class, 'checkout'])
+    ->middleware('auth')
+    ->name('trip-planner.package.checkout');
 Route::get('/media/{path}', [MediaController::class, 'show'])->where('path', '.*')->name('media.show');
 Route::post('/ketersediaan', [AvailabilityController::class, 'check'])->name('availability.check');
 
@@ -87,6 +96,9 @@ Route::prefix('akun')->middleware('auth')->as('customer.')->group(function (): v
     Route::post('/pembelian/{salesOrder}/batal', [CustomerSalesOrderController::class, 'cancel'])->name('sales.cancel');
     Route::post('/pembelian/{salesOrder}/bayar/{payment}/bukti', [SalesPaymentProofController::class, 'store'])->name('sales.proof.store');
     Route::post('/pembelian/{salesOrder}/bayar-midtrans', [SalesMidtransController::class, 'start'])->name('sales.midtrans.start');
+    Route::get('/paket/{package}', [TripPackageController::class, 'show'])->name('packages.show');
+    Route::get('/paket/{package}/dokumen', [TripPackageController::class, 'document'])->name('packages.document');
+    Route::get('/paket/{package}/pdf', [TripPackageController::class, 'pdf'])->name('packages.pdf');
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
 });

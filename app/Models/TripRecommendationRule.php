@@ -26,6 +26,7 @@ class TripRecommendationRule extends Model
         'min_participants',
         'max_participants',
         'required_special_needs',
+        'required_experience_levels',
         'product_category_id',
         'product_id',
         'product_variant_id',
@@ -43,6 +44,7 @@ class TripRecommendationRule extends Model
     {
         return [
             'required_special_needs' => 'array',
+            'required_experience_levels' => 'array',
             'service_mode' => TripServiceMode::class,
             'min_duration_days' => 'integer',
             'max_duration_days' => 'integer',
@@ -115,6 +117,12 @@ class TripRecommendationRule extends Model
     public function requiredSpecialNeeds(): array
     {
         return array_values(array_filter((array) ($this->required_special_needs ?? [])));
+    }
+
+    /** @return array<int, string> */
+    public function requiredExperienceLevels(): array
+    {
+        return array_values(array_filter((array) ($this->required_experience_levels ?? [])));
     }
 
     public function activityLabel(): string

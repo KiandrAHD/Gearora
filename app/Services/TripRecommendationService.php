@@ -102,6 +102,10 @@ class TripRecommendationService
                     'quantity' => $quantity,
                     'reason' => $this->reason($rule, $plan),
                     'mode' => $plan->mode->value,
+                    'supports_rental' => $product->supportsRental() && Money::toInt($variant->effectiveRentalPrice()) > 0,
+                    'supports_sale' => $product->supportsSale() && $this->salePrice($variant) > 0,
+                    'rental_price' => Money::toInt($variant->effectiveRentalPrice()),
+                    'sale_price' => $this->salePrice($variant),
                     'availability_checked' => $availabilityChecked,
                     'available' => $available,
                 ];
@@ -136,6 +140,12 @@ class TripRecommendationService
 
         if ($participants < (int) $rule->min_participants
             || ($rule->max_participants !== null && $participants > (int) $rule->max_participants)) {
+            return false;
+        }
+
+        $experienceLevels = $rule->requiredExperienceLevels();
+
+        if ($experienceLevels !== [] && ! in_array($plan->experience->value, $experienceLevels, true)) {
             return false;
         }
 

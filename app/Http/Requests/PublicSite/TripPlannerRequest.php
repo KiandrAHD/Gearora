@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\PublicSite;
 
+use App\Enums\ExperienceLevel;
 use App\Enums\TripActivity;
 use App\Enums\TripServiceMode;
 use App\Enums\TripSpecialNeed;
@@ -22,6 +23,7 @@ class TripPlannerRequest extends FormRequest
             'location' => is_string($this->location) ? trim($this->location) : $this->location,
             'special_needs' => array_values(array_filter((array) $this->input('special_needs', []))),
             'mode' => $this->filled('mode') ? $this->input('mode') : TripServiceMode::Sewa->value,
+            'experience' => $this->filled('experience') ? $this->input('experience') : ExperienceLevel::Pemula->value,
         ]);
     }
 
@@ -43,6 +45,7 @@ class TripPlannerRequest extends FormRequest
             'special_needs' => ['nullable', 'array'],
             'special_needs.*' => ['string', Rule::in(TripSpecialNeed::values())],
             'mode' => ['required', 'string', Rule::in(TripServiceMode::customerValues())],
+            'experience' => ['required', 'string', Rule::in(ExperienceLevel::values())],
             'start_date' => ['nullable', 'date', 'required_with:end_date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date', 'required_with:start_date'],
         ];

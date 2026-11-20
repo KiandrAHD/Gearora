@@ -2,6 +2,7 @@
 
 namespace App\Data;
 
+use App\Enums\ExperienceLevel;
 use App\Enums\TripServiceMode;
 
 /** Input Trip Planner yang sudah lolos Form Request. */
@@ -19,6 +20,7 @@ final readonly class TripPlanData
         public int $participants,
         public array $specialNeeds,
         public TripServiceMode $mode,
+        public ExperienceLevel $experience,
         public ?string $startDate = null,
         public ?string $endDate = null,
     ) {}
@@ -35,6 +37,7 @@ final readonly class TripPlanData
             participants: (int) $data['participants'],
             specialNeeds: array_values($data['special_needs'] ?? []),
             mode: TripServiceMode::from((string) $data['mode']),
+            experience: ExperienceLevel::from((string) ($data['experience'] ?? ExperienceLevel::Pemula->value)),
             startDate: filled($data['start_date'] ?? null) ? (string) $data['start_date'] : null,
             endDate: filled($data['end_date'] ?? null) ? (string) $data['end_date'] : null,
         );
