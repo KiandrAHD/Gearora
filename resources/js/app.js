@@ -87,6 +87,76 @@ Alpine.data('modalDialog', (id) => ({
     },
 }));
 
+// Public header: accessible mobile navigation drawer (menu button, Escape,
+// backdrop, focus management and focus trap). No external dependency.
+Alpine.data('mobileNav', () => ({
+    open: false,
+    lastFocus: null,
+
+    toggle() {
+        if (this.open) {
+            this.close();
+        } else {
+            this.show();
+        }
+    },
+
+    show() {
+        this.lastFocus = document.activeElement;
+        this.open = true;
+        this.$nextTick(() => this.$refs.drawerClose?.focus() ?? this.$refs.drawer?.focus());
+    },
+
+    close() {
+        this.open = false;
+        const restore = this.lastFocus;
+        this.$nextTick(() => {
+            if (restore instanceof HTMLElement) {
+                restore.focus();
+            }
+        });
+    },
+
+    trap(event) {
+        if (!this.open) {
+            return;
+        }
+
+        const panel = this.$refs.drawer;
+
+        if (!panel) {
+            return;
+        }
+
+        const focusable = Array.from(panel.querySelectorAll(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        )).filter((element) => element.offsetParent !== null || element === document.activeElement);
+
+        if (focusable.length === 0) {
+            return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement;
+
+        if (!panel.contains(active)) {
+            event.preventDefault();
+            first.focus();
+
+            return;
+        }
+
+        if (event.shiftKey && active === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && active === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    },
+}));
+
 window.Alpine = Alpine;
 
 Alpine.start();

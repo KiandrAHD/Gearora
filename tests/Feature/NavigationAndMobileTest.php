@@ -71,8 +71,9 @@ class NavigationAndMobileTest extends TestCase
         $this->assertStringContainsString('aria-controls="mobile-navigation"', $html);
         $this->assertStringContainsString('class="mobile-nav"', $html);
         $this->assertStringContainsString('mobile-nav-backdrop', $html);
-        $this->assertStringContainsString('@keydown.escape.window="open = false"', $html);
+        $this->assertStringContainsString('@keydown.escape.window="close()"', $html);
         $this->assertStringContainsString('x-effect="document.body.classList.toggle(\'nav-open\', open)"', $html);
+        $this->assertStringContainsString('x-ref="drawerClose"', $html);
     }
 
     public function test_mobile_navigation_css_has_explicit_display_override(): void
