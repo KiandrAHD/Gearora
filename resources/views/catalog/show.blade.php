@@ -15,9 +15,12 @@
             <div class="detail-grid">
                 <div class="detail-media">
                     @if($product->displayImagePath())
-                        <img src="{{ media_url($product->displayImagePath()) }}" alt="{{ $product->name }}">
+                        <img src="{{ media_url($product->displayImagePath()) }}" alt="{{ $product->name }}" width="640" height="480" loading="eager">
                     @else
-                        <div class="detail-media-empty" aria-hidden="true">Gear</div>
+                        <div class="detail-media-empty">
+                            <img src="{{ asset('images/product-placeholder.svg') }}" alt="" width="96" height="96">
+                            <span>Foto belum tersedia</span>
+                        </div>
                     @endif
                     @if($gallery->count() > 1)
                         <div class="detail-thumbs">@foreach($gallery as $image)<img src="{{ media_url($image->path) }}" alt="{{ $image->alt ?: $product->name }}">@endforeach</div>
@@ -63,13 +66,27 @@
 
                     @if($product->supportsSale())
                         <div class="sale-panel">
-                            <h2>Pembelian</h2>
+                            <h2>Beli langsung</h2>
                             @forelse($saleVariants as $variant)
-                                <div class="sale-row"><span>{{ $variant->name }}</span><strong>{{ rupiah($variant->effectiveSalePrice()) }}</strong><small>Stok {{ $variant->stock_quantity }}</small></div>
+                                @php($available = $saleAvailability[$variant->getKey()] ?? 0)
+                                <div class="sale-row">
+                                    <span>{{ $variant->name }}<br><small class="field-hint">Stok tersedia: {{ $available }}</small></span>
+                                    <strong>{{ rupiah($variant->effectiveSalePrice()) }}</strong>
+                                    @if($available > 0)
+                                        <form class="inline-form" method="post" action="{{ route('retail.cart.store') }}">
+                                            @csrf
+                                            <input type="hidden" name="variant_id" value="{{ $variant->getKey() }}">
+                                            <label><span class="sr-only">Jumlah {{ $variant->name }}</span><input type="number" name="quantity" min="1" max="{{ $available }}" value="1"></label>
+                                            <button class="btn-primary" type="submit">+ Keranjang</button>
+                                        </form>
+                                    @else
+                                        <span class="badge-inline">Stok habis</span>
+                                    @endif
+                                </div>
                             @empty
                                 <p class="empty-note">Belum ada varian jual aktif.</p>
                             @endforelse
-                            <p class="field-hint">Pembelian online belum tersedia pada MVP ini. Hubungi admin untuk pemesanan pembelian.</p>
+                            <span class="field-hint">Stok retail = stok fisik dikurangi reservasi aktif. Harga &amp; stok dihitung ulang server saat checkout.</span>
                         </div>
                     @endif
                 </div>

@@ -14,8 +14,8 @@ class UiFoundationTest extends TestCase
     {
         $this->get('/katalog')
             ->assertOk()
-            ->assertSee('Temukan gear untuk perjalananmu.')
-            ->assertSee('Cari gear')
+            ->assertSee('Sewa gear untuk perjalananmu.')
+            ->assertSee('Cari nama, merek, atau deskripsi gear')
             ->assertSee('name="q"', false)
             ->assertSee('Belum ada gear yang cocok');
     }

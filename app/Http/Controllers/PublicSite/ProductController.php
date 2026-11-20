@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Services\RentalAvailabilityService;
 use App\Services\RentalPricingService;
+use App\Services\SalesStockService;
 use App\Support\RentalPeriod;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,6 +18,7 @@ class ProductController extends Controller
     public function __construct(
         private readonly RentalAvailabilityService $availability,
         private readonly RentalPricingService $pricing,
+        private readonly SalesStockService $stock,
     ) {}
 
     public function show(Request $request, Product $product): View
@@ -62,6 +64,15 @@ class ProductController extends Controller
             }
         }
 
+        // Stok retail = fisik - reservasi aktif, dihitung via service (bukan stok fisik).
+        $saleAvailability = [];
+        foreach ($product->variants as $variant) {
+            $salePrice = $variant->effectiveSalePrice();
+            if ($product->supportsSale() && $salePrice !== null && (float) $salePrice > 0) {
+                $saleAvailability[$variant->getKey()] = $this->stock->availableQuantity($variant);
+            }
+        }
+
         $related = Product::query()
             ->active()
             ->with(['category', 'variants', 'primaryImage'])
@@ -77,6 +88,7 @@ class ProductController extends Controller
             'dateNotice' => $dateNotice,
             'startDate' => $startDate,
             'endDate' => $endDate,
+            'saleAvailability' => $saleAvailability,
             'related' => $related,
         ]);
     }
