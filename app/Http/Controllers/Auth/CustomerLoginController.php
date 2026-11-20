@@ -18,8 +18,19 @@ class CustomerLoginController extends Controller
 {
     public function __construct(private readonly ActivityLogger $logger) {}
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        // Hanya path internal yang diizinkan sebagai tujuan setelah login.
+        // Ini mempertahankan draft paket trip tanpa membuka open redirect.
+        $redirect = $request->query('redirect');
+
+        if (is_string($redirect)
+            && str_starts_with($redirect, '/')
+            && ! str_starts_with($redirect, '//')
+            && ! str_contains($redirect, '\\')) {
+            $request->session()->put('url.intended', $redirect);
+        }
+
         return view('auth.login');
     }
 

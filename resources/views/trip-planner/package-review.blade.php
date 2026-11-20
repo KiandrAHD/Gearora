@@ -85,6 +85,7 @@
                     @auth
                         <form class="stack-form" method="POST" action="{{ route('trip-planner.package.checkout') }}">
                             @csrf
+                            <input type="hidden" name="checkout_key" value="{{ $checkoutKey }}">
                             <label><span>Metode pembayaran</span>
                                 <select name="payment_method" required>
                                     @foreach($methods as $method)
@@ -97,7 +98,7 @@
                         </form>
                     @else
                         <p class="field-hint">Masuk atau daftar untuk menyimpan paket dan melanjutkan pembayaran.</p>
-                        <a class="button button-primary" href="{{ route('login') }}">Masuk untuk checkout</a>
+                        <a class="button button-primary" href="{{ route('login', ['redirect' => route('trip-planner.package.review', [], false)]) }}">Masuk untuk checkout</a>
                     @endauth
 
                     <form method="POST" action="{{ route('trip-planner.package.destroy') }}" class="package-cancel">

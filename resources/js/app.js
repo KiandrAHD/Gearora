@@ -223,10 +223,14 @@ Alpine.data('tripWizard', (config = {}) => ({
 // HTML from the trusted same-origin endpoint only.
 Alpine.data('guideEditor', (config = {}) => ({
     previewUrl: config.previewUrl,
+    uploadUrl: config.uploadUrl,
+    guideId: config.guideId || null,
     content: config.initial || '',
     html: '<p class="field-hint">Ketik konten untuk melihat pratinjau.</p>',
     minutes: 1,
     loading: false,
+    uploading: false,
+    uploadError: '',
     requestId: 0,
 
     init() {
@@ -271,6 +275,64 @@ Alpine.data('guideEditor', (config = {}) => ({
         });
     },
 
+    async uploadImage(event) {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        this.uploading = true;
+        this.uploadError = '';
+
+        try {
+            const body = new FormData();
+            body.append('image', file);
+            body.append('alt', file.name.replace(/\.[^.]+$/, ''));
+
+            const response = await fetch(this.uploadUrl, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+                body,
+                credentials: 'same-origin',
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Gambar gagal diunggah.');
+            }
+
+            this.insert(`![${data.alt || 'Ilustrasi panduan'}](${data.url})`);
+        } catch (error) {
+            this.uploadError = String(error.message || 'Gambar gagal diunggah.');
+        } finally {
+            this.uploading = false;
+            event.target.value = '';
+        }
+    },
+
+    insertYoutubeUrl() {
+        const url = window.prompt('Tempel URL YouTube (watch, youtu.be, atau shorts).');
+
+        if (!url) {
+            return;
+        }
+
+        const match = url.trim().match(/^(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:[^\s]*&)?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})(?:[?&#][^\s]*)?$/i);
+
+        if (!match) {
+            this.uploadError = 'URL YouTube tidak valid.';
+            return;
+        }
+
+        this.uploadError = '';
+        this.insert(`@youtube[${match[1]}]`);
+    },
+
     async loadPreview() {
         const current = ++this.requestId;
         this.loading = true;
@@ -283,7 +345,7 @@ Alpine.data('guideEditor', (config = {}) => ({
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
                 },
-                body: JSON.stringify({ content: this.content }),
+                body: JSON.stringify({ content: this.content, guide_id: this.guideId }),
                 credentials: 'same-origin',
             });
 

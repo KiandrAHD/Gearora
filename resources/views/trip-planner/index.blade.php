@@ -53,7 +53,8 @@
                                 </select>
                             </label>
                             <label class="field"><span>Destinasi</span>
-                                <input name="destination" value="{{ old('destination', $plan?->destination ?? '') }}" required maxlength="120" placeholder="Contoh: Gunung Prau">
+                                <input name="destination" value="Gunung Prau" readonly aria-readonly="true">
+                                <span class="field-hint">Destinasi fase ini ditetapkan server: Gunung Prau, Dieng.</span>
                             </label>
                             <label class="field"><span>Lokasi/Basecamp (opsional)</span>
                                 <input name="location" value="{{ old('location', $plan?->location ?? '') }}" maxlength="160" placeholder="Contoh: Dieng, Wonosobo">

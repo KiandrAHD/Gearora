@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('trip_packages', function (Blueprint $table): void {
             $table->id();
             $table->string('code', 32)->unique();
+            $table->uuid('checkout_key')->unique();
             $table->foreignId('customer_id')->constrained('users')->cascadeOnDelete();
             $table->string('activity', 32);
             $table->string('destination', 120);

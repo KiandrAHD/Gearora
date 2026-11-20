@@ -10,6 +10,7 @@ use App\Models\TripPackage;
 use App\Models\User;
 use App\Support\Money;
 use App\Support\RentalPeriod;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -36,6 +37,22 @@ class TripPackageCheckoutService
 
     public function checkout(User $customer, TripPackageData $data): TripPackage
     {
+        // Satu checkout draft menghasilkan satu paket. Kunci idempotensi hidup
+        // di session/controller; service tetap mencegah duplikasi dalam transaksi
+        // bila caller mengirim ulang data yang sama dengan checkout_key.
+        $checkoutKey = $data->checkoutKey ?? null;
+
+        if ($checkoutKey !== null) {
+            $existing = TripPackage::query()
+                ->where('customer_id', $customer->getKey())
+                ->where('checkout_key', $checkoutKey)
+                ->first();
+
+            if ($existing !== null) {
+                return $existing->load(['rentalOrder', 'salesOrder']);
+            }
+        }
+
         $items = $this->normalizeItems($data->items);
 
         if ($items === []) {
@@ -58,7 +75,7 @@ class TripPackageCheckoutService
 
         $method = $data->method;
 
-        return DB::transaction(function () use ($customer, $data, $items, $rentalItems, $saleItems, $period, $method) {
+        $execute = fn (): TripPackage => DB::transaction(function () use ($customer, $data, $checkoutKey, $items, $rentalItems, $saleItems, $period, $method) {
             $rentalOrder = $rentalItems === []
                 ? null
                 : $this->rentalOrders->create($customer, $rentalItems, $period, $method, $this->notes($data, 'rental'));
@@ -69,6 +86,7 @@ class TripPackageCheckoutService
 
             $package = TripPackage::query()->create([
                 'code' => $this->generateCode(),
+                'checkout_key' => $checkoutKey ?? (string) Str::uuid(),
                 'customer_id' => $customer->getKey(),
                 'activity' => $data->plan->activity,
                 'destination' => $data->plan->destination,
@@ -87,6 +105,27 @@ class TripPackageCheckoutService
 
             return $package->load(['rentalOrder', 'salesOrder']);
         });
+
+        if ($checkoutKey === null) {
+            return $execute();
+        }
+
+        // Serialisasi submit ganda untuk kunci yang sama. Bila paket sudah
+        // terbentuk (request kedua setelah request pertama selesai), kembalikan
+        // paket yang sama alih-alih membuat order child baru.
+        return Cache::lock('trip-checkout:'.$customer->getKey().':'.$checkoutKey, 15)
+            ->block(10, function () use ($customer, $checkoutKey, $execute): TripPackage {
+                $existing = TripPackage::query()
+                    ->where('customer_id', $customer->getKey())
+                    ->where('checkout_key', $checkoutKey)
+                    ->first();
+
+                if ($existing !== null) {
+                    return $existing->load(['rentalOrder', 'salesOrder']);
+                }
+
+                return $execute();
+            });
     }
 
     /**

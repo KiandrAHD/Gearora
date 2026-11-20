@@ -114,7 +114,17 @@ class GuideController extends Controller
 
     public function preview(Request $request): JsonResponse
     {
-        $this->authorize('create', EquipmentGuide::class);
+        // Pratinjau untuk panduan yang sudah ada cukup membutuhkan izin update;
+        // panduan baru membutuhkan izin create.
+        $guide = $request->filled('guide_id')
+            ? EquipmentGuide::query()->find($request->integer('guide_id'))
+            : null;
+
+        if ($guide !== null) {
+            $this->authorize('update', $guide);
+        } else {
+            $this->authorize('create', EquipmentGuide::class);
+        }
 
         $validated = $request->validate([
             'content' => ['nullable', 'string', 'max:'.(int) config('gearora.guides.max_content_kb', 200) * 1024],

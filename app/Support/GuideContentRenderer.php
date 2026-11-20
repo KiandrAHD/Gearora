@@ -11,7 +11,8 @@ namespace App\Support;
  *
  * Sintaks didukung: `#`/`##`/`###`, daftar `-`/`1.`, blockquote `>`, pemisah
  * `---`, **tebal**, *miring*, `kode`, [tautan](url), gambar inline lokal
- * `![alt](path)`, dan embed aman `@youtube[VIDEO_ID]`.
+ * `![alt](path)`, embed aman `@youtube[VIDEO_ID]`, serta URL YouTube mandiri
+ * (watch/shorts/youtu.be) yang dinormalisasi menjadi embed.
  *
  * Keamanan:
  * - Tidak ada HTML mentah/iframe arbitrer; hanya iframe YouTube yang dibentuk
@@ -33,6 +34,16 @@ final class GuideContentRenderer
         }
 
         $content = str_replace(["\r\n", "\r"], "\n", $content);
+
+        // URL YouTube mandiri (satu baris) dinormalisasi menjadi penanda embed
+        // SEBELUM escaping. Hanya ID 11 karakter tervalidasi yang dipakai ulang,
+        // sehingga URL/parameter tambahan tidak pernah masuk ke output.
+        $content = preg_replace_callback(
+            '~^[ \t]*https?://(?:www\.)?(?:youtube\.com/(?:watch\?(?:[^\s]*&)?v=|shorts/|embed/)|youtu\.be/)([A-Za-z0-9_-]{11})(?:[^\s]*)[ \t]*$~mi',
+            static fn (array $matches): string => '@youtube['.$matches[1].']',
+            $content,
+        ) ?? $content;
+
         $escaped = htmlspecialchars($content, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         $blocks = preg_split("/\n{2,}/", $escaped) ?: [];
@@ -47,6 +58,13 @@ final class GuideContentRenderer
 
             if (preg_match('~^(?:-{3,}|\*{3,}|_{3,})$~', $block) === 1) {
                 $html[] = '<hr>';
+
+                continue;
+            }
+
+            // Embed YouTube sebagai blok mandiri (bukan dibungkus <p>).
+            if (preg_match('~^@youtube\['.self::YOUTUBE_ID.'\]$~', $block) === 1) {
+                $html[] = self::youtubeEmbed($block);
 
                 continue;
             }
@@ -149,14 +167,7 @@ final class GuideContentRenderer
         // Embed YouTube aman (nocookie, ID tervalidasi).
         $text = preg_replace_callback(
             '~@youtube\['.self::YOUTUBE_ID.'\]~',
-            static function (array $matches): string {
-                if (preg_match('~^@youtube\[('.self::YOUTUBE_ID.')\]$~', $matches[0], $id) !== 1) {
-                    return '';
-                }
-
-                return '<span class="guide-embed"><iframe src="https://www.youtube-nocookie.com/embed/'.$id[1]
-                    .'" title="Video panduan" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></span>';
-            },
+            static fn (array $matches): string => self::youtubeEmbed($matches[0]),
             $text,
         ) ?? $text;
 
@@ -181,6 +192,35 @@ final class GuideContentRenderer
         $text = preg_replace('~`(.+?)`~s', '<code>$1</code>', $text) ?? $text;
 
         return $text;
+    }
+
+    private static function youtubeEmbed(string $marker): string
+    {
+        if (preg_match('~^@youtube\[('.self::YOUTUBE_ID.')\]$~', $marker, $id) !== 1) {
+            return '';
+        }
+
+        return '<span class="guide-embed"><iframe src="https://www.youtube-nocookie.com/embed/'.$id[1]
+            .'" title="Video panduan" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></span>';
+    }
+
+    /**
+     * Ambil ID video dari URL YouTube yang didukung, atau null bila tidak valid.
+     * Dipakai Studio untuk mengubah URL menjadi penanda embed yang aman.
+     */
+    public static function youtubeId(?string $url): ?string
+    {
+        $url = trim((string) $url);
+
+        if ($url === '') {
+            return null;
+        }
+
+        if (preg_match('~^(?:https?://)?(?:www\.|m\.)?(?:youtube\.com/(?:watch\?(?:[^\s]*&)?v=|shorts/|embed/)|youtu\.be/)([A-Za-z0-9_-]{11})(?:[?&#][^\s]*)?$~i', $url, $matches) === 1) {
+            return $matches[1];
+        }
+
+        return null;
     }
 
     /** Path media internal aplikasi (bukan URL absolut eksternal). */

@@ -3,7 +3,7 @@
 ## Code and tests
 
 - [x] Phase 8 tests retained; no tests skipped or deleted.
-- [x] SQLite suite green (320 tests, 988 assertions).
+- [x] SQLite suite green (331 tests, 1020 assertions).
 - [x] MySQL InnoDB integration green on `gearora_test` (7 tests, 71 assertions).
 - [x] Vite production build green.
 - [x] Changed PHP formatted with Pint.

@@ -64,6 +64,7 @@ final class AdminNavigation
                 'icon' => 'operations',
                 'children' => [
                     ['label' => 'Pesanan Rental', 'route' => 'admin.rentals.index', 'match' => 'admin.rentals.*', 'permission' => 'rentals.view'],
+                    ['label' => 'Paket Trip', 'route' => 'admin.trip-packages.index', 'match' => 'admin.trip-packages.*', 'any' => ['rentals.view', 'sales.view']],
                     ['label' => 'Pickup', 'route' => 'admin.operations.pickups', 'match' => 'admin.operations.pickups*', 'permission' => 'rentals.handover', 'badge' => 'pickups_today'],
                     ['label' => 'Pengembalian', 'route' => 'admin.operations.returns', 'match' => 'admin.operations.returns*', 'permission' => 'rentals.return', 'badge' => 'returns_today'],
                     ['label' => 'Inspeksi', 'route' => 'admin.operations.inspections', 'match' => 'admin.operations.inspections*', 'permission' => 'inspections.view', 'badge' => 'inspections_pending'],

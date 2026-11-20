@@ -19,7 +19,7 @@ use Tests\TestCase;
  * dan checkout mixed sewa+beli yang memakai nested transaction (savepoint).
  *
  * Jalankan hanya dengan database test:
- *   php artisan test --configuration=phpunit.mysql.xml tests/MySql
+ *   vendor/bin/phpunit -c phpunit.mysql.xml tests/MySql
  */
 class MySqlTripPackageIntegrationTest extends TestCase
 {

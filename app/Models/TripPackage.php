@@ -15,6 +15,7 @@ class TripPackage extends Model
 
     protected $fillable = [
         'code',
+        'checkout_key',
         'customer_id',
         'activity',
         'destination',

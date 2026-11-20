@@ -4,7 +4,7 @@
 
 GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perlengkapan outdoor** (hiking, trekking, camping, dan aktivitas alam lainnya). Platform menyatukan pencarian gear, pemeriksaan ketersediaan, reservasi, panduan penggunaan, serta pengelolaan inventaris dan transaksi.
 
-> Status: **Phase 9 selesai implementasi lokal** untuk UX navbar, katalog rental/retail, Trip Planner lima langkah + paket mixed sewa/beli, dan editorial Equipment Guides + Admin Studio. Automated suite: **320 tests / 988 assertions lulus** (SQLite) + **7 tests / 71 assertions** (integrasi MySQL 8 pada `gearora_test`). Browser smoke disposable SQLite lulus untuk homepage, wizard, hasil rekomendasi, dan panduan. Release produksi masih **PARTIALLY COMPLETED**: authenticated checkout browser, Midtrans Sandbox, hosting, dan merge ke main menunggu operator.
+> Status: **Phase 9 selesai implementasi lokal** untuk UX navbar, katalog rental/retail, Trip Planner lima langkah + paket mixed sewa/beli, dan editorial Equipment Guides + Admin Studio. Automated suite: **331 tests / 1020 assertions lulus** (SQLite) + **7 tests / 71 assertions** (integrasi MySQL 8 pada `gearora_test`). Browser smoke disposable SQLite lulus untuk homepage, wizard, hasil rekomendasi, dan panduan. Release produksi masih **PARTIALLY COMPLETED**: authenticated checkout browser, Midtrans Sandbox, hosting, dan merge ke main menunggu operator.
 >
 > Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_8_COMPLETION_REPORT.md`](.docs/PHASE_8_COMPLETION_REPORT.md) (sebelumnya: [`.docs/PHASE_7_5_COMPLETION_REPORT.md`](.docs/PHASE_7_5_COMPLETION_REPORT.md)).
 
@@ -43,7 +43,7 @@ Phase 7.5 selesai di source dan test lokal. Phase 8 (release readiness) menutup 
 - [Release Checklist](.docs/PHASE_9_RELEASE_CHECKLIST.md)
 - [Completion Report](.docs/PHASE_9_COMPLETION_REPORT.md)
 - [Navbar & Catalog](.docs/PHASE_9_NAVBAR_CATALOG.md) · [Trip Planner](.docs/PHASE_9_TRIP_PLANNER.md) · [Guide Studio](.docs/PHASE_9_GUIDE_STUDIO.md)
-- [Security Notes](.docs/PHASE_9_SECURITY_NOTES.md) · [Known Limitations](.docs/PHASE_9_KNOWN_LIMITATIONS.md)
+- [Security Notes](.docs/PHASE_9_SECURITY_NOTES.md) · [MySQL Integration](.docs/PHASE_9_MYSQL_INTEGRATION.md) · [Known Limitations](.docs/PHASE_9_KNOWN_LIMITATIONS.md)
 
 **Phase 8 (release readiness):**
 - [Completion Report](.docs/PHASE_8_COMPLETION_REPORT.md)

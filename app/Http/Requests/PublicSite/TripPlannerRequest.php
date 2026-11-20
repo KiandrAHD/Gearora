@@ -19,7 +19,9 @@ class TripPlannerRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'destination' => is_string($this->destination) ? trim($this->destination) : $this->destination,
+            // Destinasi fase ini fixed server-side. Hidden/input client tidak
+            // dapat mengubah tujuan paket Gunung Prau.
+            'destination' => 'Gunung Prau',
             'location' => is_string($this->location) ? trim($this->location) : $this->location,
             'special_needs' => array_values(array_filter((array) $this->input('special_needs', []))),
             'mode' => $this->filled('mode') ? $this->input('mode') : TripServiceMode::Sewa->value,
@@ -37,7 +39,7 @@ class TripPlannerRequest extends FormRequest
 
         return [
             'activity' => ['required', 'string', Rule::in(TripActivity::values())],
-            'destination' => ['required', 'string', 'min:2', 'max:120'],
+            'destination' => ['required', 'string', Rule::in(['Gunung Prau'])],
             'location' => ['nullable', 'string', 'max:160'],
             'description' => ['nullable', 'string', 'max:1000'],
             'duration_days' => ['required', 'integer', 'min:1', 'max:'.$maxDays],

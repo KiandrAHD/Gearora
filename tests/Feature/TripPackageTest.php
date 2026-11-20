@@ -8,6 +8,7 @@ use App\Enums\RoleName;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\RentalAsset;
+use App\Models\RentalOrder;
 use App\Models\TripPackage;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -63,6 +64,34 @@ class TripPackageTest extends TestCase
         $this->assertNull($package->sales_order_id);
         $this->assertSame($customer->id, $package->customer_id);
         $this->assertDatabaseHas('rental_orders', ['id' => $package->rental_order_id]);
+    }
+
+    public function test_duplicate_checkout_with_same_session_key_creates_one_package(): void
+    {
+        $customer = $this->customer();
+        $variant = $this->rentalVariant();
+        RentalAsset::factory()->for($variant, 'variant')->create();
+
+        $this->putDraft([
+            ['variant_id' => $variant->id, 'quantity' => 1, 'fulfillment' => 'sewa'],
+        ]);
+        $this->session(['trip_package_checkout_key' => '90b8f86c-a28d-445e-84b9-a9ec01bf4c38']);
+
+        $this->actingAs($customer)
+            ->post(route('trip-planner.package.checkout'), ['payment_method' => PaymentMethod::Transfer->value])
+            ->assertRedirect();
+
+        // Request kedua membawa session yang sama seperti double click/retry.
+        $this->withSession([
+            'trip_package_draft' => session('trip_package_draft'),
+            'trip_package_checkout_key' => '90b8f86c-a28d-445e-84b9-a9ec01bf4c38',
+        ])
+            ->actingAs($customer)
+            ->post(route('trip-planner.package.checkout'), ['payment_method' => PaymentMethod::Transfer->value])
+            ->assertRedirect();
+
+        $this->assertSame(1, TripPackage::query()->count());
+        $this->assertSame(1, RentalOrder::query()->count());
     }
 
     public function test_sales_package_checkout_creates_stock_reservation_and_sales_order(): void

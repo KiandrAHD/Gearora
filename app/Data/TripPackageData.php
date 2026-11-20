@@ -15,6 +15,7 @@ final readonly class TripPackageData
         public array $items,
         public PaymentMethod $method,
         public ?string $notes = null,
+        public ?string $checkoutKey = null,
     ) {}
 
     /** @return array<int, array{variant_id:int, quantity:int}> */

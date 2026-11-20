@@ -9,6 +9,8 @@ use App\Models\GuideCategory;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -40,6 +42,42 @@ class AdminGuideStudioTest extends TestCase
         $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $html);
         $this->assertStringNotContainsString('<script>', $html);
         $this->assertStringContainsString('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', $html);
+    }
+
+    public function test_preview_normalizes_supported_youtube_url(): void
+    {
+        $response = $this->actingAs($this->owner())
+            ->postJson(route('admin.guides.preview'), [
+                'content' => 'https://youtu.be/dQw4w9WgXcQ?t=10',
+            ])
+            ->assertOk();
+
+        $this->assertStringContainsString('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', (string) $response->json('html'));
+        $this->assertStringNotContainsString('?t=10', (string) $response->json('html'));
+    }
+
+    public function test_owner_can_upload_inline_guide_image(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->actingAs($this->owner())
+            ->post(route('admin.guides.media.store'), [
+                'image' => UploadedFile::fake()->image('prau.png'),
+                'alt' => 'Pemandangan Prau',
+            ])
+            ->assertCreated();
+
+        $path = (string) $response->json('path');
+        $this->assertStringStartsWith('guide-inline/', $path);
+        $this->assertSame('Pemandangan Prau', $response->json('alt'));
+        Storage::disk('public')->assertExists($path);
+    }
+
+    public function test_guest_cannot_upload_inline_guide_image(): void
+    {
+        $this->post(route('admin.guides.media.store'), [
+            'image' => UploadedFile::fake()->image('prau.png'),
+        ])->assertRedirect(route('login'));
     }
 
     public function test_owner_can_mark_guide_as_featured(): void

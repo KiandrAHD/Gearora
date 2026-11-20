@@ -21,6 +21,8 @@ class TripPackageFactory extends Factory
     {
         return [
             'code' => 'GRP-'.now()->format('Ymd').'-'.strtoupper(Str::random(4)),
+            'checkout_key' => Str::uuid()->toString(),
+            'checkout_key' => (string) Str::uuid(),
             'customer_id' => User::factory(),
             'activity' => 'hiking',
             'destination' => 'Gunung Prau',

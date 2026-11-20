@@ -17,6 +17,7 @@ use App\Support\RentalPeriod;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,6 +32,8 @@ class TripPackageController extends Controller
 {
     private const SESSION_KEY = 'trip_package_draft';
 
+    private const CHECKOUT_KEY = 'trip_package_checkout_key';
+
     public function __construct(
         private readonly RentalPricingService $pricing,
         private readonly TripPackageCheckoutService $checkout,
@@ -42,6 +45,7 @@ class TripPackageController extends Controller
         $data['notes'] = filled($data['notes'] ?? null) ? (string) $data['notes'] : null;
 
         $request->session()->put(self::SESSION_KEY, $data);
+        $request->session()->put(self::CHECKOUT_KEY, (string) Str::uuid());
 
         return redirect()->route('trip-planner.package.review');
     }
@@ -56,6 +60,12 @@ class TripPackageController extends Controller
         }
 
         $preview = $this->preview($draft);
+        $checkoutKey = (string) ($request->session()->get(self::CHECKOUT_KEY) ?? '');
+
+        if ($checkoutKey === '') {
+            $checkoutKey = (string) Str::uuid();
+            $request->session()->put(self::CHECKOUT_KEY, $checkoutKey);
+        }
 
         return view('trip-planner.package-review', [
             'plan' => $preview['plan'],
@@ -68,6 +78,7 @@ class TripPackageController extends Controller
             'notice' => $preview['notice'],
             'notes' => $draft['notes'] ?? null,
             'methods' => PaymentMethod::cases(),
+            'checkoutKey' => $checkoutKey,
         ]);
     }
 
@@ -162,11 +173,19 @@ class TripPackageController extends Controller
         }
 
         $plan = TripPlanData::fromArray($draft);
+        $checkoutKey = (string) ($request->session()->get(self::CHECKOUT_KEY) ?? '');
+
+        if ($checkoutKey === '') {
+            $checkoutKey = (string) Str::uuid();
+            $request->session()->put(self::CHECKOUT_KEY, $checkoutKey);
+        }
+
         $packageData = new TripPackageData(
             plan: $plan,
             items: array_values((array) ($draft['items'] ?? [])),
             method: PaymentMethod::from($request->validated('payment_method')),
             notes: $request->validated('notes') ?? ($draft['notes'] ?? null),
+            checkoutKey: $checkoutKey,
         );
 
         try {

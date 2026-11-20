@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DepositController as AdminDepositController;
 use App\Http\Controllers\Admin\GuideCategoryController as AdminGuideCategoryController;
 use App\Http\Controllers\Admin\GuideController as AdminGuideController;
+use App\Http\Controllers\Admin\GuideMediaController as AdminGuideMediaController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OperationController as AdminOperationController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\RentalOrderController as AdminRentalOrderController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SalesOrderController as AdminSalesOrderController;
+use App\Http\Controllers\Admin\TripPackageController as AdminTripPackageController;
 use App\Http\Controllers\Admin\TripRecommendationRuleController as AdminTripRecommendationRuleController;
 use App\Http\Controllers\Auth\CustomerLoginController;
 use App\Http\Controllers\Auth\CustomerRegisterController;
@@ -131,6 +133,11 @@ Route::prefix('admin')->as('admin.')->group(function (): void {
         Route::put('/inventory/assets/{asset}', [AdminInventoryController::class, 'updateAsset'])->name('inventory.assets.update');
         Route::post('/inventory/variants/{variant}/stock', [AdminInventoryController::class, 'adjustStock'])->name('inventory.stock.adjust');
 
+        Route::get('/trip-packages', [AdminTripPackageController::class, 'index'])->name('trip-packages.index');
+        Route::get('/trip-packages/{tripPackage}', [AdminTripPackageController::class, 'show'])
+            ->where('tripPackage', '[A-Za-z0-9-]+')
+            ->name('trip-packages.show');
+
         Route::get('/rentals', [AdminRentalOrderController::class, 'index'])->name('rentals.index');
         Route::get('/rentals/{order}', [AdminRentalOrderController::class, 'show'])->name('rentals.show');
         Route::post('/rentals/{order}/transition', [AdminRentalOrderController::class, 'transition'])->name('rentals.transition');
@@ -178,6 +185,9 @@ Route::prefix('admin')->as('admin.')->group(function (): void {
 
         Route::resource('guide-categories', AdminGuideCategoryController::class)->except('show');
         Route::post('/guides/preview', [AdminGuideController::class, 'preview'])->name('guides.preview');
+        Route::post('/guides/media', [AdminGuideMediaController::class, 'store'])
+            ->middleware('throttle:30,1')
+            ->name('guides.media.store');
         Route::resource('guides', AdminGuideController::class)->except('show');
         Route::post('/guides/{guide}/publish', [AdminGuideController::class, 'publish'])->name('guides.publish');
         Route::post('/guides/{guide}/unpublish', [AdminGuideController::class, 'unpublish'])->name('guides.unpublish');

@@ -101,6 +101,8 @@ return [
         'cover_max_kb' => (int) env('GEARORA_GUIDE_COVER_MAX_KB', 4096),
         'cover_disk' => env('GEARORA_GUIDE_COVER_DISK', 'public'),
         'cover_directory' => 'guide-covers',
+        'inline_directory' => 'guide-inline',
+        'inline_max_kb' => (int) env('GEARORA_GUIDE_INLINE_MAX_KB', 4096),
         'max_content_kb' => (int) env('GEARORA_GUIDE_CONTENT_MAX_KB', 200),
     ],
 

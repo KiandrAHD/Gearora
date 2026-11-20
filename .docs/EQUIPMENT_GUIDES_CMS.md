@@ -113,9 +113,10 @@ Dengan pendekatan escape-first, payload seperti `<script>alert(1)</script>` tamp
 ### 5.2 Upload
 
 - `image` + `mimetypes` (`image/jpeg`, `image/png`, `image/webp`).
-- Ukuran dibatasi `cover_max_kb`.
+- Ukuran dibatasi `cover_max_kb` untuk sampul dan `inline_max_kb` untuk gambar inline.
 - Disimpan dengan nama acak via `Storage::putFile`.
 - Disk dikonfigurasi (`public` default); path lama dihapus saat diganti.
+- Gambar inline diunggah lewat `POST /admin/guides/media` (throttle 30/menit) dan hanya untuk staf dengan izin create/update panduan. Respons berupa `path`, `url` (`/media/...`), dan `alt`.
 
 ### 5.3 Otorisasi
 

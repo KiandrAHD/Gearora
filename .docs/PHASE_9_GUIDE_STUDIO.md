@@ -11,7 +11,9 @@ Tanggal: 20 November 2026
 
 ## Admin Studio
 
-- Toolbar Markdown: bold, italic, heading, list, link, gambar lokal, YouTube.
+- Toolbar Markdown: bold, italic, heading, list, link.
+- Unggah gambar inline (JPG/PNG/WEBP) → sisip `![alt](/media/...)`; endpoint `admin.guides.media.store` dengan throttle.
+- Tempel URL YouTube (watch/youtu.be/shorts) → otomatis jadi `@youtube[VIDEO_ID]` tervalidasi.
 - Preview live via `admin.guides.preview`.
 - Estimasi waktu baca server-rendered.
 - Checkbox featured.
@@ -28,4 +30,4 @@ Renderer escape-first (`GuideContentRenderer`):
 
 ## Coverage
 
-`GuideContentRendererTest`, `AdminGuideStudioTest`, `EquipmentGuideTest`, dan `AdminEquipmentGuideTest`.
+`GuideContentRendererTest`, `AdminGuideStudioTest`, `GuideMediaUploadTest`, `EquipmentGuideTest`, dan `AdminEquipmentGuideTest`.

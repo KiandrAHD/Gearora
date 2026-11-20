@@ -6,8 +6,8 @@ Tanggal: 20 November 2026
 
 | Check | Command | Result |
 |---|---|---|
-| SQLite full suite | `php artisan test --compact` | PASS — 320 tests, 988 assertions |
-| MySQL integration | `php artisan test --configuration=phpunit.mysql.xml tests/MySql` | PASS — 7 tests, 71 assertions; target enforced as `gearora_test` |
+| SQLite full suite | `php artisan test --compact` | PASS — 331 tests, 1020 assertions |
+| MySQL integration | `vendor/bin/phpunit -c phpunit.mysql.xml tests/MySql` | PASS — 7 tests, 71 assertions, exit 0; target enforced as `gearora_test` |
 | Frontend build | `npm run build` | PASS — Vite production build |
 | Code style | `vendor/bin/pint` on changed PHP files | PASS |
 | Whitespace | `git diff --check` | PASS |

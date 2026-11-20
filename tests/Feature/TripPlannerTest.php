@@ -34,12 +34,13 @@ class TripPlannerTest extends TestCase
             'destination' => 'Bromo',
             'duration_days' => 3,
             'participants' => 2,
+            'experience' => 'pemula',
             'mode' => 'sewa',
         ]);
 
         $response->assertOk()
             ->assertSee('item cocok')
-            ->assertSee('Bromo');
+            ->assertSee('Gunung Prau');
     }
 
     public function test_post_invalid_activity_returns_validation(): void
@@ -50,6 +51,7 @@ class TripPlannerTest extends TestCase
             'destination' => 'Bromo',
             'duration_days' => 3,
             'participants' => 2,
+            'experience' => 'pemula',
             'mode' => 'sewa',
         ]);
 
@@ -77,7 +79,7 @@ class TripPlannerTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertSee('Merbabu')
+            ->assertSee('Gunung Prau')
             ->assertSee('value="hiking" selected', false);
     }
 
