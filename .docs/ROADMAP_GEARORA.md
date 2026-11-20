@@ -306,7 +306,7 @@ Tidak ada blocker security atau data integrity; alur utama lulus test; file sens
 
 **Tujuan:** menyatukan pengalaman publik — navbar, katalog rental/retail, Trip Planner sampai pembayaran/dokumen paket, dan editorial Equipment Guides + Admin Studio.
 
-**Status (20 Nov 2026): PARTIALLY COMPLETED.** Implementasi dan automated tests lulus; browser smoke disposable SQLite lulus. Authenticated checkout/payment browser walkthrough, Midtrans Sandbox, dan deployment belum dijalankan.
+**Status (20 Nov 2026): COMPLETED (implementasi & verifikasi).** Implementasi, automated tests, dan browser E2E (SQLite disposable, termasuk checkout transfer + dokumen/PDF + Guide Studio + admin monitor) lulus. Empat item masih BLOCKED karena butuh sumber daya eksternal: verifikasi layout mobile piksel di browser, Midtrans Sandbox, Figma, dan deployment.
 
 ### Tasks
 
@@ -317,7 +317,9 @@ Tidak ada blocker security atau data integrity; alur utama lulus test; file sens
 - [x] Guide editorial: featured, reading time, related, inline image lokal, YouTube nocookie tervalidasi, preview aman. — commit `01a4df6`.
 - [x] SQLite suite + MySQL integration + Vite build + Pint. — lihat `.docs/PHASE_9_TEST_PLAN.md`.
 - [x] Browser smoke homepage, wizard, hasil rekomendasi, panduan pada `storage/phase9-e2e.sqlite`.
-- [ ] Authenticated checkout/payment browser walkthrough dan Midtrans Sandbox. — **PENDING**.
+- [x] Browser E2E authenticated checkout (transfer), dokumen/PDF paket, Guide Studio (publish + inline image + YouTube + XSS payload), admin monitor paket. — lihat `.docs/PHASE_9_BROWSER_E2E_RESULTS.md`.
+- [ ] Verifikasi layout mobile piksel di browser. — **BLOCKED** (headless Chrome mengunci viewport).
+- [ ] Midtrans Sandbox walkthrough. — **BLOCKED** (butuh kredensial).
 - [ ] Deployment dan merge ke `main`. — menunggu keputusan owner.
 
 ### Exit Criteria

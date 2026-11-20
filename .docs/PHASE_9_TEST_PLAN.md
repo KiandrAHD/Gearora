@@ -24,7 +24,11 @@ Target: local Laravel server, disposable SQLite `storage/phase9-e2e.sqlite`. No 
 | Recommendation results | POST returned results; three demo gear cards and package form rendered |
 | Guides landing | HTTP 200; editorial hero and guide cards rendered |
 
-No screenshots recorded in this verification run. Browser smoke did not submit payment or create real orders. Automated SQLite feature tests cover mixed order creation; MySQL test covers the same transactional path. Midtrans production was not invoked.
+Screenshots were recorded under `storage/e2e/` (not committed). Browser E2E
+extended to authenticated checkout (transfer), package document/PDF, Guide Studio
+(publish + inline image + YouTube + XSS payload), and admin trip-package monitor.
+Midtrans production was not invoked. Full evidence and the mobile-viewport
+limitation are in `.docs/PHASE_9_BROWSER_E2E_RESULTS.md`.
 
 ## MySQL safety
 

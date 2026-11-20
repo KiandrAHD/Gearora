@@ -4,7 +4,7 @@
 
 GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perlengkapan outdoor** (hiking, trekking, camping, dan aktivitas alam lainnya). Platform menyatukan pencarian gear, pemeriksaan ketersediaan, reservasi, panduan penggunaan, serta pengelolaan inventaris dan transaksi.
 
-> Status: **Phase 9 selesai implementasi lokal** untuk UX navbar, katalog rental/retail, Trip Planner lima langkah + paket mixed sewa/beli, dan editorial Equipment Guides + Admin Studio. Automated suite: **331 tests / 1020 assertions lulus** (SQLite) + **7 tests / 71 assertions** (integrasi MySQL 8 pada `gearora_test`). Browser smoke disposable SQLite lulus untuk homepage, wizard, hasil rekomendasi, dan panduan. Release produksi masih **PARTIALLY COMPLETED**: authenticated checkout browser, Midtrans Sandbox, hosting, dan merge ke main menunggu operator.
+> Status: **Phase 9 selesai implementasi lokal** untuk UX navbar, katalog rental/retail, Trip Planner lima langkah + paket mixed sewa/beli, dan editorial Equipment Guides + Admin Studio. Automated suite: **331 tests / 1020 assertions lulus** (SQLite) + **7 tests / 71 assertions** (integrasi MySQL 8 pada `gearora_test`). Browser E2E (SQLite disposable) lulus untuk katalog, wizard, checkout transfer, dokumen/PDF paket, Guide Studio + halaman panduan, dan admin monitor paket. Release produksi masih **BLOCKED** untuk: verifikasi layout mobile piksel di browser, Midtrans Sandbox, hosting, Figma, dan merge ke main — menunggu operator.
 >
 > Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_8_COMPLETION_REPORT.md`](.docs/PHASE_8_COMPLETION_REPORT.md) (sebelumnya: [`.docs/PHASE_7_5_COMPLETION_REPORT.md`](.docs/PHASE_7_5_COMPLETION_REPORT.md)).
 
@@ -36,12 +36,12 @@ GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perleng
 Phase 7.5 selesai di source dan test lokal. Phase 8 (release readiness) menutup hardening keamanan, QA, backup/restore, dan CI.
 
 **Phase 9 (UX + transaction experience):**
-- [UX Audit](.docs/PHASE_9_UX_AUDIT.md)
-- [Implementation](.docs/PHASE_9_IMPLEMENTATION.md)
-- [Trip Package ADR](.docs/ADR_PHASE_9_TRIP_PACKAGE.md)
-- [Test Plan and Results](.docs/PHASE_9_TEST_PLAN.md)
-- [Release Checklist](.docs/PHASE_9_RELEASE_CHECKLIST.md)
-- [Completion Report](.docs/PHASE_9_COMPLETION_REPORT.md)
+- [UX Audit](.docs/PHASE_9_UX_AUDIT.md) · [Design Spec](.docs/PHASE_9_DESIGN_SPEC.md)
+- [Implementation](.docs/PHASE_9_IMPLEMENTATION.md) · [Catalog Implementation](.docs/PHASE_9_CATALOG_IMPLEMENTATION.md)
+- [Trip Package ADR](.docs/ADR_PHASE_9_TRIP_PACKAGE.md) · [Trip Package Architecture](.docs/PHASE_9_TRIP_PACKAGE_ARCHITECTURE.md) · [Guide Studio Architecture](.docs/PHASE_9_GUIDE_STUDIO_ARCHITECTURE.md)
+- [Test Plan and Results](.docs/PHASE_9_TEST_PLAN.md) · [Browser E2E Results](.docs/PHASE_9_BROWSER_E2E_RESULTS.md)
+- [Product Image Test](.docs/PHASE_9_PRODUCT_IMAGE_TEST_REPORT.md) · [Trip Package Test](.docs/PHASE_9_TRIP_PACKAGE_TEST_REPORT.md) · [Guide CMS Test](.docs/PHASE_9_GUIDE_CMS_TEST_REPORT.md)
+- [Release Checklist](.docs/PHASE_9_RELEASE_CHECKLIST.md) · [Completion Report](.docs/PHASE_9_COMPLETION_REPORT.md)
 - [Navbar & Catalog](.docs/PHASE_9_NAVBAR_CATALOG.md) · [Trip Planner](.docs/PHASE_9_TRIP_PLANNER.md) · [Guide Studio](.docs/PHASE_9_GUIDE_STUDIO.md)
 - [Security Notes](.docs/PHASE_9_SECURITY_NOTES.md) · [MySQL Integration](.docs/PHASE_9_MYSQL_INTEGRATION.md) · [Known Limitations](.docs/PHASE_9_KNOWN_LIMITATIONS.md)
 

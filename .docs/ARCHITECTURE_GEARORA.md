@@ -276,11 +276,11 @@ Reservasi stok jual terpisah (`sales_stock_reservations`): `reserved` menahan st
 
 ### 8.5 Equipment Guide
 
-`draft` → `published` → `archived`. Hanya `published` dengan `published_at <= now()` yang tampil publik. `unpublish` mengembalikan ke `draft`. Konten dirender escape-first oleh `GuideContentRenderer`; embed hanya YouTube `youtube-nocookie.com` dengan ID tervalidasi. `is_featured` menandai panduan unggulan tanpa mengubah lifecycle.
+`draft` → `published` → `archived`. Hanya `published` dengan `published_at <= now()` yang tampil publik. `unpublish` mengembalikan ke `draft`. Konten dirender escape-first oleh `GuideContentRenderer`; embed hanya YouTube `youtube-nocookie.com` dengan ID tervalidasi. `is_featured` menandai panduan unggulan tanpa mengubah lifecycle. Gambar inline diunggah lewat `admin.guides.media.store` (`Admin\GuideMediaController`) ke disk publik (`guide-inline/`, nama acak) dan hanya aset lokal `/media/...` yang dirender; hotlink eksternal ditolak. Arsitektur lengkap: [Guide Studio Architecture](./PHASE_9_GUIDE_STUDIO_ARCHITECTURE.md).
 
 ### 8.6 Trip Package
 
-`TripPackage` menautkan satu `RentalOrder` dan/atau satu `SalesOrder` (keduanya nullable) plus `plan_snapshot`. Status paket adalah agregasi status order, bukan sumber kebenaran pembayaran. `TripPackageCheckoutService` membuka satu `DB::transaction`, lalu memanggil service domain order yang sudah ada (nested transaction = savepoint). Harga, deposit, dan stok dihitung ulang server-side. Detail keputusan: [ADR Paket Trip](./ADR_PHASE_9_TRIP_PACKAGE.md).
+`TripPackage` menautkan satu `RentalOrder` dan/atau satu `SalesOrder` (keduanya nullable) plus `plan_snapshot`. Status paket adalah agregasi status order, bukan sumber kebenaran pembayaran. `TripPackageCheckoutService` membuka satu `DB::transaction`, lalu memanggil service domain order yang sudah ada (nested transaction = savepoint). Harga, deposit, dan stok dihitung ulang server-side. Idempotensi checkout dijaga oleh `checkout_key` (UUID unik) di `trip_packages` + `Cache::lock`, sehingga permintaan ganda mengembalikan paket yang sudah ada alih-alih membuat order duplikat. Detail keputusan: [ADR Paket Trip](./ADR_PHASE_9_TRIP_PACKAGE.md) · [Trip Package Architecture](./PHASE_9_TRIP_PACKAGE_ARCHITECTURE.md).
 
 ## 9. Availability & Anti-Overbooking
 
