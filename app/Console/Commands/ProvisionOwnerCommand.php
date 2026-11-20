@@ -8,17 +8,18 @@ use App\Services\ActivityLogger;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 /**
- * Membuat atau mempromosikan akun Owner. Password tidak pernah di-hardcode
- * dan selalu diminta secara interaktif (atau lewat opsi rahasia saat otomasi).
+ * Membuat atau mempromosikan akun Owner. Password tidak pernah di-hardcode dan
+ * tidak diterima lewat argumen command (agar tidak terekspos di shell history
+ * atau daftar proses); selalu diminta secara interaktif dan dikonfirmasi.
  */
 class ProvisionOwnerCommand extends Command
 {
     protected $signature = 'gearora:provision-owner
         {--name= : Nama pemilik}
-        {--email= : Email pemilik}
-        {--password= : Password (kosongkan untuk diminta interaktif)}';
+        {--email= : Email pemilik}';
 
     protected $description = 'Membuat akun Owner GEARORA dengan role owner.';
 
@@ -32,14 +33,23 @@ class ProvisionOwnerCommand extends Command
 
         $name = (string) ($this->option('name') ?: $this->ask('Nama pemilik'));
         $email = (string) ($this->option('email') ?: $this->ask('Email pemilik'));
-        $password = (string) ($this->option('password') ?: $this->secret('Password (min 8 karakter, kombinasi huruf & angka)'));
+
+        // Password hanya lewat prompt rahasia; tidak ada opsi CLI dan tidak ada default.
+        $password = (string) $this->secret('Password Owner (min 8 karakter, kombinasi huruf & angka)');
+        $confirmation = (string) $this->secret('Ulangi password Owner');
+
+        if ($password !== $confirmation) {
+            $this->error('Konfirmasi password tidak cocok.');
+
+            return self::FAILURE;
+        }
 
         $validator = Validator::make(
             ['name' => $name, 'email' => $email, 'password' => $password],
             [
                 'name' => ['required', 'string', 'min:3', 'max:120'],
                 'email' => ['required', 'string', 'email:rfc', 'max:190'],
-                'password' => ['required', 'string', 'min:8'],
+                'password' => ['required', 'string', 'min:8', Password::min(8)->letters()->numbers()],
             ],
         );
 
@@ -65,7 +75,7 @@ class ProvisionOwnerCommand extends Command
         });
 
         $this->info("Owner siap: {$user->email} (id {$user->getKey()}).");
-        $this->warn('Segera ganti password default dan pastikan hanya Owner yang memegang akun ini.');
+        $this->warn('Simpan password di tempat aman dan jangan bagikan akun Owner.');
 
         return self::SUCCESS;
     }

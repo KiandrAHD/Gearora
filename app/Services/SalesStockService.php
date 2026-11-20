@@ -186,7 +186,7 @@ class SalesStockService
         return DB::transaction(function () use ($order, $status, $actor) {
             $affected = SalesStockReservation::query()
                 ->where('sales_order_id', $order->getKey())
-                ->active()
+                ->where('status', SalesReservationStatus::Reserved->value)
                 ->update([
                     'status' => $status->value,
                     'released_at' => now(),

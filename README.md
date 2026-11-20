@@ -4,9 +4,9 @@
 
 GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perlengkapan outdoor** (hiking, trekking, camping, dan aktivitas alam lainnya). Platform menyatukan pencarian gear, pemeriksaan ketersediaan, reservasi, panduan penggunaan, serta pengelolaan inventaris dan transaksi.
 
-> Status: **Phase 0–7.5 selesai lokal** untuk foundation, auth/RBAC, katalog/inventaris, rental MVP, pembayaran & operasional, Trip Planner & Equipment Guides, retail sales, serta optimasi admin dan ekspor laporan PDF/XLSX/CSV. Automated suite: **206 tests / 624 assertions lulus**. Verifikasi hosting AeonFree, MySQL `gearora_test`, Midtrans Sandbox, dan browser visual QA masih **BLOCKED/PENDING**.
+> Status: **Phase 0–8 selesai lokal** untuk foundation, auth/RBAC, katalog/inventaris, rental MVP, pembayaran & operasional, Trip Planner & Equipment Guides, retail sales, optimasi admin + ekspor laporan, serta hardening release (keamanan, QA, backup/restore, CI). Automated suite: **249 tests / 747 assertions lulus** (SQLite) + **5 tests / 58 assertions** (integrasi MySQL 8). Browser QA nyata lulus (halaman publik, daftar/login, kontrol akses admin). Verifikasi hosting AeonFree dan Midtrans Sandbox end-to-end masih **BLOCKED/PENDING** (butuh akses operator).
 >
-> Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_7_5_COMPLETION_REPORT.md`](.docs/PHASE_7_5_COMPLETION_REPORT.md).
+> Aturan bisnis rental: [`.docs/RENTAL_POLICY.md`](.docs/RENTAL_POLICY.md). Laporan terbaru: [`.docs/PHASE_8_COMPLETION_REPORT.md`](.docs/PHASE_8_COMPLETION_REPORT.md) (sebelumnya: [`.docs/PHASE_7_5_COMPLETION_REPORT.md`](.docs/PHASE_7_5_COMPLETION_REPORT.md)).
 
 ---
 
@@ -33,7 +33,21 @@ GEARORA adalah platform berbasis website untuk **penyewaan dan penjualan perleng
 
 ## 3. Status Implementasi & Dokumen
 
-Phase 7.5 selesai di source dan test lokal. Rincian desain, akses laporan, ekspor, navigasi, dan hasil verifikasi:
+Phase 7.5 selesai di source dan test lokal. Phase 8 (release readiness) menutup hardening keamanan, QA, backup/restore, dan CI.
+
+**Phase 8 (release readiness):**
+- [Completion Report](.docs/PHASE_8_COMPLETION_REPORT.md)
+- [Baseline Audit](.docs/PHASE_8_BASELINE_AUDIT.md)
+- [Bug Register](.docs/PHASE_8_BUG_REGISTER.md)
+- [Security Audit](.docs/PHASE_8_SECURITY_AUDIT.md)
+- [Route Authorization Matrix](.docs/PHASE_8_ROUTE_AUTHORIZATION_MATRIX.md)
+- [Test Plan](.docs/PHASE_8_TEST_PLAN.md)
+- [E2E Test Results](.docs/PHASE_8_E2E_TEST_RESULTS.md)
+- [MySQL Integration Report](.docs/PHASE_8_MYSQL_INTEGRATION_REPORT.md)
+- [Backup & Restore Report](.docs/PHASE_8_BACKUP_RESTORE_REPORT.md) · [Runbook](.docs/BACKUP_AND_RESTORE.md)
+- [Release Checklist](.docs/PHASE_8_RELEASE_CHECKLIST.md) · [Deployment Readiness](.docs/PHASE_8_DEPLOYMENT_READINESS.md)
+
+**Phase 7.5:**
 
 - [Phase 7.5 Completion Report](.docs/PHASE_7_5_COMPLETION_REPORT.md)
 - [Technical Design](.docs/PHASE_7_5_TECHNICAL_DESIGN.md)
@@ -128,13 +142,30 @@ php artisan test
 ./vendor/bin/phpunit
 ```
 
-Hasil terakhir: **174 tests, 495 assertions** (SQLite in-memory). Untuk parity MySQL (butuh database terpisah `gearora_test`):
+Hasil terakhir: **249 tests, 747 assertions** (SQLite in-memory). Pemeriksaan tambahan:
 
 ```bash
-php artisan test --configuration=phpunit.mysql.xml
+vendor/bin/pint --test              # gaya kode
+composer validate --strict          # manifest
+composer audit                      # advisory PHP
+npm audit                           # advisory JS
+npm run build                       # build aset
 ```
 
+Untuk parity MySQL (butuh database terpisah `gearora_test`, dijalankan dengan MySQL 8 aktif):
+
+```bash
+vendor/bin/phpunit --configuration=phpunit.mysql.xml
+```
+
+Hasil terakhir MySQL: **5 tests, 58 assertions** (termasuk uji row-lock InnoDB dua koneksi).
+
 Jangan pernah memakai `migrate:fresh`, `db:wipe`, atau `migrate:reset` pada database `gearora`.
+Test MySQL menolak berjalan bila `DB_DATABASE` bukan `gearora_test`.
+
+Backup/restore: lihat `.docs/BACKUP_AND_RESTORE.md`. Gate konfigurasi produksi:
+`php artisan gearora:production-check`. Expiry reservasi retail:
+`php artisan gearora:expire-sales-orders`.
 
 ## 10. Build Production
 

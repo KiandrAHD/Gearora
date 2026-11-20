@@ -301,8 +301,15 @@ class SalesPaymentService
 
             $order = SalesOrder::query()->whereKey($payment->sales_order_id)->lockForUpdate()->firstOrFail();
 
+            // Reservasi yang sudah kedaluwarsa/dilepas tidak boleh dikonsumsi lagi.
+            // Bila order belum final tetapi tidak ada reservasi aktif, ini late
+            // settlement: jangan konfirmasi order, jangan potong stok.
+            $pendingObligation = in_array($order->order_status, [SalesOrderStatus::PendingPayment, SalesOrderStatus::PaymentReview], true);
+            $activeReservations = $order->reservations()->active()->count();
+
             $late = in_array($order->order_status, [SalesOrderStatus::Cancelled, SalesOrderStatus::Expired], true)
-                || in_array($payment->status, [PaymentStatus::Expired, PaymentStatus::Failed], true);
+                || in_array($payment->status, [PaymentStatus::Expired, PaymentStatus::Failed], true)
+                || ($pendingObligation && $activeReservations === 0);
 
             $payment->forceFill([
                 'status' => $late ? PaymentStatus::Processing : PaymentStatus::Verified,

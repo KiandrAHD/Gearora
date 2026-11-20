@@ -270,29 +270,33 @@ Sales tidak mengubah data rental; stok berkurang sesuai kebijakan; laporan dapat
 
 **Tujuan:** mempersiapkan demonstrasi dan deployment yang aman.
 
+**Status (20 Nov 2026): SELESAI untuk kode + automated tests + browser QA + backup/restore + CI + docs. Deployment dan smoke test nyata BLOCKED tanpa akses hosting. Gate otomatis (`gearora:production-check`) memastikan konfigurasi tidak aman akan menggagalkan boot.**
+
+Laporan: `.docs/PHASE_8_COMPLETION_REPORT.md`. Rincian: [Baseline Audit](./PHASE_8_BASELINE_AUDIT.md), [Bug Register](./PHASE_8_BUG_REGISTER.md), [Security Audit](./PHASE_8_SECURITY_AUDIT.md), [Route Auth Matrix](./PHASE_8_ROUTE_AUTHORIZATION_MATRIX.md), [Test Plan](./PHASE_8_TEST_PLAN.md), [E2E Results](./PHASE_8_E2E_TEST_RESULTS.md), [MySQL Report](./PHASE_8_MYSQL_INTEGRATION_REPORT.md), [Backup Report](./PHASE_8_BACKUP_RESTORE_REPORT.md), [Release Checklist](./PHASE_8_RELEASE_CHECKLIST.md), [Deployment Readiness](./PHASE_8_DEPLOYMENT_READINESS.md).
+
 ### Tasks
 
-- [ ] Jalankan seluruh unit dan feature tests.
-- [ ] Uji role/permission untuk semua route admin.
-- [ ] Uji CSRF, validasi, rate limiting, upload, dan akses file privat.
-- [ ] Uji date overlap dan transaksi bersamaan.
-- [ ] Periksa query N+1, pagination, dan indeks database.
-- [ ] Uji responsive customer pages dan Admin Dashboard.
-- [ ] Lakukan accessibility pass pada form, tabel, modal, dan status.
-- [ ] Jalankan dependency audit dan hapus package tidak terpakai.
-- [ ] Siapkan backup database dan file upload.
-- [ ] Siapkan production `.env` tanpa memasukkannya ke Git.
-- [ ] Build asset dan Composer dependencies secara lokal.
-- [ ] Deploy ke AeonFree hanya setelah document root dan ekstensi dinyatakan aman.
-- [ ] Jalankan deployment smoke tests.
-- [ ] Buat README instalasi, panduan admin, dan panduan penggunaan.
+- [x] Jalankan seluruh unit dan feature tests. — 249 tests / 747 assertions lulus.
+- [x] Uji role/permission untuk semua route admin. — `AdminRouteAuthorizationTest`, matriks di `.docs/PHASE_8_ROUTE_AUTHORIZATION_MATRIX.md`.
+- [x] Uji CSRF, validasi, rate limiting, upload, dan akses file privat. — `CsrfSecurityTest`, `RateLimitSecurityTest`, `PrivateUploadSecurityTest`.
+- [x] Uji date overlap dan transaksi bersamaan. — `MySqlConcurrencyTest` (row-lock InnoDB dua koneksi).
+- [x] Periksa query N+1, pagination, dan indeks database. — tinjauan + unique index `event_hash`; parity MySQL hijau.
+- [x] Uji responsive customer pages dan Admin Dashboard. — browser QA (8 halaman publik + area admin).
+- [~] Lakukan accessibility pass pada form, tabel, modal, dan status. — komponen sudah memakai `aria-describedby`, `focus-visible`, dan skip-link; audit a11y menyeluruh belum dijalankan.
+- [x] Jalankan dependency audit dan hapus package tidak terpakai. — `composer audit` & `npm audit` bersih.
+- [x] Siapkan backup database dan file upload. — `.docs/BACKUP_AND_RESTORE.md` + laporan validasi.
+- [x] Siapkan production `.env` tanpa memasukkannya ke Git. — gate `gearora:production-check`.
+- [x] Build asset dan Composer dependencies secara lokal. — `npm run build` sukses.
+- [ ] Deploy ke AeonFree hanya setelah document root dan ekstensi dinyatakan aman. — **BLOCKED** (tanpa akses cPanel).
+- [ ] Jalankan deployment smoke tests. — **BLOCKED** (butuh deployment nyata).
+- [x] Buat README instalasi, panduan admin, dan panduan penggunaan. — README, runbook backup, dan dokumentasi Phase 8.
 
 ### Deliverables
 
-- Release candidate.
-- Test report/checklist.
-- Backup & restore procedure.
-- Deployment notes dan user documentation.
+- Release candidate. — commit Phase 8 di `main`.
+- Test report/checklist. — `.docs/PHASE_8_TEST_PLAN.md`, `.docs/PHASE_8_RELEASE_CHECKLIST.md`.
+- Backup & restore procedure. — `.docs/BACKUP_AND_RESTORE.md`.
+- Deployment notes dan user documentation. — `.docs/PHASE_8_DEPLOYMENT_READINESS.md`.
 
 ### Exit Criteria
 

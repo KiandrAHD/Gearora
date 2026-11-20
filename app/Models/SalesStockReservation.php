@@ -65,6 +65,11 @@ class SalesStockReservation extends Model
      */
     public function scopeActive(Builder $query): void
     {
-        $query->where('status', SalesReservationStatus::Reserved->value);
+        // Reservation yang melewati expires_at tidak boleh menahan stok, bahkan
+        // sebelum job expiry sempat mengubah statusnya.
+        $query->where('status', SalesReservationStatus::Reserved->value)
+            ->where(function (Builder $query): void {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            });
     }
 }

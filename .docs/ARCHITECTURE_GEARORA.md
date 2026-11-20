@@ -450,7 +450,30 @@ Phase 7.5 mempertahankan modular monolith dan menambah layer terpisah untuk konf
 
 Rujukan detail: [Phase 7.5 Technical Design](./PHASE_7_5_TECHNICAL_DESIGN.md), [Report Access Control](./REPORT_ACCESS_CONTROL.md), dan [Report Export Guide](./REPORT_EXPORT_GUIDE.md).
 
-## 19. Referensi
+## 19. Phase 8 — Hardening & Release Readiness
+
+Phase 8 tidak mengubah gaya arsitektur (tetap modular monolith), tetapi memperkuat invariant
+keamanan dan konsistensi data:
+
+- **Webhook signature-first.** `PaymentNotificationService::handle` memverifikasi signature
+  **sebelum** mendaftarkan `event_hash`; penolakan dicatat pada namespace hash terpisah sehingga
+  tidak dapat mengklaim fingerprint notifikasi valid. Event berstatus `Failed` dapat diretry;
+  status lain diperlakukan sebagai duplikat. Detail: [`PHASE_8_SECURITY_AUDIT.md`](./PHASE_8_SECURITY_AUDIT.md).
+- **Guard provider pembayaran.** Produksi menolak `FakePaymentGateway` (fail-fast); `testing`
+  selalu fake, `local` opt-in eksplisit.
+- **Kedaluwarsa reservasi retail.** `SalesOrderExpiryService` + command
+  `gearora:expire-sales-orders` melepaskan stok; `SalesStockReservation::scopeActive()` sadar
+  waktu sehingga stok tidak tertahan walau job belum berjalan. Semua mutasi di bawah lock order.
+- **Late-settlement guard.** `SalesPaymentService::markSettled` tidak mengonfirmasi order/tidak
+  memotong stok bila reservasi aktif sudah habis; payment ditandai `Processing` untuk rekonsiliasi.
+- **Gate konfigurasi produksi.** `ProductionReadiness` dijalankan saat boot produksi dan via
+  `gearora:production-check`.
+- **Penanganan berkas & error.** Media publik hanya raster (tanpa SVG) dengan CSP/nosniff; view
+  error `403`/`4xx` menampilkan kode HTTP yang benar.
+
+Semua keputusan diuji otomatis dan diverifikasi browser; lihat [`PHASE_8_COMPLETION_REPORT.md`](./PHASE_8_COMPLETION_REPORT.md).
+
+## 20. Referensi
 
 - [Proposal GEARORA](https://github.com/KiandrAHD/Gearora/blob/main/.Gearora/GEARORA.md)
 - [Homepage Master Design Reference](https://github.com/KiandrAHD/Gearora/blob/main/.docs/Desain_Gearora.md)
