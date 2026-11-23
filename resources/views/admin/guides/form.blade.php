@@ -2,7 +2,8 @@
 <x-layouts.admin :title="$editing ? 'Ubah panduan' : 'Panduan baru'">
     @if($errors->any())<div class="notice notice-warning" role="alert">{{ $errors->first() }}</div>@endif
     <div class="panel guide-studio" x-data="guideEditor({ previewUrl: '{{ route('admin.guides.preview') }}', uploadUrl: '{{ route('admin.guides.media.store') }}', guideId: {{ $editing ? $guide->getKey() : 'null' }}, initial: @js(old('content', $guide->content)) })">
-        <div class="panel-head"><div><h2>{{ $editing ? 'Studio panduan' : 'Studio panduan baru' }}</h2><p class="field-hint">Editor Markdown aman. Pratinjau memakai renderer publik yang sama.</p></div><span class="field-hint" x-text="minutes + ' menit baca'"></span></div>
+        <div class="panel-head"><div><h2>{{ $editing ? 'Studio panduan' : 'Studio panduan baru' }}</h2><p class="field-hint">Editor Markdown aman. Pratinjau memakai renderer publik yang sama; HTML mentah tidak pernah dieksekusi.</p></div><span class="field-hint" x-text="minutes + ' menit baca'"></span></div>
+        <p class="guide-studio-note">Alur singkat: tulis judul, susun kerangka dengan heading, tambahkan gambar lokal (bukan hotlink), lalu pratinjau sebelum menerbitkan.</p>
         <form class="stack-form" method="post" enctype="multipart/form-data" action="{{ $editing ? route('admin.guides.update', $guide) : route('admin.guides.store') }}">
             @csrf
             @if($editing) @method('PUT') @endif

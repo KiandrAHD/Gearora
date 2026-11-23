@@ -1,5 +1,5 @@
 <x-layout :title="$guide->seo_title ?: $guide->title" :description="$guide->seo_description ?: ($guide->excerpt ?: \App\Support\GuideContentRenderer::plain($guide->content))">
-    <section class="guide-hero guide-hero-detail">
+    <section class="guide-detail-hero">
         <div class="page-container guide-hero-inner">
             <p class="eyebrow">{{ $guide->category?->name ?? 'Panduan' }}</p>
             <h1 class="page-title">{{ $guide->title }}</h1>
@@ -60,7 +60,7 @@
                 </section>
             @endif
 
-            <p class="field-hint">Panduan bersifat informasi umum, bukan pengganti pelatihan atau instruksi keselamatan resmi.</p>
+            <p class="guide-safety-note">Panduan bersifat informasi umum, bukan pengganti pelatihan atau instruksi keselamatan resmi. Cek cuaca, kondisi jalur, dan arahan pengelola kawasan sebelum berangkat.</p>
         </div>
     </article>
 </x-layout>

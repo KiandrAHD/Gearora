@@ -1,15 +1,15 @@
 <x-layout title="Panduan">
-    <section class="guide-hero">
-        <div class="page-container guide-hero-inner">
-            <p class="eyebrow">PANDUAN GEARORA</p>
-            <h1 class="page-title">Panduan sebelum bertualang.</h1>
-            <p class="page-lead">Catatan praktis untuk memilih, menyiapkan, dan merawat perlengkapan outdoor-mu — disusun ringkas oleh tim GEARORA.</p>
+    <section class="guide-library-hero">
+        <div class="page-container guide-library-hero-inner">
+            <p class="eyebrow">FIELD NOTES · GEARORA</p>
+            <h1 class="page-title">Bekal pengetahuan<br>sebelum melangkah.</h1>
+            <p class="page-lead">Panduan memilih, menyiapkan, dan merawat perlengkapan outdoor. Ditulis ringkas, bersumber, dan siap dibawa ke jalur.</p>
         </div>
     </section>
 
-    <section class="page-block">
+    <section class="page-block guide-library-content">
         <div class="page-container">
-            <form method="GET" action="{{ route('guides.index') }}" class="filter-bar">
+            <form method="GET" action="{{ route('guides.index') }}" class="guide-library-filter">
                 <input type="search" name="q" value="{{ $keyword }}" placeholder="Cari panduan..." aria-label="Cari panduan">
                 <select name="kategori" aria-label="Kategori">
                     <option value="">Semua kategori</option>
@@ -37,7 +37,10 @@
                 </section>
             @endif
 
-            <div class="section-heading"><h2>Semua panduan</h2></div>
+            <div class="guide-library-heading">
+                <div><h2>Semua panduan</h2><p>Pilih satu catatan, simpan ilmunya.</p></div>
+                @if($guides->total() > 0)<p>{{ $guides->total() }} artikel</p>@endif
+            </div>
 
             <div class="guide-grid">
                 @forelse($guides as $guide)

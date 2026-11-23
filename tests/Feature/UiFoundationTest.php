@@ -24,7 +24,7 @@ class UiFoundationTest extends TestCase
     {
         $this->get('/panduan')
             ->assertOk()
-            ->assertSee('Panduan sebelum bertualang.')
+            ->assertSee('Bekal pengetahuan')
             ->assertSee('Belum ada panduan dipublikasikan.');
     }
 
