@@ -6,7 +6,7 @@
 @source '../**/*.js';
 @theme { --color-forest:#143B2E; --color-navy:#0F1E26; --color-blue:#1B6CA8; --color-trail:#E06D32; --color-sage:#9BB094; --color-sand:#EFE5D6; --color-cloud:#FAFAF7; --color-earth:#7A624B; --color-line:#E2E6DF; --font-heading:'Plus Jakarta Sans',ui-sans-serif,system-ui,sans-serif; --font-sans:'Inter',ui-sans-serif,system-ui,sans-serif; }
 :root{--forest:#143B2E;--navy:#0F1E26;--blue:#1B6CA8;--trail:#E06D32;--sage:#9BB094;--sand:#EFE5D6;--cloud:#FAFAF7;--earth:#7A624B;--line:#E2E6DF}*{box-sizing:border-box}html{scroll-behavior:smooth}body.nav-open{overflow:hidden}body.modal-open{overflow:hidden}body{margin:0;min-width:320px;background:var(--cloud);color:var(--navy);font-family:Inter,ui-sans-serif,system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}h1,h2,h3{font-family:'Plus Jakarta Sans',ui-sans-serif,system-ui,sans-serif;letter-spacing:-.03em;margin:0}a{color:inherit;text-decoration:none}button,input{font:inherit}.page-container{width:min(1200px,calc(100% - 40px));margin-inline:auto}
-.site-header,.site-header-inner,.brand,.brand-mark,.brand-copy,.primary-nav,.header-actions,.header-icon,.mobile-menu,.account-action,.user-icon{all:unset}
+.site-header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:24px}.brand{display:flex;align-items:center;gap:10px;grid-column:1}.primary-nav{display:flex;gap:8px;justify-self:center;grid-column:2;align-self:stretch;align-items:center;margin:0}.primary-nav a{position:relative;display:flex;align-items:center}.primary-nav a[aria-current=page]::after{content:"";position:absolute;left:0;right:0;bottom:0}.header-actions{display:flex;align-items:center;gap:8px;justify-self:end;grid-column:3}
 /* Animated Floating Pill Navbar (Adapted to Gearora Clean Adventure Palette) */
 body.has-floating-nav main{padding-top:86px}
 .floating-nav-wrap{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:55;width:max-content;max-width:calc(100vw - 28px);pointer-events:none}
@@ -20,13 +20,14 @@ body.has-floating-nav main{padding-top:86px}
 .fn-brand-name{font:800 14.5px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:.06em;white-space:nowrap}
 .floating-nav.is-collapsed .fn-brand{opacity:0;transform:translateX(-16px) scale(.85);pointer-events:none;transition:opacity .2s ease,transform .35s ease}
 .floating-nav.is-collapsed .fn-logo{transform:rotate(-90deg)}
-.fn-links{display:flex;align-items:center;gap:4px;padding:0 4px;transition:opacity .32s ease .1s,transform .48s cubic-bezier(.22,1,.36,1)}
-.fn-links a{padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;color:inherit;opacity:.82;transition:opacity .18s,background .18s,color .18s}
-.fn-links a:hover{opacity:1;background:rgba(20,59,46,.08)}
-.floating-nav.is-hero-overlay:not(.is-scrolled) .fn-links a:hover{background:rgba(255,255,255,.14)}
-.fn-links a[aria-current=page]{opacity:1;background:var(--forest);color:#fff}
-.floating-nav.is-hero-overlay:not(.is-scrolled) .fn-links a[aria-current=page]{background:var(--trail);color:#fff}
-.floating-nav.is-collapsed .fn-links{opacity:0;transform:translateX(-12px) scale(.94);pointer-events:none;transition:opacity .18s ease,transform .3s ease}
+.floating-nav .primary-nav{display:flex;align-items:center;align-self:center;gap:4px;padding:0 4px;transition:opacity .32s ease .1s,transform .48s cubic-bezier(.22,1,.36,1)}
+.floating-nav .primary-nav a{padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;color:inherit;opacity:.82;transition:opacity .18s,background .18s,color .18s}
+.floating-nav .primary-nav a::after{display:none}
+.floating-nav .primary-nav a:hover{opacity:1;background:rgba(20,59,46,.08)}
+.floating-nav.is-hero-overlay:not(.is-scrolled) .primary-nav a:hover{background:rgba(255,255,255,.14)}
+.floating-nav .primary-nav a[aria-current=page]{opacity:1;background:var(--forest);color:#fff}
+.floating-nav.is-hero-overlay:not(.is-scrolled) .primary-nav a[aria-current=page]{background:var(--trail);color:#fff}
+.floating-nav.is-collapsed .primary-nav{opacity:0;transform:translateX(-12px) scale(.94);pointer-events:none;transition:opacity .18s ease,transform .3s ease}
 .fn-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;transition:opacity .32s ease .12s,transform .48s cubic-bezier(.22,1,.36,1)}
 .floating-nav.is-collapsed .fn-actions{opacity:0;transform:scale(.9);pointer-events:none;transition:opacity .18s ease,transform .3s ease}
 .fn-icon,.fn-mobile-toggle{position:relative;width:36px;height:36px;border-radius:999px;border:0;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer;transition:background .18s}
@@ -44,7 +45,7 @@ body.has-floating-nav main{padding-top:86px}
 .fn-collapsed-icon{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:scale(.75);pointer-events:none;transition:opacity .25s ease .08s,transform .35s cubic-bezier(.34,1.36,.5,1) .08s}
 .floating-nav.is-collapsed .fn-collapsed-icon{opacity:1;transform:scale(1)}
 .fn-mobile-toggle,.mobile-nav,.mobile-nav-backdrop{display:none}
-@media(max-width:900px){.fn-links,.fn-account{display:none}.fn-mobile-toggle{display:grid}.floating-nav{width:calc(100vw - 28px);justify-content:space-between;padding:0 10px 0 14px}}
+@media(max-width:900px){.mobile-nav{display:block;position:fixed;top:80px;left:14px;right:14px;padding:14px 18px 20px;background:var(--cloud);border:1px solid var(--line);border-radius:18px;box-shadow:0 20px 40px rgba(15,30,38,.18);z-index:54}.floating-nav .primary-nav,.fn-account{display:none}.fn-mobile-toggle{display:grid}.floating-nav{width:calc(100vw - 28px);justify-content:space-between;padding:0 10px 0 14px}}
 
 /* Clean Adventure Full-Bleed Hero */
 .hero-cinema{position:relative;padding:138px 0 0;margin-bottom:58px;color:#fff;background:#0F1E26}

@@ -85,13 +85,13 @@ class NavigationAndMobileTest extends TestCase
         $this->assertStringContainsString('body.nav-open{overflow:hidden}', $css);
     }
 
-    public function test_hero_svg_has_valid_driver_translation(): void
+    public function test_hero_renders_clean_adventure_banner(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('transform="translate(178 290)"', $html);
-        $this->assertStringNotContainsString('transform="translate(178 290">', $html);
-        $this->assertStringContainsString('viewBox="0 0 660 520"', $html);
+        $this->assertStringContainsString('hero-cinema', $html);
+        $this->assertStringContainsString('hero-mountain.jpg', $html);
+        $this->assertStringContainsString('hero-search-bar', $html);
     }
 
     private function primaryNav(string $html): string

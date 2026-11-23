@@ -14,45 +14,47 @@
 @endphp
 <div
     class="floating-nav-root"
-    x-data="{
-        expanded: true,
-        open: false,
-        scrolled: false,
-        lastY: 0,
-        collapseY: 0,
-        init() {
-            this.lastY = window.scrollY || 0;
-            this.scrolled = this.lastY > 60;
-        },
-        onScroll() {
-            const y = window.scrollY || 0;
-            this.scrolled = y > 60;
-            if (window.innerWidth <= 900) {
-                this.expanded = true;
-                this.lastY = y;
-                return;
-            }
-            if (this.expanded && y > this.lastY && y > 150) {
-                this.expanded = false;
-                this.collapseY = y;
-            } else if (!this.expanded && (y < 40 || (y < this.lastY && (this.collapseY - y > 80)))) {
-                this.expanded = true;
-            }
-            this.lastY = y;
-        },
-        expandFromPill(e) {
-            if (!this.expanded) {
-                e.preventDefault();
-                this.expanded = true;
-            }
-        }
-    }"
+    x-data="mobileNav"
     x-effect="document.body.classList.toggle('nav-open', open)"
-    @scroll.window.passive="onScroll()"
-    @keydown.escape.window="open = false"
+    @keydown.escape.window="close()"
     @resize.window="if (window.innerWidth > 900) open = false"
 >
-    <div class="floating-nav-wrap">
+    <div
+        class="floating-nav-wrap"
+        x-data="{
+            expanded: true,
+            scrolled: false,
+            lastY: 0,
+            collapseY: 0,
+            init() {
+                this.lastY = window.scrollY || 0;
+                this.scrolled = this.lastY > 60;
+            },
+            onScroll() {
+                const y = window.scrollY || 0;
+                this.scrolled = y > 60;
+                if (window.innerWidth <= 900) {
+                    this.expanded = true;
+                    this.lastY = y;
+                    return;
+                }
+                if (this.expanded && y > this.lastY && y > 150) {
+                    this.expanded = false;
+                    this.collapseY = y;
+                } else if (!this.expanded && (y < 40 || (y < this.lastY && (this.collapseY - y > 80)))) {
+                    this.expanded = true;
+                }
+                this.lastY = y;
+            },
+            expandFromPill(e) {
+                if (!this.expanded) {
+                    e.preventDefault();
+                    this.expanded = true;
+                }
+            }
+        }"
+        @scroll.window.passive="onScroll()"
+    >
         <header
             class="floating-nav {{ $isHome ? 'is-hero-overlay' : '' }}"
             :class="{
@@ -68,7 +70,7 @@
             </a>
 
             {{-- Primary Nav Links --}}
-            <nav class="fn-links" aria-label="Navigasi utama" :class="{ 'pointer-events-none': !expanded }">
+            <nav class="primary-nav" aria-label="Navigasi utama" :class="{ 'pointer-events-none': !expanded }">
                 <a href="{{ route('catalog.index', ['mode' => 'sewa']) }}" @click.stop @if($isRentalActive) aria-current="page" @endif>Sewa</a>
                 <a href="{{ route('catalog.index', ['mode' => 'beli']) }}" @click.stop @if($isSaleActive) aria-current="page" @endif>Beli</a>
                 <a href="{{ $tripUrl }}" @click.stop @if(request()->routeIs('trip-planner.*')) aria-current="page" @endif>Trip Planner</a>
@@ -90,7 +92,7 @@
                 <button
                     type="button"
                     class="fn-mobile-toggle"
-                    @click.stop="open = !open"
+                    @click="toggle()"
                     :aria-expanded="open.toString()"
                     aria-controls="mobile-navigation"
                     aria-label="Buka atau tutup menu"
@@ -110,14 +112,14 @@
     </div>
 
     {{-- Mobile Navigation Drawer --}}
-    <div class="mobile-nav-backdrop" x-show="open" x-cloak x-transition.opacity @click="open = false" aria-hidden="true"></div>
-    <nav id="mobile-navigation" class="mobile-nav" x-show="open" x-cloak x-transition aria-label="Navigasi seluler">
-        <button type="button" class="mobile-nav-close" @click="open = false" aria-label="Tutup menu navigasi">Tutup menu</button>
-        <a href="{{ route('catalog.index', ['mode' => 'sewa']) }}" @click="open = false" class="{{ $isRentalActive ? 'is-active' : '' }}" @if($isRentalActive) aria-current="page" @endif>Sewa</a>
-        <a href="{{ route('catalog.index', ['mode' => 'beli']) }}" @click="open = false" class="{{ $isSaleActive ? 'is-active' : '' }}" @if($isSaleActive) aria-current="page" @endif>Beli</a>
-        <a href="{{ $tripUrl }}" @click="open = false" @if(request()->routeIs('trip-planner.*')) aria-current="page" @endif>Rekomendasi Trip</a>
-        <a href="{{ $guidesUrl }}" @click="open = false" @if(request()->routeIs('guides.*')) aria-current="page" @endif>Panduan</a>
-        <a href="{{ $accountUrl }}" @click="open = false">{{ auth()->check() ? 'Akun Saya' : 'Masuk' }}</a>
-        @if(auth()->check() && auth()->user()->isStaff())<a href="{{ route('admin.dashboard') }}" @click="open = false">Admin Console</a>@endif
+    <div class="mobile-nav-backdrop" x-show="open" x-cloak x-transition.opacity @click="close()" aria-hidden="true"></div>
+    <nav id="mobile-navigation" class="mobile-nav" x-ref="drawer" x-show="open" x-cloak x-transition @keydown.tab="trap($event)" aria-label="Navigasi seluler">
+        <button type="button" class="mobile-nav-close" x-ref="drawerClose" @click="close()" aria-label="Tutup menu navigasi">Tutup menu</button>
+        <a href="{{ route('catalog.index', ['mode' => 'sewa']) }}" @click="close()" class="{{ $isRentalActive ? 'is-active' : '' }}" @if($isRentalActive) aria-current="page" @endif>Sewa</a>
+        <a href="{{ route('catalog.index', ['mode' => 'beli']) }}" @click="close()" class="{{ $isSaleActive ? 'is-active' : '' }}" @if($isSaleActive) aria-current="page" @endif>Beli</a>
+        <a href="{{ $tripUrl }}" @click="close()" @if(request()->routeIs('trip-planner.*')) aria-current="page" @endif>Rekomendasi Trip</a>
+        <a href="{{ $guidesUrl }}" @click="close()" @if(request()->routeIs('guides.*')) aria-current="page" @endif>Panduan</a>
+        <a href="{{ $accountUrl }}" @click="close()">{{ auth()->check() ? 'Akun Saya' : 'Masuk' }}</a>
+        @if(auth()->check() && auth()->user()->isStaff())<a href="{{ route('admin.dashboard') }}" @click="close()">Admin Console</a>@endif
     </nav>
 </div>
