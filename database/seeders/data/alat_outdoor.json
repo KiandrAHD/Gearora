@@ -1,0 +1,957 @@
+﻿[
+    {
+        "icon":  "bag",
+        "name":  "Backpack \u0026 Carrier",
+        "slug":  "backpack-carrier",
+        "products":  [
+                         {
+                             "featured":  true,
+                             "name":  "Backpack \u0026 Carrier Series #1",
+                             "rental":  55000,
+                             "sale":  1300000,
+                             "image":  "products/backpack-carrier/1-backpack-carrier-1.jpg",
+                             "slug":  "backpack-carrier-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Backpack \u0026 Carrier Series #2",
+                             "rental":  60000,
+                             "sale":  1350000,
+                             "image":  "products/backpack-carrier/2-backpack-carrier-2.jpg",
+                             "slug":  "backpack-carrier-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Amazon com Mardingtop 28L Tactical Backpacks",
+                             "rental":  50000,
+                             "sale":  1250000,
+                             "image":  "products/backpack-carrier/3-backpack-carrier-3.jpg",
+                             "slug":  "backpack-carrier-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Herman Yung",
+                             "rental":  55000,
+                             "sale":  1300000,
+                             "image":  "products/backpack-carrier/4-backpack-carrier-4.jpg",
+                             "slug":  "backpack-carrier-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Men s 50 L + 10 L Hiking Backpack, MT 900 Symbium",
+                             "rental":  60000,
+                             "sale":  1350000,
+                             "image":  "products/backpack-carrier/5-backpack-carrier-5.jpg",
+                             "slug":  "backpack-carrier-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Ready for your next adventure Check out this durable 50L h",
+                             "rental":  50000,
+                             "sale":  1250000,
+                             "image":  "products/backpack-carrier/6-backpack-carrier-6.jpg",
+                             "slug":  "backpack-carrier-6"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Rei Pack",
+                             "rental":  55000,
+                             "sale":  1300000,
+                             "image":  "products/backpack-carrier/7-backpack-carrier-7.jpg",
+                             "slug":  "backpack-carrier-7"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "RUSH100 BACKPACK 60L",
+                             "rental":  60000,
+                             "sale":  1350000,
+                             "image":  "products/backpack-carrier/8-backpack-carrier-8.jpg",
+                             "slug":  "backpack-carrier-8"
+                         }
+                     ]
+    },
+    {
+        "icon":  "light",
+        "name":  "Flashlight",
+        "slug":  "flashlight",
+        "products":  [
+                         {
+                             "featured":  false,
+                             "name":  "GTmini Pro (Discontinued) - Lumintop",
+                             "rental":  25000,
+                             "sale":  400000,
+                             "image":  "products/flashlight/1-flashlight-1.jpg",
+                             "slug":  "flashlight-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "MAYTHANK Lampe Torche Led Ultra Puissante USB C Rechargeab",
+                             "rental":  30000,
+                             "sale":  450000,
+                             "image":  "products/flashlight/2-flashlight-2.jpg",
+                             "slug":  "flashlight-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Nebo Torchy MossyOak 2K Rechargeable Pocket Flashlight (1)",
+                             "rental":  20000,
+                             "sale":  350000,
+                             "image":  "products/flashlight/3-flashlight-3.jpg",
+                             "slug":  "flashlight-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Suprabeam Q2 Flashlight",
+                             "rental":  25000,
+                             "sale":  400000,
+                             "image":  "products/flashlight/4-flashlight-4.jpg",
+                             "slug":  "flashlight-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "The Ultimate Guide to Choosing the Best Tactical (1)",
+                             "rental":  30000,
+                             "sale":  450000,
+                             "image":  "products/flashlight/5-flashlight-5.jpg",
+                             "slug":  "flashlight-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "The Ultimate Guide to Choosing the Best Tactical",
+                             "rental":  20000,
+                             "sale":  350000,
+                             "image":  "products/flashlight/6-flashlight-6.jpg",
+                             "slug":  "flashlight-6"
+                         }
+                     ]
+    },
+    {
+        "icon":  "glove",
+        "name":  "Gloves",
+        "slug":  "gloves",
+        "products":  [
+                         {
+                             "featured":  false,
+                             "name":  "Craftsman Gloves - Orange",
+                             "rental":  20000,
+                             "sale":  215000,
+                             "image":  "products/gloves/1-gloves-1.jpg",
+                             "slug":  "gloves-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Laksen Moscow Waterproof Gloves - Green Small",
+                             "rental":  25000,
+                             "sale":  265000,
+                             "image":  "products/gloves/2-gloves-2.jpg",
+                             "slug":  "gloves-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Men\u0027s Gloves Simons",
+                             "rental":  15000,
+                             "sale":  165000,
+                             "image":  "products/gloves/3-gloves-3.jpg",
+                             "slug":  "gloves-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Natural Wool Men\u0027s Gloves",
+                             "rental":  20000,
+                             "sale":  215000,
+                             "image":  "products/gloves/4-gloves-4.jpg",
+                             "slug":  "gloves-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "The North Face Flashdry Running Gloves",
+                             "rental":  25000,
+                             "sale":  265000,
+                             "image":  "products/gloves/5-gloves-5.jpg",
+                             "slug":  "gloves-5"
+                         }
+                     ]
+    },
+    {
+        "icon":  "hat",
+        "name":  "Hat",
+        "slug":  "hat",
+        "products":  [
+                         {
+                             "featured":  false,
+                             "name":  "Hat Series #1",
+                             "rental":  20000,
+                             "sale":  235000,
+                             "image":  "products/hat/1-hat-1.jpg",
+                             "slug":  "hat-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "1PC Camouflage Army Hat Men Women Baseball Cap Camo Milita",
+                             "rental":  25000,
+                             "sale":  285000,
+                             "image":  "products/hat/2-hat-2.jpg",
+                             "slug":  "hat-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Hat Series #3",
+                             "rental":  15000,
+                             "sale":  185000,
+                             "image":  "products/hat/3-hat-3.jpg",
+                             "slug":  "hat-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Abisko Summer Hat - dark grey XXL",
+                             "rental":  20000,
+                             "sale":  235000,
+                             "image":  "products/hat/4-hat-4.jpg",
+                             "slug":  "hat-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Emersongear Lichtgewicht Tactische Baseballpet Ademend Sne",
+                             "rental":  25000,
+                             "sale":  285000,
+                             "image":  "products/hat/5-hat-5.jpg",
+                             "slug":  "hat-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "FURTALK Mountain Embroidery Baseball Cap Washed Denim-Styl",
+                             "rental":  15000,
+                             "sale":  185000,
+                             "image":  "products/hat/6-hat-6.jpg",
+                             "slug":  "hat-6"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "IDOGEAR Wide Brim Boonie Hat Sun Hat for Men Women Fishing",
+                             "rental":  20000,
+                             "sale":  235000,
+                             "image":  "products/hat/7-hat-7.jpg",
+                             "slug":  "hat-7"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Soaking up the great outdoors",
+                             "rental":  25000,
+                             "sale":  285000,
+                             "image":  "products/hat/8-hat-8.jpg",
+                             "slug":  "hat-8"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Unique Military Design Cotton Cap - Dark Gray One Size",
+                             "rental":  15000,
+                             "sale":  185000,
+                             "image":  "products/hat/9-hat-9.jpg",
+                             "slug":  "hat-9"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Wallowa Trail Hat - Tillak",
+                             "rental":  20000,
+                             "sale":  235000,
+                             "image":  "products/hat/10-hat-10.jpg",
+                             "slug":  "hat-10"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Womens High Coast Wind Cap",
+                             "rental":  25000,
+                             "sale":  285000,
+                             "image":  "products/hat/11-hat-11.jpg",
+                             "slug":  "hat-11"
+                         }
+                     ]
+    },
+    {
+        "icon":  "light",
+        "name":  "Headlamp",
+        "slug":  "headlamp",
+        "products":  [
+                         {
+                             "featured":  false,
+                             "name":  "Coast Rechargeable Mid-Size Headlamp - 144 Black",
+                             "rental":  25000,
+                             "sale":  370000,
+                             "image":  "products/headlamp/1-headlamp-1.jpg",
+                             "slug":  "headlamp-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "LED Headlamp Learn more by visiting the image",
+                             "rental":  30000,
+                             "sale":  420000,
+                             "image":  "products/headlamp/2-headlamp-2.jpg",
+                             "slug":  "headlamp-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Headlamp Series #3",
+                             "rental":  20000,
+                             "sale":  320000,
+                             "image":  "products/headlamp/3-headlamp-3.jpg",
+                             "slug":  "headlamp-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Rechargeable LED Cap Mining Lamp for Hard Hat Helmet, Wate",
+                             "rental":  25000,
+                             "sale":  370000,
+                             "image":  "products/headlamp/4-headlamp-4.jpg",
+                             "slug":  "headlamp-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "USB Rechargeable LED Headlamp Headlight Lamp Torch Flashli",
+                             "rental":  30000,
+                             "sale":  420000,
+                             "image":  "products/headlamp/5-headlamp-5.jpg",
+                             "slug":  "headlamp-5"
+                         }
+                     ]
+    },
+    {
+        "icon":  "shoe",
+        "name":  "Hiking Shoes",
+        "slug":  "hiking-shoes",
+        "products":  [
+                         {
+                             "featured":  true,
+                             "name":  "Adventurer Mens Waterproof Boots",
+                             "rental":  55000,
+                             "sale":  1230000,
+                             "image":  "products/hiking-shoes/1-hiking-shoes-1.jpg",
+                             "slug":  "hiking-shoes-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Aigle Altavio Mid high Gore-Tex Boots hiking, trail, walki",
+                             "rental":  60000,
+                             "sale":  1280000,
+                             "image":  "products/hiking-shoes/2-hiking-shoes-2.jpg",
+                             "slug":  "hiking-shoes-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "BORCEGO BREITHORN MARRON - 41 MARRON",
+                             "rental":  50000,
+                             "sale":  1180000,
+                             "image":  "products/hiking-shoes/3-hiking-shoes-3.jpg",
+                             "slug":  "hiking-shoes-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "grisport brown crusader wide fit walking boots",
+                             "rental":  55000,
+                             "sale":  1230000,
+                             "image":  "products/hiking-shoes/4-hiking-shoes-4.jpg",
+                             "slug":  "hiking-shoes-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "KEEN Herren Targhee 4 Mid Height Durable Comfortable Water",
+                             "rental":  60000,
+                             "sale":  1280000,
+                             "image":  "products/hiking-shoes/5-hiking-shoes-5.jpg",
+                             "slug":  "hiking-shoes-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Men\u0027s Headout Waterproof Hiking Boot Black Olive Fossil Or",
+                             "rental":  50000,
+                             "sale":  1180000,
+                             "image":  "products/hiking-shoes/6-hiking-shoes-6.jpg",
+                             "slug":  "hiking-shoes-6"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Men\u0027s Targhee II Mid Hiking Boots Olive",
+                             "rental":  55000,
+                             "sale":  1230000,
+                             "image":  "products/hiking-shoes/7-hiking-shoes-7.jpg",
+                             "slug":  "hiking-shoes-7"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Mountain Warehouse Brown Mens Rapid Waterproof Boots 13 EU",
+                             "rental":  60000,
+                             "sale":  1280000,
+                             "image":  "products/hiking-shoes/8-hiking-shoes-8.jpg",
+                             "slug":  "hiking-shoes-8"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "NORTIV 8 Men\u0027s Ankle High Waterproof Boots Hiking Boots Me",
+                             "rental":  50000,
+                             "sale":  1180000,
+                             "image":  "products/hiking-shoes/9-hiking-shoes-9.jpg",
+                             "slug":  "hiking-shoes-9"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Snowdon Mens Vegan Waterproof Hiking Boots Mountain Wareho",
+                             "rental":  55000,
+                             "sale":  1230000,
+                             "image":  "products/hiking-shoes/10-hiking-shoes-10.jpg",
+                             "slug":  "hiking-shoes-10"
+                         }
+                     ]
+    },
+    {
+        "icon":  "jacket",
+        "name":  "Jacket",
+        "slug":  "jacket",
+        "products":  [
+                         {
+                             "featured":  true,
+                             "name":  "66 North Dyngja Shell Jacket",
+                             "rental":  50000,
+                             "sale":  830000,
+                             "image":  "products/jacket/1-jacket-1.jpg",
+                             "slug":  "jacket-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "A Great Raincoat Makes Bad Weather Look Good",
+                             "rental":  55000,
+                             "sale":  880000,
+                             "image":  "products/jacket/2-jacket-2.jpg",
+                             "slug":  "jacket-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Alle Beitr ge Instagram",
+                             "rental":  45000,
+                             "sale":  780000,
+                             "image":  "products/jacket/3-jacket-3.jpg",
+                             "slug":  "jacket-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "AURION Premium Hard Shell Jacket 3-Layer Waterproof Outdoo",
+                             "rental":  50000,
+                             "sale":  830000,
+                             "image":  "products/jacket/4-jacket-4.jpg",
+                             "slug":  "jacket-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Keb GTX Jacket Women\u0027s",
+                             "rental":  55000,
+                             "sale":  880000,
+                             "image":  "products/jacket/5-jacket-5.jpg",
+                             "slug":  "jacket-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "make a ray! 76 ALL WEATHER-TEX MEN",
+                             "rental":  45000,
+                             "sale":  780000,
+                             "image":  "products/jacket/6-jacket-6.jpg",
+                             "slug":  "jacket-6"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Men\u0027s Lightweight Windbreaker Jacket with Hood, Zip Pocket",
+                             "rental":  50000,
+                             "sale":  830000,
+                             "image":  "products/jacket/7-jacket-7.jpg",
+                             "slug":  "jacket-7"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Men\u0027s Stormbird Waterproof Jacket - S Olive",
+                             "rental":  55000,
+                             "sale":  880000,
+                             "image":  "products/jacket/8-jacket-8.jpg",
+                             "slug":  "jacket-8"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Patagonia Mens size XL Extra Large Army Green H2NO Torrent",
+                             "rental":  45000,
+                             "sale":  780000,
+                             "image":  "products/jacket/9-jacket-9.jpg",
+                             "slug":  "jacket-9"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Patagonia Torrentshell 3L Jacket - Dark Walnut - S Brown",
+                             "rental":  50000,
+                             "sale":  830000,
+                             "image":  "products/jacket/10-jacket-10.jpg",
+                             "slug":  "jacket-10"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "thisisneverthat x GORETEX 2L Wet Weather Jacket Brown",
+                             "rental":  55000,
+                             "sale":  880000,
+                             "image":  "products/jacket/11-jacket-11.jpg",
+                             "slug":  "jacket-11"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Veste Homme recycl e de randonn e TETRAS",
+                             "rental":  45000,
+                             "sale":  780000,
+                             "image":  "products/jacket/12-jacket-12.jpg",
+                             "slug":  "jacket-12"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Waterproof Jacket",
+                             "rental":  50000,
+                             "sale":  830000,
+                             "image":  "products/jacket/13-jacket-13.jpg",
+                             "slug":  "jacket-13"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Jacket Series #14",
+                             "rental":  55000,
+                             "sale":  880000,
+                             "image":  "products/jacket/14-jacket-14.jpg",
+                             "slug":  "jacket-14"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Jacket Series #15",
+                             "rental":  45000,
+                             "sale":  780000,
+                             "image":  "products/jacket/15-jacket-15.jpg",
+                             "slug":  "jacket-15"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "! 6 LEON Web",
+                             "rental":  50000,
+                             "sale":  830000,
+                             "image":  "products/jacket/16-jacket-16.jpg",
+                             "slug":  "jacket-16"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Jacket Series #17",
+                             "rental":  55000,
+                             "sale":  880000,
+                             "image":  "products/jacket/17-jacket-17.jpg",
+                             "slug":  "jacket-17"
+                         }
+                     ]
+    },
+    {
+        "icon":  "package",
+        "name":  "Sleeping Bag",
+        "slug":  "sleeping-bag",
+        "products":  [
+                         {
+                             "featured":  false,
+                             "name":  "Sleeping Bag Series #1",
+                             "rental":  40000,
+                             "sale":  470000,
+                             "image":  "products/sleeping-bag/1-sleeping-bag-1.jpg",
+                             "slug":  "sleeping-bag-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "195 85 cm Snugpak bivvi Bag, Sleeping Bag Cover, Portable",
+                             "rental":  45000,
+                             "sale":  520000,
+                             "image":  "products/sleeping-bag/2-sleeping-bag-2.jpg",
+                             "slug":  "sleeping-bag-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Sleeping Bag Series #3",
+                             "rental":  35000,
+                             "sale":  420000,
+                             "image":  "products/sleeping-bag/3-sleeping-bag-3.jpg",
+                             "slug":  "sleeping-bag-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Sleeping Bag Series #4",
+                             "rental":  40000,
+                             "sale":  470000,
+                             "image":  "products/sleeping-bag/4-sleeping-bag-4.jpg",
+                             "slug":  "sleeping-bag-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Lightweight Sleeping Bag Compact 4-Season Gear for Hiking",
+                             "rental":  45000,
+                             "sale":  520000,
+                             "image":  "products/sleeping-bag/5-sleeping-bag-5.jpg",
+                             "slug":  "sleeping-bag-5"
+                         }
+                     ]
+    },
+    {
+        "icon":  "fire",
+        "name":  "Stove Portable",
+        "slug":  "stove-portable",
+        "products":  [
+                         {
+                             "featured":  false,
+                             "name":  "Stove Portable Series #1",
+                             "rental":  33000,
+                             "sale":  340000,
+                             "image":  "products/stove-portable/1-stove-portable-1.jpg",
+                             "slug":  "stove-portable-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Stove Portable Series #2",
+                             "rental":  38000,
+                             "sale":  390000,
+                             "image":  "products/stove-portable/2-stove-portable-2.jpg",
+                             "slug":  "stove-portable-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Stove Portable Series #3",
+                             "rental":  28000,
+                             "sale":  290000,
+                             "image":  "products/stove-portable/3-stove-portable-3.jpg",
+                             "slug":  "stove-portable-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "chinacoal03 Portable gas stove outdoor picnic",
+                             "rental":  33000,
+                             "sale":  340000,
+                             "image":  "products/stove-portable/4-stove-portable-4.jpg",
+                             "slug":  "stove-portable-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Coleman Triton 2-Burner Propane Camping Stove, Portable Ca",
+                             "rental":  38000,
+                             "sale":  390000,
+                             "image":  "products/stove-portable/5-stove-portable-5.jpg",
+                             "slug":  "stove-portable-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Foldable cassette gas stove portable stove outdoor camping",
+                             "rental":  28000,
+                             "sale":  290000,
+                             "image":  "products/stove-portable/6-stove-portable-6.jpg",
+                             "slug":  "stove-portable-6"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "MSR Dragonfly Stove",
+                             "rental":  33000,
+                             "sale":  340000,
+                             "image":  "products/stove-portable/7-stove-portable-7.jpg",
+                             "slug":  "stove-portable-7"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Outdoor Mini Square Portable Folding Gas Stove Ultra-Light",
+                             "rental":  38000,
+                             "sale":  390000,
+                             "image":  "products/stove-portable/8-stove-portable-8.jpg",
+                             "slug":  "stove-portable-8"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Single Burner Camping Stove",
+                             "rental":  28000,
+                             "sale":  290000,
+                             "image":  "products/stove-portable/9-stove-portable-9.jpg",
+                             "slug":  "stove-portable-9"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "The Best Portable Stoves and Burners for Cooking On the Go",
+                             "rental":  33000,
+                             "sale":  340000,
+                             "image":  "products/stove-portable/10-stove-portable-10.jpg",
+                             "slug":  "stove-portable-10"
+                         }
+                     ]
+    },
+    {
+        "icon":  "tent",
+        "name":  "Tenda",
+        "slug":  "tenda",
+        "products":  [
+                         {
+                             "featured":  true,
+                             "name":  "Tenda Series #1",
+                             "rental":  80000,
+                             "sale":  1200000,
+                             "image":  "products/tenda/1-tenda-1.jpg",
+                             "slug":  "tenda-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Tenda Series #2",
+                             "rental":  85000,
+                             "sale":  1250000,
+                             "image":  "products/tenda/2-tenda-2.jpg",
+                             "slug":  "tenda-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Tenda Series #3",
+                             "rental":  75000,
+                             "sale":  1150000,
+                             "image":  "products/tenda/3-tenda-3.jpg",
+                             "slug":  "tenda-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Cabela\u0027s",
+                             "rental":  80000,
+                             "sale":  1200000,
+                             "image":  "products/tenda/4-tenda-4.jpg",
+                             "slug":  "tenda-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Camping Hot Tent, 2 Persons Cabin Tent with Stove Jack \u0026 P",
+                             "rental":  85000,
+                             "sale":  1250000,
+                             "image":  "products/tenda/5-tenda-5.jpg",
+                             "slug":  "tenda-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "OHS 2 Person Tent - Black",
+                             "rental":  75000,
+                             "sale":  1150000,
+                             "image":  "products/tenda/6-tenda-6.jpg",
+                             "slug":  "tenda-6"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "SNOW PEAK Tuga Inner Mat \u0026 Floor Mat Set - Inner mat \u0026 flo",
+                             "rental":  80000,
+                             "sale":  1200000,
+                             "image":  "products/tenda/7-tenda-7.jpg",
+                             "slug":  "tenda-7"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Top 8 Solar-Powered Gadgets for Your Bug Out Kit",
+                             "rental":  85000,
+                             "sale":  1250000,
+                             "image":  "products/tenda/8-tenda-8.jpg",
+                             "slug":  "tenda-8"
+                         }
+                     ]
+    },
+    {
+        "icon":  "pole",
+        "name":  "Tracking Pole",
+        "slug":  "tracking-pole",
+        "products":  [
+                         {
+                             "featured":  false,
+                             "name":  "Tracking Pole Series #1",
+                             "rental":  30000,
+                             "sale":  360000,
+                             "image":  "products/tracking-pole/1-tracking-pole-1.jpg",
+                             "slug":  "tracking-pole-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Hammers HP5 Anti-Shock Hiking Pole with Compass",
+                             "rental":  35000,
+                             "sale":  410000,
+                             "image":  "products/tracking-pole/2-tracking-pole-2.jpg",
+                             "slug":  "tracking-pole-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Pair of Trekrite Antishock Hiking Sticks Walking Poles - B",
+                             "rental":  25000,
+                             "sale":  310000,
+                             "image":  "products/tracking-pole/3-tracking-pole-3.jpg",
+                             "slug":  "tracking-pole-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Powrx Attrac Nordic Walking Poles Aluminium Hiking Sticks",
+                             "rental":  30000,
+                             "sale":  360000,
+                             "image":  "products/tracking-pole/4-tracking-pole-4.jpg",
+                             "slug":  "tracking-pole-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Season Adjustable Ski Poles",
+                             "rental":  35000,
+                             "sale":  410000,
+                             "image":  "products/tracking-pole/5-tracking-pole-5.jpg",
+                             "slug":  "tracking-pole-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "The Best Trekking Poles for Backpackers",
+                             "rental":  25000,
+                             "sale":  310000,
+                             "image":  "products/tracking-pole/6-tracking-pole-6.jpg",
+                             "slug":  "tracking-pole-6"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Unisex Carbon Fibre Trekking Poles - 2 Pack Black",
+                             "rental":  30000,
+                             "sale":  360000,
+                             "image":  "products/tracking-pole/7-tracking-pole-7.jpg",
+                             "slug":  "tracking-pole-7"
+                         }
+                     ]
+    },
+    {
+        "icon":  "shoe",
+        "name":  "Trail Run Shoes",
+        "slug":  "trail-run-shoes",
+        "products":  [
+                         {
+                             "featured":  false,
+                             "name":  "Domin el terreno Las Salomon Speedcross 6 W",
+                             "rental":  50000,
+                             "sale":  1300000,
+                             "image":  "products/trail-run-shoes/1-trail-run-shoes-1.jpg",
+                             "slug":  "trail-run-shoes-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Feels like heaven Runs like hell",
+                             "rental":  55000,
+                             "sale":  1350000,
+                             "image":  "products/trail-run-shoes/2-trail-run-shoes-2.jpg",
+                             "slug":  "trail-run-shoes-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "grip the walk with style",
+                             "rental":  45000,
+                             "sale":  1250000,
+                             "image":  "products/trail-run-shoes/3-trail-run-shoes-3.jpg",
+                             "slug":  "trail-run-shoes-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Men s Luxury Leather Hiking Sneakers with Rugged Sole Grey",
+                             "rental":  50000,
+                             "sale":  1300000,
+                             "image":  "products/trail-run-shoes/4-trail-run-shoes-4.jpg",
+                             "slug":  "trail-run-shoes-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Merrell Men\u0027s Moab 3 Hiking Shoe",
+                             "rental":  55000,
+                             "sale":  1350000,
+                             "image":  "products/trail-run-shoes/5-trail-run-shoes-5.jpg",
+                             "slug":  "trail-run-shoes-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Mountain Warehouse Field Mens Shoes - Waterproof",
+                             "rental":  45000,
+                             "sale":  1250000,
+                             "image":  "products/trail-run-shoes/6-trail-run-shoes-6.jpg",
+                             "slug":  "trail-run-shoes-6"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Salomon rebaja de 110 a 75 euros las zapatillas m s c moda",
+                             "rental":  50000,
+                             "sale":  1300000,
+                             "image":  "products/trail-run-shoes/7-trail-run-shoes-7.jpg",
+                             "slug":  "trail-run-shoes-7"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "The Ultimate Pacific Crest Trail Packing List for 2026 Hal",
+                             "rental":  55000,
+                             "sale":  1350000,
+                             "image":  "products/trail-run-shoes/8-trail-run-shoes-8.jpg",
+                             "slug":  "trail-run-shoes-8"
+                         }
+                     ]
+    },
+    {
+        "icon":  "camera",
+        "name":  "Tripod",
+        "slug":  "tripod",
+        "products":  [
+                         {
+                             "featured":  false,
+                             "name":  "Tripod Series #1",
+                             "rental":  30000,
+                             "sale":  330000,
+                             "image":  "products/tripod/1-tripod-1.jpg",
+                             "slug":  "tripod-1"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Tripod Series #2",
+                             "rental":  35000,
+                             "sale":  380000,
+                             "image":  "products/tripod/2-tripod-2.jpg",
+                             "slug":  "tripod-2"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "9 acess rios para melhorar a qualidade das fotos - Carpe M",
+                             "rental":  25000,
+                             "sale":  280000,
+                             "image":  "products/tripod/3-tripod-3.jpg",
+                             "slug":  "tripod-3"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Mobile Tripod Stand with Selfie Stick",
+                             "rental":  30000,
+                             "sale":  330000,
+                             "image":  "products/tripod/4-tripod-4.jpg",
+                             "slug":  "tripod-4"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Tripod Series #5",
+                             "rental":  35000,
+                             "sale":  380000,
+                             "image":  "products/tripod/5-tripod-5.jpg",
+                             "slug":  "tripod-5"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Tripod Series #6",
+                             "rental":  25000,
+                             "sale":  280000,
+                             "image":  "products/tripod/6-tripod-6.jpg",
+                             "slug":  "tripod-6"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "ULANZI MT-44 Tripod for Smartphone \u0026 Camera Portable Vlogg",
+                             "rental":  30000,
+                             "sale":  330000,
+                             "image":  "products/tripod/7-tripod-7.jpg",
+                             "slug":  "tripod-7"
+                         },
+                         {
+                             "featured":  false,
+                             "name":  "Universal Adjustable Iron Tripod Stand With Phone Holder C",
+                             "rental":  35000,
+                             "sale":  380000,
+                             "image":  "products/tripod/8-tripod-8.jpg",
+                             "slug":  "tripod-8"
+                         }
+                     ]
+    }
+]

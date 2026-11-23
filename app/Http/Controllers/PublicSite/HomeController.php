@@ -14,9 +14,9 @@ class HomeController extends Controller
         $categories = Category::query()
             ->active()
             ->withCount(['products' => fn ($query) => $query->active()])
+            ->with(['products' => fn ($query) => $query->active()->with(['primaryImage', 'variants'])->orderBy('id')])
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->take(4)
             ->get();
 
         $featured = Product::query()
