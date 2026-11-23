@@ -6,13 +6,13 @@ use App\Enums\ProductStatus;
 use App\Enums\ProductType;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\RentalAsset;
 use Illuminate\Database\Seeder;
 
 /**
- * Data contoh katalog untuk pengembangan lokal. Tidak dijalankan di produksi.
- * Label "Demo" dipakai agar tidak disalahartikan sebagai data nyata.
+ * Data katalog produk yang dikelompokkan sesuai kategori alat outdoor.
  */
 class DemoCatalogSeeder extends Seeder
 {
@@ -24,39 +24,43 @@ class DemoCatalogSeeder extends Seeder
             return;
         }
 
-        $catalog = [
-            ['name' => 'Tenda', 'icon' => 'tent', 'products' => [
-                ['name' => 'Tenda Arunika 4P (Demo)', 'rental' => 85000, 'sale' => null, 'units' => 4, 'featured' => true],
-                ['name' => 'Tenda Rimba 2P (Demo)', 'rental' => 65000, 'sale' => null, 'units' => 3],
-            ]],
-            ['name' => 'Tas & Carrier', 'icon' => 'bag', 'products' => [
-                ['name' => 'Carrier Altitude 55L (Demo)', 'rental' => 55000, 'sale' => null, 'units' => 4, 'featured' => true],
-            ]],
-            ['name' => 'Tidur & Shelter', 'icon' => 'package', 'products' => [
-                ['name' => 'Sleeping Bag Bromo -5C (Demo)', 'rental' => 35000, 'sale' => 425000, 'units' => 5, 'featured' => true],
-            ]],
-            ['name' => 'Peralatan Masak', 'icon' => 'fire', 'products' => [
-                ['name' => 'Kompor Trail Mini (Demo)', 'rental' => 28000, 'sale' => 289000, 'units' => 6, 'featured' => true],
-            ]],
-        ];
+        $jsonPath = database_path('seeders/data/alat_outdoor.json');
+
+        if (! is_file($jsonPath)) {
+            $this->command?->warn('File alat_outdoor.json tidak ditemukan.');
+
+            return;
+        }
+
+        /** @var array<int, array<string, mixed>> $catalog */
+        $rawJson = ltrim((string) file_get_contents($jsonPath), "\xEF\xBB\xBF");
+        $catalog = json_decode($rawJson, true) ?? [];
 
         foreach ($catalog as $index => $group) {
             $category = Category::query()->updateOrCreate(
-                ['slug' => str($group['name'])->slug()->value()],
-                ['name' => $group['name'], 'icon' => $group['icon'], 'is_active' => true, 'sort_order' => $index],
+                ['slug' => $group['slug']],
+                [
+                    'name' => $group['name'],
+                    'icon' => $group['icon'] ?? 'bag',
+                    'is_active' => true,
+                    'sort_order' => $index,
+                ],
             );
 
-            foreach ($group['products'] as $entry) {
+            foreach ($group['products'] ?? [] as $entry) {
                 $product = Product::query()->updateOrCreate(
-                    ['slug' => str($entry['name'])->slug()->value()],
+                    ['slug' => $entry['slug']],
                     [
                         'category_id' => $category->getKey(),
                         'name' => $entry['name'],
-                        'description' => 'Produk contoh untuk pengembangan. Ganti dengan data nyata sebelum produksi.',
-                        'brand' => 'GEARORA Demo',
-                        'type' => $entry['sale'] === null ? ProductType::Rental : ProductType::Both,
+                        'description' => 'Perlengkapan outdoor kategori '.$group['name'].' yang terkurasi, bersih, dan siap digunakan untuk kegiatan alam terbuka maupun pendakian.',
+                        'brand' => 'GEARORA Select',
+                        'type' => ProductType::Both,
                         'status' => ProductStatus::Active,
-                        'specifications' => ['Catatan' => 'Data demo'],
+                        'specifications' => [
+                            'Kategori' => $group['name'],
+                            'Kondisi' => 'Terinspeksi & Siap Pakai',
+                        ],
                         'requires_deposit' => false,
                         'rental_price_per_day' => $entry['rental'],
                         'sale_price' => $entry['sale'],
@@ -64,25 +68,36 @@ class DemoCatalogSeeder extends Seeder
                     ],
                 );
 
+                if (filled($entry['image'] ?? null)) {
+                    ProductImage::query()->updateOrCreate(
+                        ['product_id' => $product->getKey(), 'is_primary' => true],
+                        [
+                            'path' => $entry['image'],
+                            'alt' => $entry['name'],
+                            'sort_order' => 0,
+                        ],
+                    );
+                }
+
                 $variant = ProductVariant::query()->updateOrCreate(
-                    ['sku' => 'DEMO-'.$product->getKey().'-STD'],
+                    ['sku' => 'GEAR-'.$product->getKey().'-STD'],
                     [
                         'product_id' => $product->getKey(),
                         'name' => 'Standar',
                         'sale_price' => $entry['sale'],
-                        'stock_quantity' => $entry['sale'] !== null ? 10 : 0,
+                        'stock_quantity' => 8,
                         'is_active' => true,
                     ],
                 );
 
-                for ($unit = 1; $unit <= $entry['units']; $unit++) {
+                for ($unit = 1; $unit <= 3; $unit++) {
                     RentalAsset::query()->updateOrCreate(
-                        ['asset_code' => 'DEMO-'.$variant->getKey().'-'.str_pad((string) $unit, 2, '0', STR_PAD_LEFT)],
+                        ['asset_code' => 'GEAR-'.$variant->getKey().'-'.str_pad((string) $unit, 2, '0', STR_PAD_LEFT)],
                         [
                             'product_variant_id' => $variant->getKey(),
                             'condition' => 'good',
                             'status' => 'available',
-                            'notes' => 'Unit demo',
+                            'notes' => 'Unit siap sewa',
                         ],
                     );
                 }
