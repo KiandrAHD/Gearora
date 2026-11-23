@@ -33,8 +33,28 @@
         <span class="muted">Status paket: {{ $package->status->label() }} · Aktivitas: {{ \App\Enums\TripActivity::tryFrom($package->activity)?->label() ?? $package->activity }} · Level: {{ $package->experience_level->label() }}</span>
     </p>
 
+    <table class="summary">
+        <tr><td class="label">Destinasi</td><td class="value">{{ $package->destination }}@if($package->location) · {{ $package->location }}@endif</td></tr>
+        <tr><td class="label">Mode</td><td class="value">{{ $package->mode->label() }}</td></tr>
+        <tr><td class="label">Durasi</td><td class="value">{{ $package->duration_days }} hari · {{ $package->participants }} peserta</td></tr>
+        @if($package->start_date && $package->end_date)
+            <tr><td class="label">Tanggal</td><td class="value">{{ $package->start_date->translatedFormat('d M Y') }} → {{ $package->end_date->translatedFormat('d M Y') }}</td></tr>
+        @endif
+        @if($package->departure_time)
+            <tr><td class="label">Waktu berkumpul</td><td class="value">{{ $package->departure_time }}</td></tr>
+        @endif
+        @php($needs = $package->specialNeeds())
+        @if($needs !== [])
+            <tr><td class="label">Kebutuhan khusus</td><td class="value">{{ collect($needs)->map(fn ($need) => \App\Enums\TripSpecialNeed::tryFrom($need)?->label() ?? $need)->implode(', ') }}</td></tr>
+        @endif
+        @if($package->planDescription())
+            <tr><td class="label">Catatan</td><td class="value">{{ $package->planDescription() }}</td></tr>
+        @endif
+    </table>
+
     @if($package->rentalOrder)
         <h2>Pesanan sewa · {{ $package->rentalOrder->order_code }}</h2>
+        <p class="muted">Status pembayaran: <strong>{{ $package->rentalPaymentStatus()?->documentLabel() ?? 'Belum Dibayar' }}</strong></p>
         <table>
             <thead><tr><th>Gear</th><th>Varian</th><th class="num">Qty</th><th class="num">Hari</th><th class="num">Subtotal</th></tr></thead>
             <tbody>
@@ -58,6 +78,7 @@
 
     @if($package->salesOrder)
         <h2>Pesanan beli · {{ $package->salesOrder->order_code }}</h2>
+        <p class="muted">Status pembayaran: <strong>{{ $package->salesPaymentStatus()?->documentLabel() ?? 'Belum Dibayar' }}</strong></p>
         <table>
             <thead><tr><th>Gear</th><th>Varian</th><th class="num">Qty</th><th class="num">Harga/unit</th><th class="num">Subtotal</th></tr></thead>
             <tbody>

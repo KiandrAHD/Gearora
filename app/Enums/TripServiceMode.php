@@ -10,6 +10,7 @@ enum TripServiceMode: string
 {
     case Sewa = 'sewa';
     case Beli = 'beli';
+    case Fleksibel = 'fleksibel';
     case Semua = 'semua';
 
     public function label(): string
@@ -17,6 +18,7 @@ enum TripServiceMode: string
         return match ($this) {
             self::Sewa => 'Sewa',
             self::Beli => 'Beli',
+            self::Fleksibel => 'Fleksibel (pilih per item)',
             self::Semua => 'Sewa & Beli',
         };
     }
@@ -40,12 +42,36 @@ enum TripServiceMode: string
     /** @return array<int, string> Nilai mode yang dapat dipilih pelanggan. */
     public static function customerValues(): array
     {
-        return [self::Sewa->value, self::Beli->value];
+        return [self::Sewa->value, self::Beli->value, self::Fleksibel->value];
     }
 
-    /** Apakah aturan bermode ini cocok dengan mode yang diminta pelanggan. */
+    /**
+     * Nilai mode yang valid untuk sebuah aturan rekomendasi Admin.
+     *
+     * `fleksibel` adalah pilihan pelanggan, bukan mode aturan; aturan yang ingin
+     * mencakup keduanya memakai `semua`.
+     *
+     * @return array<int, string>
+     */
+    public static function ruleValues(): array
+    {
+        return [self::Sewa->value, self::Beli->value, self::Semua->value];
+    }
+
+    /**
+     * Apakah aturan bermode ini cocok dengan mode yang diminta pelanggan.
+     *
+     * - Aturan `semua` selalu cocok.
+     * - Mode `fleksibel` (pelanggan memilih sewa/beli per item) menerima aturan
+     *   sewa maupun beli karena item tetap divalidasi ulang saat checkout.
+     * - Mode tegas `sewa`/`beli` hanya cocok dengan aturan yang sama atau `semua`.
+     */
     public function matches(self $requested): bool
     {
-        return $this === self::Semua || $this === $requested;
+        if ($this === self::Semua || $this === $requested) {
+            return true;
+        }
+
+        return $requested === self::Fleksibel;
     }
 }

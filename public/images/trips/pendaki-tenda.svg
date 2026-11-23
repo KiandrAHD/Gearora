@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-label="Siluet pendaki dan tenda di Gunung Prau" preserveAspectRatio="xMidYMax meet">
+    <defs>
+        <linearGradient id="prauFade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#08213F" stop-opacity="0"/>
+            <stop offset="1" stop-color="#061627" stop-opacity="1"/>
+        </linearGradient>
+    </defs>
+    <path d="M0,214 L150,150 L250,196 L372,110 L470,190 L600,120 L720,186 L840,132 L960,198 L1080,150 L1200,206 L1200,300 L0,300 Z" fill="url(#prauFade)"/>
+    <g fill="#061627">
+        <path d="M0,236 L120,196 L250,232 L390,182 L520,230 L660,192 L800,234 L940,196 L1080,232 L1200,200 L1200,300 L0,300 Z"/>
+    </g>
+    <g fill="#04101F">
+        <!-- tenda -->
+        <path d="M300,300 L360,206 L420,300 Z"/>
+        <path d="M360,206 L360,300 L392,300 Z" fill="#0B2440"/>
+        <path d="M356,300 L360,232 L364,300 Z" fill="#08213F"/>
+        <!-- pendaki 1 dengan ransel dan trekking pole -->
+        <circle cx="560" cy="214" r="12"/>
+        <path d="M548,230 q14,-10 26,0 l4,30 -6,42 h-7 l-2,-34 -4,34 h-7 l-3,-42 z"/>
+        <path d="M570,232 q16,2 18,20 l-6,4 -4,-14 z"/>
+        <path d="M548,286 L536,300 L542,300 L552,288 Z"/>
+        <path d="M578,286 L590,300 L584,300 L574,288 Z"/>
+        <path d="M578,240 l18,-56 2,1 -16,56 z" opacity=".85"/>
+        <!-- pendaki 2 lebih kecil (di belakang) -->
+        <circle cx="646" cy="234" r="9"/>
+        <path d="M638,246 q8,-7 16,0 l3,22 -4,32 h-6 l-1,-24 -3,24 h-6 l-2,-32 z"/>
+        <path d="M638,290 L630,300 L635,300 L643,291 Z"/>
+        <path d="M660,290 L668,300 L663,300 L656,291 Z"/>
+    </g>
+</svg>

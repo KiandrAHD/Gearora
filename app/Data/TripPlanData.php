@@ -21,6 +21,7 @@ final readonly class TripPlanData
         public array $specialNeeds,
         public TripServiceMode $mode,
         public ExperienceLevel $experience,
+        public ?string $departureTime = null,
         public ?string $startDate = null,
         public ?string $endDate = null,
     ) {}
@@ -38,6 +39,7 @@ final readonly class TripPlanData
             specialNeeds: array_values($data['special_needs'] ?? []),
             mode: TripServiceMode::from((string) $data['mode']),
             experience: ExperienceLevel::from((string) ($data['experience'] ?? ExperienceLevel::Pemula->value)),
+            departureTime: filled($data['departure_time'] ?? null) ? trim((string) $data['departure_time']) : null,
             startDate: filled($data['start_date'] ?? null) ? (string) $data['start_date'] : null,
             endDate: filled($data['end_date'] ?? null) ? (string) $data['end_date'] : null,
         );

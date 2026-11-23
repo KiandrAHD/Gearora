@@ -20,17 +20,30 @@
 
                 <dl class="trip-summary">
                     <div><dt>Pemesan</dt><dd>{{ $package->customer?->name ?? 'Pelanggan GEARORA' }}</dd></div>
+                    <div><dt>Destinasi</dt><dd>{{ $package->destination }}@if($package->location) · {{ $package->location }}@endif</dd></div>
                     <div><dt>Aktivitas</dt><dd>{{ \App\Enums\TripActivity::tryFrom($package->activity)?->label() ?? $package->activity }}</dd></div>
                     <div><dt>Level</dt><dd>{{ $package->experience_level->label() }}</dd></div>
                     <div><dt>Mode</dt><dd>{{ $package->mode->label() }}</dd></div>
+                    <div><dt>Durasi</dt><dd>{{ $package->duration_days }} hari · {{ $package->participants }} peserta</dd></div>
                     @if($package->start_date && $package->end_date)
                         <div><dt>Tanggal</dt><dd>{{ $package->start_date->translatedFormat('d M Y') }} → {{ $package->end_date->translatedFormat('d M Y') }}</dd></div>
+                    @endif
+                    @if($package->departure_time)
+                        <div><dt>Waktu berkumpul</dt><dd>{{ $package->departure_time }}</dd></div>
+                    @endif
+                    @php($needs = $package->specialNeeds())
+                    @if($needs !== [])
+                        <div class="trip-summary-wide"><dt>Kebutuhan khusus</dt><dd>{{ collect($needs)->map(fn ($need) => \App\Enums\TripSpecialNeed::tryFrom($need)?->label() ?? $need)->implode(', ') }}</dd></div>
+                    @endif
+                    @if($package->planDescription())
+                        <div class="trip-summary-wide"><dt>Catatan</dt><dd>{{ $package->planDescription() }}</dd></div>
                     @endif
                 </dl>
 
                 @if($package->rentalOrder)
                     <section class="document-section">
                         <h2>Pesanan sewa · {{ $package->rentalOrder->order_code }}</h2>
+                        <p class="document-payment"><x-partials.payment-badge :status="$package->rentalPaymentStatus()" /></p>
                         <table class="table-plain">
                             <thead><tr><th>Gear</th><th>Qty</th><th>Hari</th><th>Subtotal</th></tr></thead>
                             <tbody>
@@ -51,6 +64,7 @@
                 @if($package->salesOrder)
                     <section class="document-section">
                         <h2>Pesanan beli · {{ $package->salesOrder->order_code }}</h2>
+                        <p class="document-payment"><x-partials.payment-badge :status="$package->salesPaymentStatus()" /></p>
                         <table class="table-plain">
                             <thead><tr><th>Gear</th><th>Qty</th><th>Harga/unit</th><th>Subtotal</th></tr></thead>
                             <tbody>

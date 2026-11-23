@@ -29,6 +29,25 @@ enum PaymentStatus: string
         };
     }
 
+    /**
+     * Label panjang untuk dokumen/nota pelanggan, termasuk frasa status
+     * pembayaran yang eksplisit ("Menunggu Verifikasi Pembayaran").
+     */
+    public function documentLabel(): string
+    {
+        return match ($this) {
+            self::Unpaid => 'Belum Dibayar',
+            self::WaitingVerification => 'Menunggu Verifikasi Pembayaran',
+            self::Processing => 'Pembayaran Sedang Diproses',
+            self::Verified => 'Pembayaran Terverifikasi',
+            self::Rejected => 'Pembayaran Ditolak',
+            self::Expired => 'Pembayaran Kedaluwarsa',
+            self::Failed => 'Pembayaran Gagal',
+            self::Refunded => 'Dana Dikembalikan',
+            self::PartiallyRefunded => 'Dana Dikembalikan Sebagian',
+        };
+    }
+
     /** Status yang dianggap sudah menerima dana (revenue/deposit dapat dialokasikan). */
     public function isSettled(): bool
     {

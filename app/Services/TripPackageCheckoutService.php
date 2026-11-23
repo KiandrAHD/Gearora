@@ -97,6 +97,7 @@ class TripPackageCheckoutService
                 'mode' => $data->plan->mode->value,
                 'start_date' => $period?->startDate(),
                 'end_date' => $period?->endDate(),
+                'departure_time' => $data->plan->departureTime,
                 'status' => TripPackageStatus::AwaitingPayment->value,
                 'rental_order_id' => $rentalOrder?->getKey(),
                 'sales_order_id' => $salesOrder?->getKey(),
@@ -196,6 +197,10 @@ class TripPackageCheckoutService
     }
 
     /**
+     * Snapshot rencana perjalanan pada saat paket dibuat. Data historis (kebutuhan
+     * khusus, catatan, jam keberangkatan, konfigurasi peserta) tidak diubah oleh
+     * perubahan katalog atau aturan setelah paket terbentuk.
+     *
      * @param  array<int, array{variant_id:int, quantity:int, fulfillment:string}>  $items
      * @return array<string, mixed>
      */
@@ -203,8 +208,18 @@ class TripPackageCheckoutService
     {
         return [
             'destination' => $data->plan->destination,
+            'location' => $data->plan->location,
+            'description' => $data->plan->description,
             'activity' => $data->plan->activity,
             'experience' => $data->plan->experience->value,
+            'duration_days' => $data->plan->durationDays,
+            'participants' => $data->plan->participants,
+            'special_needs' => $data->plan->specialNeeds,
+            'mode' => $data->plan->mode->value,
+            'departure_time' => $data->plan->departureTime,
+            'start_date' => $data->plan->startDate,
+            'end_date' => $data->plan->endDate,
+            'notes' => $data->notes,
             'items' => $items,
             'generated_at' => now()->toIso8601String(),
             'rental_total' => $rentalOrder !== null ? (int) $rentalOrder->total : 0,

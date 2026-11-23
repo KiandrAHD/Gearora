@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\ExperienceLevel;
 use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Enums\RoleName;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -194,9 +195,51 @@ class TripPackageTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
-    private function putDraft(array $items): void
+    public function test_document_and_show_expose_plan_details_and_payment_state(): void
     {
-        $this->withSession(['trip_package_draft' => array_merge($this->payload($items), ['items' => $items])]);
+        $customer = $this->customer();
+        $variant = $this->rentalVariant();
+        RentalAsset::factory()->for($variant, 'variant')->create();
+
+        $this->putDraft(
+            [['variant_id' => $variant->id, 'quantity' => 1, 'fulfillment' => 'sewa']],
+            ['departure_time' => '04:30', 'description' => 'Target sunrise', 'special_needs' => ['cold_weather']],
+        );
+
+        $this->actingAs($customer)
+            ->post(route('trip-planner.package.checkout'), ['payment_method' => PaymentMethod::Transfer->value])
+            ->assertRedirect();
+
+        $package = TripPackage::query()->firstOrFail();
+        $this->assertSame('04:30', $package->departure_time);
+        $this->assertSame(['cold_weather'], $package->specialNeeds());
+        $this->assertSame('Target sunrise', $package->planDescription());
+
+        $package->rentalOrder->payments()->create([
+            'method' => PaymentMethod::Transfer->value,
+            'amount' => $package->rentalOrder->total,
+            'status' => PaymentStatus::WaitingVerification->value,
+        ]);
+
+        $this->actingAs($customer)
+            ->get(route('customer.packages.document', $package))
+            ->assertOk()
+            ->assertSee('04:30')
+            ->assertSee('Cuaca dingin')
+            ->assertSee('Target sunrise')
+            ->assertSee('Menunggu Verifikasi Pembayaran');
+
+        $this->actingAs($customer)
+            ->get(route('customer.packages.show', $package))
+            ->assertOk()
+            ->assertSee('Menunggu Verifikasi Pembayaran');
+    }
+
+    private function putDraft(array $items, array $extra = []): void
+    {
+        $this->withSession([
+            'trip_package_draft' => array_merge($this->payload($items), $extra, ['items' => $items]),
+        ]);
     }
 
     private function payload(array $items): array

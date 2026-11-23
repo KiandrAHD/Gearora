@@ -7,6 +7,7 @@ use App\Enums\TripActivity;
 use App\Enums\TripServiceMode;
 use App\Enums\TripSpecialNeed;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 class TripPlannerRequest extends FormRequest
@@ -18,15 +19,40 @@ class TripPlannerRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        // Destinasi fase ini fixed server-side. Hidden/input client tidak
+        // dapat mengubah tujuan paket Gunung Prau.
         $this->merge([
-            // Destinasi fase ini fixed server-side. Hidden/input client tidak
-            // dapat mengubah tujuan paket Gunung Prau.
             'destination' => 'Gunung Prau',
             'location' => is_string($this->location) ? trim($this->location) : $this->location,
             'special_needs' => array_values(array_filter((array) $this->input('special_needs', []))),
             'mode' => $this->filled('mode') ? $this->input('mode') : TripServiceMode::Sewa->value,
             'experience' => $this->filled('experience') ? $this->input('experience') : ExperienceLevel::Pemula->value,
         ]);
+
+        $this->deriveReturnDate();
+    }
+
+    /**
+     * Tanggal kembali selalu dihitung server dari tanggal berangkat + durasi.
+     * Dengan begitu jumlah hari sewa (RentalPeriod) selalu identik dengan durasi
+     * yang ditampilkan Trip Planner; end_date dari klien tidak dipercaya.
+     */
+    private function deriveReturnDate(): void
+    {
+        $start = trim((string) $this->input('start_date'));
+        $duration = (int) $this->input('duration_days');
+
+        if ($start === '' || $duration < 1) {
+            return;
+        }
+
+        try {
+            $return = Carbon::parse($start)->startOfDay()->addDays($duration)->toDateString();
+        } catch (\Throwable) {
+            return;
+        }
+
+        $this->merge(['end_date' => $return]);
     }
 
     /**
@@ -48,6 +74,7 @@ class TripPlannerRequest extends FormRequest
             'special_needs.*' => ['string', Rule::in(TripSpecialNeed::values())],
             'mode' => ['required', 'string', Rule::in(TripServiceMode::customerValues())],
             'experience' => ['required', 'string', Rule::in(ExperienceLevel::values())],
+            'departure_time' => ['nullable', 'date_format:H:i'],
             'start_date' => ['nullable', 'date', 'required_with:end_date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date', 'required_with:start_date'],
         ];

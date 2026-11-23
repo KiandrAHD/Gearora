@@ -24,6 +24,9 @@
                             <div><dt>Level</dt><dd>{{ $plan->experience->label() }}</dd></div>
                             <div><dt>Mode</dt><dd>{{ $plan->mode->label() }}</dd></div>
                             @if($plan->startDate && $plan->endDate)<div><dt>Tanggal</dt><dd>{{ $plan->startDate }} → {{ $plan->endDate }}</dd></div>@endif
+                            @if($plan->departureTime)<div><dt>Waktu berkumpul</dt><dd>{{ $plan->departureTime }}</dd></div>@endif
+                            @if($plan->specialNeeds !== [])<div class="trip-summary-wide"><dt>Kebutuhan khusus</dt><dd>{{ collect($plan->specialNeeds)->map(fn ($need) => \App\Enums\TripSpecialNeed::tryFrom($need)?->label() ?? $need)->implode(', ') }}</dd></div>@endif
+                            @if($plan->description)<div class="trip-summary-wide"><dt>Catatan</dt><dd>{{ $plan->description }}</dd></div>@endif
                         </dl>
                     </section>
 

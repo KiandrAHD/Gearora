@@ -106,7 +106,7 @@ class TripRecommendationRuleController extends Controller
             'rule' => $rule,
             'activities' => TripActivity::ruleValues(),
             'specialNeeds' => TripSpecialNeed::cases(),
-            'modes' => TripServiceMode::values(),
+            'modes' => TripServiceMode::ruleValues(),
             'categories' => Category::query()->orderBy('name')->get(),
             'products' => Product::query()->orderBy('name')->limit(500)->get(),
         ];

@@ -74,7 +74,9 @@ class TripRecommendationService
                 $availabilityChecked = false;
 
                 // Tanggal bersifat opsional. Bila tidak ada, tidak klaim tersedia.
-                if ($plan->mode->supportsRental() && filled($plan->startDate) && filled($plan->endDate)) {
+                // Ketersediaan rental hanya relevan untuk produk yang memang dapat
+                // disewa (mode fleksibel tetap memuat item beli yang tidak terikat tanggal).
+                if ($plan->mode->supportsRental() && $product->supportsRental() && filled($plan->startDate) && filled($plan->endDate)) {
                     try {
                         $period = RentalPeriod::from($plan->startDate, $plan->endDate);
                         $period->assertValid(config('gearora.rental'));
@@ -83,7 +85,7 @@ class TripRecommendationService
                             ->check($variant, $this->quantity($rule, $plan), $period)
                             ->isAvailable();
 
-                        if (! $available) {
+                        if (! $available && $plan->mode === TripServiceMode::Sewa) {
                             continue;
                         }
                     } catch (\Throwable) {
@@ -196,7 +198,7 @@ class TripRecommendationService
         return match ($mode) {
             TripServiceMode::Sewa => $product->supportsRental(),
             TripServiceMode::Beli => $product->supportsSale() && $this->salePrice($variant) > 0,
-            TripServiceMode::Semua => $product->supportsRental() || ($product->supportsSale() && $this->salePrice($variant) > 0),
+            TripServiceMode::Fleksibel, TripServiceMode::Semua => $product->supportsRental() || ($product->supportsSale() && $this->salePrice($variant) > 0),
         };
     }
 

@@ -19,7 +19,8 @@ class TripPlannerTest extends TestCase
         $response = $this->get('/rekomendasi-trip');
 
         $response->assertOk()
-            ->assertSee('Bingung harus bawa apa')
+            ->assertSee('Ke mana langkahmu')
+            ->assertSee('Gunung Prau')
             ->assertSee('Catatan keselamatan:')
             ->assertSee('kondisi jalur');
     }
@@ -39,7 +40,7 @@ class TripPlannerTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertSee('item cocok')
+            ->assertSee('gear direkomendasikan')
             ->assertSee('Gunung Prau');
     }
 

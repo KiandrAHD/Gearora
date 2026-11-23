@@ -19,18 +19,40 @@
             <section class="panel">
                 <h2>Rencana</h2>
                 <dl class="trip-summary">
+                    <div><dt>Destinasi</dt><dd>{{ $package->destination }}</dd></div>
+                    @if($package->location)
+                        <div><dt>Basecamp</dt><dd>{{ $package->location }}</dd></div>
+                    @endif
                     <div><dt>Aktivitas</dt><dd>{{ \App\Enums\TripActivity::tryFrom($package->activity)?->label() ?? $package->activity }}</dd></div>
                     <div><dt>Level</dt><dd>{{ $package->experience_level->label() }}</dd></div>
                     <div><dt>Mode</dt><dd>{{ $package->mode->label() }}</dd></div>
+                    <div><dt>Durasi</dt><dd>{{ $package->duration_days }} hari</dd></div>
+                    <div><dt>Peserta</dt><dd>{{ $package->participants }} orang</dd></div>
                     @if($package->start_date && $package->end_date)
                         <div><dt>Tanggal</dt><dd>{{ $package->start_date->translatedFormat('d M Y') }} → {{ $package->end_date->translatedFormat('d M Y') }}</dd></div>
+                    @endif
+                    @if($package->departure_time)
+                        <div><dt>Waktu berkumpul</dt><dd>{{ $package->departure_time }}</dd></div>
+                    @endif
+                    @php($needs = $package->specialNeeds())
+                    @if($needs !== [])
+                        <div class="trip-summary-wide"><dt>Kebutuhan khusus</dt><dd>{{ collect($needs)->map(fn ($need) => \App\Enums\TripSpecialNeed::tryFrom($need)?->label() ?? $need)->implode(', ') }}</dd></div>
+                    @endif
+                    @if($package->planDescription())
+                        <div class="trip-summary-wide"><dt>Catatan</dt><dd>{{ $package->planDescription() }}</dd></div>
                     @endif
                 </dl>
             </section>
 
             @if($package->rentalOrder)
                 <section class="panel">
-                    <div class="panel-head"><h2>Pesanan sewa</h2><x-partials.status-badge :status="$package->rentalOrder->order_status" /></div>
+                    <div class="panel-head">
+                        <h2>Pesanan sewa</h2>
+                        <div class="panel-head-badges">
+                            <x-partials.status-badge :status="$package->rentalOrder->order_status" />
+                            <x-partials.payment-badge :status="$package->rentalPaymentStatus()" />
+                        </div>
+                    </div>
                     <p class="field-hint">{{ $package->rentalOrder->order_code }} · Total {{ rupiah($package->rentalOrder->total) }}</p>
                     <table class="table-plain">
                         <thead><tr><th>Gear</th><th>Qty</th><th>Durasi</th><th>Subtotal</th></tr></thead>
@@ -51,7 +73,13 @@
 
             @if($package->salesOrder)
                 <section class="panel">
-                    <div class="panel-head"><h2>Pesanan beli</h2><x-partials.status-badge :status="$package->salesOrder->order_status" /></div>
+                    <div class="panel-head">
+                        <h2>Pesanan beli</h2>
+                        <div class="panel-head-badges">
+                            <x-partials.status-badge :status="$package->salesOrder->order_status" />
+                            <x-partials.payment-badge :status="$package->salesPaymentStatus()" />
+                        </div>
+                    </div>
                     <p class="field-hint">{{ $package->salesOrder->order_code }} · Total {{ rupiah($package->salesOrder->total) }}</p>
                     <table class="table-plain">
                         <thead><tr><th>Gear</th><th>Qty</th><th>Harga/unit</th><th>Subtotal</th></tr></thead>

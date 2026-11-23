@@ -26,3 +26,6 @@ yarn-error.log
 
 storage/e2e/
 storage/phase9-e2e.sqlite
+storage/qa/
+storage/phase-followup-e2e.sqlite
+storage/phase-followup-e2e.sqlite-journal

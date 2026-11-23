@@ -161,20 +161,52 @@ Alpine.data('mobileNav', () => ({
 // recomputes every recommendation and package price. No pricing in JS.
 Alpine.data('tripWizard', (config = {}) => ({
     step: Number(config.step) || 1,
-    steps: ['Aktivitas', 'Durasi & peserta', 'Mode & tanggal', 'Ringkasan', 'Pilih gear'],
+    steps: ['Jadwal', 'Peserta', 'Kebutuhan', 'Ringkasan', 'Pilih gear'],
     picked: {},
-    summary: { activity: '', destination: '', duration: '', participants: '', experience: '', mode: '', dates: '' },
+    summary: { location: '', departureTime: '', startDate: '', description: '', duration: '', participants: '', experience: '', mode: '', needs: '' },
 
     init() {
+        const startDate = this.$root.querySelector('[name="start_date"]');
+        const duration = this.$root.querySelector('[name="duration_days"]');
+        if (startDate && duration) {
+            startDate.addEventListener('change', () => duration.setAttribute('min', '1'));
+        }
         this.capture();
     },
 
     next() {
-        this.capture();
-
-        if (this.step < 4) {
-            this.step += 1;
+        const panel = this.$root.querySelector('.trip-panel:not([style*="display: none"])');
+        if (panel) {
+            const invalid = Array.from(panel.querySelectorAll('input, select, textarea'))
+                .find((field) => !field.checkValidity());
+            if (invalid) {
+                invalid.reportValidity();
+                invalid.focus();
+                return;
+            }
         }
+        this.capture();
+        this.step = Math.min(4, this.step + 1);
+        if (this.step === 4) {
+            this.capture();
+        }
+    },
+
+    submitPlan(event) {
+        const form = event.currentTarget;
+        const fields = Array.from(form.querySelectorAll('input, select, textarea'));
+        const invalid = fields.find((field) => !field.checkValidity());
+        if (invalid) {
+            const panel = invalid.closest('.trip-panel');
+            const index = Array.from(form.querySelectorAll('.trip-panel')).indexOf(panel);
+            this.step = Math.max(1, index + 1);
+            this.$nextTick(() => {
+                invalid.reportValidity();
+                invalid.focus();
+            });
+            return;
+        }
+        form.submit();
     },
 
     prev() {
@@ -185,36 +217,43 @@ Alpine.data('tripWizard', (config = {}) => ({
 
     capture() {
         const form = this.$root.querySelector('form.trip-form');
-
         if (!form) {
             return;
         }
 
         const value = (name) => {
             const element = form.querySelector(`[name="${name}"]`);
-
             return element ? String(element.value || '').trim() : '';
         };
 
         const checkedValue = (name) => {
             const element = form.querySelector(`[name="${name}"]:checked`);
-
             return element ? element.value : '';
+        };
+
+        const checkedLabels = (name) => {
+            const selected = Array.from(form.querySelectorAll(`input[name="${name}"]:checked`));
+            return selected.map((input) => {
+                const label = input.closest('label');
+                return (label && label.textContent) ? label.textContent.trim().replace(/\s+/g, ' ') : input.value;
+            }).filter(Boolean).join(', ');
         };
 
         const capitalise = (word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : '');
 
-        const start = value('start_date');
-        const end = value('end_date');
+        const modeValue = checkedValue('mode') || value('mode');
+        const modeLabels = { sewa: 'Sewa', beli: 'Beli', fleksibel: 'Fleksibel (per item)' };
 
         this.summary = {
-            activity: capitalise(value('activity')),
-            destination: value('destination'),
+            location: value('location'),
+            departureTime: value('departure_time'),
+            startDate: value('start_date'),
+            description: value('description'),
             duration: value('duration_days'),
             participants: value('participants'),
             experience: capitalise(checkedValue('experience') || 'pemula'),
-            mode: capitalise(value('mode')),
-            dates: start && end ? `${start} → ${end}` : '',
+            mode: modeLabels[modeValue] || capitalise(modeValue),
+            needs: checkedLabels('special_needs[]') || checkedLabels('special_needs'),
         };
     },
 }));

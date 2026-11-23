@@ -43,7 +43,7 @@ class TripRecommendationRuleRequest extends FormRequest
             'product_category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'product_id' => ['nullable', 'integer', 'exists:products,id'],
             'product_variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
-            'service_mode' => ['required', 'string', Rule::in(TripServiceMode::values())],
+            'service_mode' => ['required', 'string', Rule::in(TripServiceMode::ruleValues())],
             'recommended_quantity' => ['required', 'integer', 'min:1', 'max:99'],
             'quantity_per_participant' => ['boolean'],
             'priority' => ['required', 'integer', 'min:0', 'max:10000'],
