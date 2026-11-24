@@ -113,7 +113,9 @@ jobs:
 
           # Repository product and guide media are intentionally private. Laravel
           # serves allowed image formats through /media/{path}, not public/storage.
-          rsync -a storage/app/public/ deploy/app/storage/app/public/
+          mkdir -p deploy/app/storage/app/public
+          rsync -a storage/app/public/ \
+            deploy/app/storage/app/public/
 
           # htdocs must never let a stale default index.html outrank index.php.
           # Applied to the htdocs copy only; app source .htaccess stays unchanged.
@@ -162,11 +164,31 @@ jobs:
           test -f deploy/public/index.php
           test -f deploy/public/.htaccess
           test -f deploy/app/storage/app/public/products/backpack-carrier/1-backpack-carrier-1.jpg
+          test "$(find deploy/app/storage/app/public -type f | wc -l)" -ge 100
           test ! -e deploy/public/.env
           test ! -e deploy/public/vendor
           test ! -e deploy/public/storage
+          test ! -e deploy/public/hot
+          test ! -e deploy/app/public/hot
           ! find deploy/public -type f \( -name '.env' -o -name '*.pem' -o -name '*.key' \) -print -quit | grep -q .
           ! find deploy/public -type f -name '*.php' ! -path 'deploy/public/index.php' -print -quit | grep -q .
+          ! find deploy/public -iname '*proof*' -print -quit | grep -q .
+          grep -q '^DirectoryIndex index.php index.html' deploy/public/.htaccess
+          grep -q 'gearora-app/vendor/autoload.php' deploy/public/index.php
+          grep -q 'gearora-app/bootstrap/app.php' deploy/public/index.php
+          grep -q 'gearora-app/storage/framework/maintenance.php' deploy/public/index.php
+          for dir in \
+            deploy/app/storage/app/private \
+            deploy/app/storage/app/public \
+            deploy/app/storage/framework/cache/data \
+            deploy/app/storage/framework/sessions \
+            deploy/app/storage/framework/views \
+            deploy/app/storage/logs
+          do
+            test -d "$dir"
+          done
+          echo "Packaged media files: $(find deploy/app/storage/app/public -type f | wc -l)"
+          echo "Packaged public files: $(find deploy/public -type f | wc -l)"
 
       - name: Upload deployment package
         uses: actions/upload-artifact@v4
