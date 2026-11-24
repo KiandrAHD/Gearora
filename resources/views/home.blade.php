@@ -6,11 +6,19 @@
 
         <div class="page-container hero-cinema-inner">
             <div class="hero-cinema-copy">
-                <div class="hero-trust-pill">
-                    <span class="hero-trust-dots" aria-hidden="true">
-                        <span></span><span></span><span></span>
-                    </span>
-                    <span>Gear terinspeksi · Siap untuk setiap medan</span>
+                <div class="mb-5">
+                    <x-partials.images-badge
+                        label="Gear terinspeksi · Siap untuk setiap medan"
+                        :href="route('catalog.index', ['mode' => 'sewa'])"
+                        :images="[
+                            ['src' => asset('images/editorial/story-trail.jpg'), 'alt' => 'Jalur pendakian'],
+                            ['src' => asset('images/editorial/story-lake.jpg'), 'alt' => 'Danau pegunungan'],
+                            ['src' => asset('images/editorial/story-forest.jpg'), 'alt' => 'Hutan pinus'],
+                            ['src' => asset('images/editorial/story-group.jpg'), 'alt' => 'Petualangan tim'],
+                            ['src' => asset('images/editorial/story-chill.jpg'), 'alt' => 'Istirahat di puncak'],
+                            ['src' => asset('images/editorial/trip-banner.jpg'), 'alt' => 'Camping alpine'],
+                        ]"
+                    />
                 </div>
 
                 <h1>Lebih dekat dengan alam.<br>Lebih siap bertualang.</h1>
