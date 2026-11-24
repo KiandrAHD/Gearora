@@ -533,7 +533,8 @@ body.has-floating-nav main{padding-top:86px}
 .gf-key:active{transform:scale(.94)}
 .gf-key:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
 .gf-glyph--arrow{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-@media(max-width:640px){.folder-grid{grid-template-columns:1fr}.gf-root{--gf-scale:.86}}
+@media(max-width:640px){.folder-grid{grid-template-columns:1fr;overflow-x:clip;padding-inline:4px}.gf-root{--gf-scale:.82}.categories-section,.featured-section{overflow-x:clip}}
+@media(max-width:440px){.gf-root{--gf-scale:.76}.gf-root[data-open]{--gf-spread:26px;--gf-fan:4deg;--gf-lift:-86px}}
 .gf-sheet--paper{background:linear-gradient(180deg,#ffffff 0%,#f2f2f0 100%)}.gf-sheet--paper .gf-sheet-name{color:#18181b}.gf-sheet--paper .gf-sheet-meta{color:rgba(24,24,27,.55)}.gf-lines{position:absolute;left:14px;right:14px;top:40px;display:flex;flex-direction:column;gap:9px}.gf-lines i{display:block;height:5px;border-radius:3px;background:rgba(24,24,27,.08)}.gf-lines i:first-child{height:9px;margin-bottom:4px;background:rgba(24,24,27,.15)}
 
 /* Animated ImagesBadge (Hero Trust Pill) */
@@ -548,4 +549,4 @@ body.has-floating-nav main{padding-top:86px}
 .ib-overflow-count{font:700 10px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em}
 .ib-card img{width:100%;height:100%;object-fit:cover;display:block}
 .ib-label{white-space:nowrap;font-size:12.5px;font-weight:600;color:#F4F7F3;line-height:1}
-@media(max-width:640px){.ib-pill{height:42px;padding:0 14px 0 8px;gap:10px}.ib-label{font-size:11.5px}}
+@media(max-width:640px){.ib-pill{height:40px;max-width:100%;padding:0 14px 0 8px;gap:10px;overflow:hidden}.ib-pill.is-hovered .ib-strip{width:var(--ib-collapsed-w)}.ib-pill.is-hovered .ib-card{transform:translate3d(var(--ib-cx),0,0) rotate(var(--ib-cr)) scale(1)}.ib-pill.is-hovered .ib-card--hidden{opacity:0}.ib-label{font-size:11.5px;overflow:hidden;text-overflow:ellipsis}}
