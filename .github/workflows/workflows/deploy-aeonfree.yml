@@ -1,0 +1,157 @@
+name: Deploy Gearora to AeonFree
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gearora-aeonfree-production
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy Gearora
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: bcmath, ctype, curl, dom, fileinfo, gd, mbstring, openssl, pdo_mysql, pdo_sqlite, simplexml, tokenizer, xml, xmlreader, xmlwriter, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate Composer lock file
+        run: composer validate --no-check-publish
+
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Prepare private and public deployment packages
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf deploy
+          mkdir -p deploy/app deploy/public
+
+          # Laravel source stays outside the public document root.
+          rsync -a ./ deploy/app/ \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.docs/' \
+            --exclude='node_modules/' \
+            --exclude='tests/' \
+            --exclude='deploy/' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='storage/' \
+            --exclude='public/' \
+            --exclude='database/*.sqlite' \
+            --exclude='database/*.sqlite-*'
+
+          # Keep Laravel's own public directory for public_path() and Vite manifest lookup.
+          # Static assets are also copied to htdocs for actual web serving.
+          rsync -a public/ deploy/app/public/
+          rsync -a public/ deploy/public/
+
+          # Public entry point boots Laravel from the sibling private directory.
+          cat > deploy/public/index.php <<'PHP'
+          <?php
+
+          use Illuminate\Foundation\Application;
+          use Illuminate\Http\Request;
+
+          define('LARAVEL_START', microtime(true));
+
+          $maintenance = __DIR__ . '/../gearora-app/storage/framework/maintenance.php';
+
+          if (file_exists($maintenance)) {
+              require $maintenance;
+          }
+
+          require __DIR__ . '/../gearora-app/vendor/autoload.php';
+
+          /** @var Application $app */
+          $app = require_once __DIR__ . '/../gearora-app/bootstrap/app.php';
+
+          $app->handleRequest(Request::capture());
+          PHP
+
+          # Create runtime directories without shipping local runtime data.
+          for dir in \
+            storage/app/private \
+            storage/app/public \
+            storage/framework/cache/data \
+            storage/framework/sessions \
+            storage/framework/views \
+            storage/logs
+          do
+            mkdir -p "deploy/app/$dir"
+            printf '*\n!.gitignore\n' > "deploy/app/$dir/.gitignore"
+          done
+
+          test -f deploy/app/vendor/autoload.php
+          test -f deploy/app/public/build/manifest.json
+          test -f deploy/public/index.php
+          test -f deploy/public/.htaccess
+
+      - name: Deploy private Laravel application to AeonFree
+        if: ${{ vars.AEONFREE_DEPLOY_ENABLED == 'true' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: deploy/app/
+          server-dir: /gearora-app/
+          dangerous-clean-slate: false
+          log-level: standard
+
+      - name: Deploy public website to AeonFree
+        if: ${{ vars.AEONFREE_DEPLOY_ENABLED == 'true' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: deploy/public/
+          server-dir: /htdocs/
+          dangerous-clean-slate: false
+          log-level: standard
+
+      - name: Deployment status
+        if: always()
+        shell: bash
+        run: |
+          if [[ "${{ vars.AEONFREE_DEPLOY_ENABLED }}" == "true" ]]; then
+            echo "FTP deployment was enabled. Check the two FTP steps above."
+          else
+            echo "Build completed. FTP deployment is disabled until repository variable AEONFREE_DEPLOY_ENABLED is set to true."
+          fi
