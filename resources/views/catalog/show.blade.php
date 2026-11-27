@@ -42,7 +42,6 @@
                     @if($product->supportsRental())
                         <form class="booking-form" method="post" action="{{ route('booking.store') }}">
                             @csrf
-                            <input type="hidden" name="method" value="transfer">
                             <label><span>Varian</span>
                                 <select name="variant_id" required>
                                     @foreach($rentalVariants as $variant)
@@ -60,6 +59,7 @@
                                 <label><span>Jumlah</span><input name="quantity" type="number" min="1" max="20" value="1" required></label>
                             </div>
                             <p class="field-hint">Durasi minimal {{ config('gearora.rental.min_days') }} hari, maksimal {{ config('gearora.rental.max_days') }} hari. Ketersediaan akhir dicek ulang saat pesanan dibuat.</p>
+                            <x-partials.payment-method-picker name="method" :selected="\App\Enums\PaymentMethod::Transfer->value" />
                             <button class="btn-primary" type="submit">Lanjutkan ke ringkasan</button>
                         </form>
                     @endif

@@ -26,7 +26,8 @@
                     <div class="cost-row"><span>Subtotal sewa</span><strong>{{ rupiah($quote->subtotal) }}</strong></div>
                     <div class="cost-row"><span>Deposit</span><strong>{{ rupiah($quote->depositTotal) }}</strong></div>
                     <div class="cost-row cost-total"><span>Total</span><strong>{{ rupiah($quote->total) }}</strong></div>
-                    <p class="field-hint">Metode pembayaran: {{ \App\Enums\PaymentMethod::from($method)->label() }}. Pembayaran manual, diverifikasi admin.</p>
+                    @php($selectedMethod = \App\Enums\PaymentMethod::from($method))
+                    <p class="field-hint">Metode pembayaran: <strong>{{ $selectedMethod->label() }}</strong>. {{ $selectedMethod->description() }}</p>
                 </div>
             </div>
 

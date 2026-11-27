@@ -21,11 +21,29 @@
 
         <section class="panel">
             <h2>Pembayaran</h2>
+            @php
+                $methodIcons = ['midtrans' => 'QRIS', 'transfer' => 'BANK', 'cash' => 'TUNAI'];
+            @endphp
             @forelse($order->payments as $payment)
-                <div class="payment-row">
-                    <div><p>{{ $payment->method->label() }} · {{ rupiah($payment->amount) }} <x-partials.status-badge :status="$payment->status" /></p>
-                        @if($payment->verification_note)<p class="field-hint">Catatan admin: {{ $payment->verification_note }}</p>@endif
+                <div class="payment-row payment-row--{{ $payment->method->value }}">
+                    <div class="payment-row-head">
+                        <span class="payment-method-badge" aria-hidden="true">{{ $methodIcons[$payment->method->value] ?? 'BAYAR' }}</span>
+                        <div>
+                            <p><strong>{{ $payment->method->label() }}</strong> · {{ rupiah($payment->amount) }}</p>
+                            <p class="field-hint">{{ $payment->method->description() }}</p>
+                        </div>
+                        <x-partials.status-badge :status="$payment->status" />
                     </div>
+
+                    @if($payment->verification_note)<p class="field-hint">Catatan admin: {{ $payment->verification_note }}</p>@endif
+
+                    @if($payment->method->value === 'cash' && $payment->status->value !== 'verified')
+                        <div class="payment-cash-note">
+                            <strong>Bayar tunai saat pengambilan</strong>
+                            <p>Bayar langsung ke petugas saat gear diambil @if(filled($instructions['cash_location'])) di {{ $instructions['cash_location'] }}@endif. Bukan pembayaran COD pengiriman. Admin akan mencatat penerimaan tunai setelah uang diterima.</p>
+                        </div>
+                    @endif
+
                     @if($payment->method->value === 'transfer' && ! in_array($payment->status->value, ['verified', 'refunded'], true))
                         <form class="stack-form" method="post" action="{{ route('customer.orders.payment-proof.store', $order) }}" enctype="multipart/form-data">
                             @csrf
@@ -41,25 +59,25 @@
 
             @if($gatewayAvailable && ! in_array($order->order_status->value, ['cancelled', 'completed'], true))
                 <div class="payment-instructions">
-                    <h3>Bayar otomatis</h3>
-                    <p class="field-hint">Kartu kredit/debit, VA bank, e-wallet, dan QRIS diproses melalui Midtrans. Status terverifikasi otomatis setelah pembayaran berhasil.</p>
+                    <h3>Bayar via QRIS / Midtrans</h3>
+                    <p class="field-hint">QRIS, e-wallet, kartu kredit/debit, dan VA bank diproses melalui Midtrans Snap. Status terverifikasi otomatis setelah pembayaran berhasil.</p>
                     <form method="post" action="{{ route('customer.orders.midtrans.start', $order) }}">
                         @csrf
-                        <button class="btn-primary" type="submit">Bayar sekarang (Midtrans)</button>
+                        <button class="btn-primary" type="submit">Bayar via QRIS / Midtrans</button>
                     </form>
                 </div>
             @endif
 
             @if($hasTransferInstruction)
                 <div class="payment-instructions">
-                    <h3>Instruksi transfer</h3>
+                    <h3>Instruksi transfer bank</h3>
                     <p>{{ $instructions['bank_name'] }}</p>
                     <p>No. rekening: <strong>{{ $instructions['bank_account_number'] }}</strong></p>
                     <p>Atas nama: {{ $instructions['bank_account_name'] }}</p>
                 </div>
             @endif
             @if(filled($instructions['cash_location']))
-                <p class="field-hint">Pembayaran tunai di: {{ $instructions['cash_location'] }}</p>
+                <p class="field-hint">Lokasi pembayaran tunai saat pengambilan: {{ $instructions['cash_location'] }}</p>
             @endif
         </section>
 

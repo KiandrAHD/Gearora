@@ -89,13 +89,7 @@
                         <form class="stack-form" method="POST" action="{{ route('trip-planner.package.checkout') }}">
                             @csrf
                             <input type="hidden" name="checkout_key" value="{{ $checkoutKey }}">
-                            <label><span>Metode pembayaran</span>
-                                <select name="payment_method" required>
-                                    @foreach($methods as $method)
-                                        <option value="{{ $method->value }}" @selected($method->value === 'transfer')>{{ $method->label() }}</option>
-                                    @endforeach
-                                </select>
-                            </label>
+                            <x-partials.payment-method-picker name="payment_method" :methods="$methods" :selected="\App\Enums\PaymentMethod::Transfer->value" />
                             <label><span>Catatan (opsional)</span><input name="notes" maxlength="500" value="{{ $notes }}"></label>
                             <button class="button button-primary" type="submit">Buat paket &amp; lanjut bayar</button>
                         </form>

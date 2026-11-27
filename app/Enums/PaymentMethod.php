@@ -11,18 +11,28 @@ enum PaymentMethod: string
     public function label(): string
     {
         return match ($this) {
-            self::Midtrans => 'Pembayaran otomatis (Midtrans)',
-            self::Transfer => 'Transfer bank',
-            self::Cash => 'Tunai di lokasi',
+            self::Midtrans => 'QRIS / e-wallet & transfer otomatis (Midtrans)',
+            self::Transfer => 'Transfer bank manual',
+            self::Cash => 'Bayar tunai saat pengambilan',
         };
     }
 
     public function shortLabel(): string
     {
         return match ($this) {
-            self::Midtrans => 'Midtrans',
+            self::Midtrans => 'QRIS / Midtrans',
             self::Transfer => 'Transfer',
-            self::Cash => 'Tunai',
+            self::Cash => 'Tunai saat ambil',
+        };
+    }
+
+    /** Penjelasan singkat untuk UI pemilihan metode. */
+    public function description(): string
+    {
+        return match ($this) {
+            self::Midtrans => 'Bayar dengan QRIS, e-wallet, kartu, atau VA bank. Status terverifikasi otomatis melalui Midtrans.',
+            self::Transfer => 'Transfer ke rekening GEARORA, lalu unggah bukti. Diverifikasi manual oleh admin.',
+            self::Cash => 'Bayar tunai langsung di basecamp/toko saat gear diambil. Bukan COD pengiriman.',
         };
     }
 

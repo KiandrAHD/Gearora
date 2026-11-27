@@ -103,7 +103,7 @@ Repository: https://github.com/KiandrAHD/Gearora (branch `main`)
 
 ## 9. Keputusan implementasi (aman/terdokumentasi)
 
-1. **Basecamp**: daftar basecamp disimpan di `config/gearora.php` (`trip.basecamps`) + rule `in:` di FormRequest; nilai custom "Lainnya" ditolak (hanya pilihan tervalidasi) agar ringkasan paket selalu konsisten. Tidak ada tabel baru (shared hosting, perubahan minimal).
+1. **Basecamp**: daftar basecamp disimpan di `config/gearora.php` (`trip.basecamps`) + dropdown di wizard. Pilihan "Lainnya" (`basecamp_other_value`) menampilkan input tambahan `basecamp_other`; nilainya divalidasi `required_if` + `string|max:120` lalu diresolusi server-side menjadi `location`. Posting lama berbasis `location` tetap didukung. Tidak ada tabel baru (shared hosting, perubahan minimal).
 2. **Tanggal keberangkatan**: validasi `after_or_equal:today` di backend dengan zona `Asia/Jakarta` (config `app.timezone`), plus atribut `min` di HTML sebagai bantuan.
 3. **Panduan demo**: artikel testing ditambahkan ke `DemoGuidesSeeder` (hanya `local`/`testing`, idempotent via `updateOrCreate` by slug, tidak menimpa artikel existing karena slug demo berbeda).
 4. **Pembayaran**: QRIS disajikan melalui Midtrans Snap (channel e-wallet/QRIS di dalam Snap). Tidak ada pipeline baru. Tunai diberi label "Bayar Tunai Saat Pengambilan (COD pickup)". Admin mencatat nominal diterima + waktu + petugas melalui `PaymentService::recordCash` yang diperluas (kolom baru `cash_received_amount` + `cash_officer_note` bila migration diperlukan — dievaluasi di fase 7; jika tidak perlu kolom baru, note terstruktur disimpan di `verification_note`).
