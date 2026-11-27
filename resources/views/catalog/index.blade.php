@@ -58,7 +58,7 @@
                                 @endforeach
                             </select>
                         </label>
-                        <button class="catalog-filter-toggle" type="button" @click="filtersOpen = true; $nextTick(() => $refs.filterPanel?.querySelector('.catalog-sidebar-close')?.focus())" aria-controls="catalog-filters">
+                        <button class="catalog-filter-toggle" type="button" @click="filtersOpen = true; $nextTick(() => $refs.filterPanel?.querySelector('.catalog-sidebar-close')?.focus())" aria-controls="catalog-filters" :aria-expanded="filtersOpen.toString()">
                             Filter
                             @if($hasFilters)<span class="catalog-filter-dot" aria-hidden="true"></span>@endif
                         </button>
@@ -69,7 +69,7 @@
                 <div class="catalog-filter-backdrop" x-show="filtersOpen" x-cloak x-transition.opacity @click="filtersOpen = false" aria-hidden="true"></div>
 
                 <div class="catalog-layout">
-                    <aside id="catalog-filters" class="catalog-sidebar" :class="{ 'is-open': filtersOpen }" aria-label="Filter katalog" x-ref="filterPanel">
+                    <aside id="catalog-filters" class="catalog-sidebar" :class="{ 'is-open': filtersOpen }" aria-label="Filter katalog" x-ref="filterPanel" @keydown.escape.window="filtersOpen = false">
                         <div class="catalog-sidebar-inner">
                             <div class="catalog-sidebar-head">
                                 <h2>Filter</h2>
