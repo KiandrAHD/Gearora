@@ -61,7 +61,7 @@
                                 <span class="field-hint">Terkunci di server untuk paket Prau.</span>
                             </label>
                             <label class="field"><span>Basecamp / lokasi</span>
-                                @php($selectedBasecamp = old('basecamp', $plan?->basecamp ?? (in_array($plan?->location, config('gearora.trip.basecamps', []), true) ? $plan?->location : (filled($plan?->location) ? config('gearora.trip.basecamp_other_value') : ''))))
+                                @php($selectedBasecamp = old('basecamp', in_array($plan?->location, config('gearora.trip.basecamps', []), true) ? $plan?->location : (filled($plan?->location) ? config('gearora.trip.basecamp_other_value') : '')))
                                 <select name="basecamp" required x-ref="basecampSelect">
                                     <option value="" disabled @selected($selectedBasecamp === '')>Pilih basecamp</option>
                                     @foreach(config('gearora.trip.basecamps', []) as $basecamp)

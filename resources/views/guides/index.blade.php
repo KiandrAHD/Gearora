@@ -1,9 +1,16 @@
 <x-layout title="Panduan">
     <section class="guide-library-hero">
+        <div class="guide-library-hero-bg" aria-hidden="true"></div>
+        <div class="guide-library-hero-scrim" aria-hidden="true"></div>
         <div class="page-container guide-library-hero-inner">
             <p class="eyebrow">FIELD NOTES · GEARORA</p>
             <h1 class="page-title">Bekal pengetahuan<br>sebelum melangkah.</h1>
             <p class="page-lead">Panduan memilih, menyiapkan, dan merawat perlengkapan outdoor. Ditulis ringkas, bersumber, dan siap dibawa ke jalur.</p>
+            <ul class="guide-library-stats">
+                <li><strong>{{ $guides->total() }}</strong><span>artikel lapangan</span></li>
+                <li><strong>{{ $categories->count() }}</strong><span>kategori</span></li>
+                <li><strong>Safety-first</strong><span>selalu dicek tim</span></li>
+            </ul>
         </div>
     </section>
 

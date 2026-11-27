@@ -48,7 +48,7 @@ class EquipmentGuideTest extends TestCase
 
         $this->get(route('guides.show', $guide))
             ->assertOk()
-            ->assertSee('<h2>Aman</h2>', false)
+            ->assertSee('<h2 id="aman">Aman</h2>', false)
             ->assertSee('<strong>tebal</strong>', false)
             ->assertSee('&lt;script&gt;alert', false)
             ->assertDontSee('<script>alert', false);

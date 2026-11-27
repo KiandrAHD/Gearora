@@ -347,12 +347,18 @@ body.has-floating-nav main{padding-top:88px}
 @media(max-width:900px){.guide-featured{grid-template-columns:1fr}.guide-featured-card.is-lead{grid-row:auto}.guide-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.guide-grid{grid-template-columns:1fr}}
 /* Editorial guide library and secure Guide Studio */
-.guide-library-hero{position:relative;overflow:hidden;background:linear-gradient(120deg,#102f27 0%,#183d32 58%,#365746 100%);color:#fff;padding:76px 0 68px}
-.guide-library-hero::after{content:"";position:absolute;right:-8vw;top:-28vw;width:54vw;height:54vw;border:1px solid #ffffff20;border-radius:50%;box-shadow:0 0 0 42px #ffffff08,0 0 0 92px #ffffff06;pointer-events:none}
+.guide-library-hero{position:relative;overflow:hidden;color:#fff;padding:76px 0 68px;background:#102f27}
+.guide-library-hero-bg{position:absolute;inset:0;background:url('/images/editorial/story-forest.jpg') center/cover;z-index:0}
+.guide-library-hero-scrim{position:absolute;inset:0;background:linear-gradient(120deg,rgba(16,47,39,.95) 0%,rgba(24,61,50,.9) 58%,rgba(54,87,70,.76) 100%);z-index:1}
+.guide-library-hero::after{content:"";position:absolute;right:-8vw;top:-28vw;width:54vw;height:54vw;border:1px solid #ffffff20;border-radius:50%;box-shadow:0 0 0 42px #ffffff08,0 0 0 92px #ffffff06;pointer-events:none;z-index:1}
 .guide-library-hero .page-title{max-width:760px;color:#fff;font-size:clamp(40px,6vw,72px);line-height:1.02;letter-spacing:-.065em}
 .guide-library-hero .page-lead{max-width:540px;color:#e0e8de;font-size:15px}
 .guide-library-hero .eyebrow{color:#c5d3b9}
-.guide-library-hero-inner{position:relative;z-index:1}
+.guide-library-hero-inner{position:relative;z-index:2}
+.guide-library-stats{list-style:none;display:flex;flex-wrap:wrap;gap:12px;margin:26px 0 0;padding:0}
+.guide-library-stats li{display:flex;flex-direction:column;gap:2px;padding:12px 18px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(255,255,255,.08);backdrop-filter:blur(8px)}
+.guide-library-stats strong{font:700 18px Poppins,sans-serif}
+.guide-library-stats span{color:#c5d3b9;font-size:12px}
 .guide-library-content{padding-top:36px}
 .guide-library-filter{display:grid;grid-template-columns:minmax(200px,1fr) minmax(160px,240px) auto;gap:10px;margin-bottom:24px;padding:12px;border:1px solid #e0e5dc;border-radius:9px;background:#fff;box-shadow:0 12px 34px #102f2709}
 .guide-library-filter input,.guide-library-filter select{min-width:0;min-height:46px;padding:0 14px;border:1px solid #dbe0d7;border-radius:5px;background:#fff;color:var(--navy);font-size:13px}
@@ -382,7 +388,19 @@ body.has-floating-nav main{padding-top:88px}
 .guide-detail-hero{padding:58px 0 42px;background:#183d32;color:#fff}
 .guide-detail-hero .page-title{max-width:900px;color:#fff;font-size:clamp(36px,5vw,60px);line-height:1.08}
 .guide-detail-hero .field-hint{color:#d6ded2}
+.guide-breadcrumb{color:rgba(230,238,224,.78);margin-bottom:16px}
+.guide-breadcrumb a:hover{color:#fff}
 .prose-container{max-width:900px}
+.guide-article-grid{display:grid;grid-template-columns:210px minmax(0,1fr);gap:40px;align-items:start;margin-top:8px}
+.guide-article-grid.is-single{grid-template-columns:minmax(0,1fr)}
+.guide-body{min-width:0}
+.guide-toc{position:sticky;top:96px;padding-left:16px;border-left:2px solid var(--line)}
+.guide-toc-title{margin:0 0 12px;font:700 11px Poppins,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.guide-toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.guide-toc a{display:block;font-size:12.5px;line-height:1.45;color:#526267}
+.guide-toc a:hover{color:var(--forest)}
+.guide-toc li.is-level-3{padding-left:12px}
+.guide-toc li.is-level-3 a{font-size:11.5px;color:#74817D}
 .guide-cover{display:block;width:100%;max-height:520px;object-fit:cover;border-radius:8px;margin:-12px auto 34px}
 .guide-lede{max-width:72ch;margin:0 auto 32px;padding-left:20px;border-left:3px solid var(--sage);color:#405450;font:500 20px/1.65 Poppins,sans-serif}
 .guide-content{max-width:72ch;margin-inline:auto;color:#263b3a;font-size:16px;line-height:1.85}
@@ -405,6 +423,7 @@ body.has-floating-nav main{padding-top:88px}
 .guide-studio input,.guide-studio textarea,.guide-studio select{border-radius:5px}
 .guide-studio textarea[name="content"]{min-height:320px;font:13px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace}
 @media(max-width:760px){.guide-library-hero{padding:54px 0 46px}.guide-library-hero::after{right:-35vw;top:-26vw;width:85vw;height:85vw}.guide-library-filter{grid-template-columns:1fr}.guide-library-filter .button{width:100%}.guide-featured{grid-template-columns:1fr;margin-bottom:38px}.guide-featured-card.is-lead{min-height:0}.guide-featured-card.is-lead .guide-featured-cover,.guide-featured-cover{height:auto;aspect-ratio:1.6}.guide-library-heading{align-items:flex-start;flex-direction:column;gap:4px}.guide-library-heading h2{font-size:24px}.guide-detail-hero{padding:40px 0 28px}.guide-cover{margin:0 auto 26px}.guide-lede{font-size:17px}.guide-content{font-size:15px}.guide-content iframe{aspect-ratio:16/9}}
+@media(max-width:900px){.guide-article-grid{grid-template-columns:1fr;gap:18px}.guide-toc{position:static;padding:14px 0 0;border-left:0;border-top:1px solid var(--line)}.guide-toc ol{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}.guide-toc li.is-level-3{display:none}}
 @media(prefers-reduced-motion:reduce){.guide-card,.guide-card-photo img{transition:none!important}.guide-card:hover{transform:none}}
 
 /* Phase 9 — Trip Planner wizard */

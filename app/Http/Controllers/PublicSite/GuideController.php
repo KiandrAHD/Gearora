@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EquipmentGuide;
 use App\Models\GuideCategory;
 use App\Support\GuideContentRenderer;
+use App\Support\GuideTableOfContents;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -59,10 +60,13 @@ class GuideController extends Controller
             ->limit(3)
             ->get();
 
+        $rendered = GuideTableOfContents::build(GuideContentRenderer::render($guide->content));
+
         return view('guides.show', [
             'guide' => $guide,
             'related' => $related,
-            'renderedContent' => GuideContentRenderer::render($guide->content),
+            'renderedContent' => $rendered['html'],
+            'toc' => $rendered['toc'],
         ]);
     }
 }
