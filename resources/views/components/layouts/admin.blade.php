@@ -88,13 +88,19 @@
         <div class="admin-main">
             <header class="admin-header">
                 <button type="button" class="admin-toggle" x-ref="sidebarToggle" @click="openSidebar()" aria-label="Buka menu admin" aria-controls="admin-sidebar" :aria-expanded="sidebarOpen.toString()">☰</button>
-                <div><p class="admin-kicker">Admin Console</p><h1>{{ $title }}</h1></div>
-                <a class="text-link" href="{{ route('home') }}">Lihat situs publik</a>
+                <div class="admin-header-copy">
+                    <p class="admin-kicker">Admin Console · GEARORA</p>
+                    <h1>{{ $title }}</h1>
+                    @if($subtitle)<p class="admin-subtitle">{{ $subtitle }}</p>@endif
+                </div>
+                <div class="admin-header-meta">
+                    <a class="text-link admin-site-link" href="{{ route('home') }}">Lihat situs publik</a>
+                    <span class="admin-user-chip" title="{{ $user?->name }}">{{ strtoupper(mb_substr((string) $user?->name, 0, 1)) }}</span>
+                </div>
             </header>
             <main id="admin-content" class="admin-content" tabindex="-1">
                 @if(session('status'))<div class="notice" role="status">{{ session('status') }}</div>@endif
                 @if(session('error'))<div class="notice notice-warning" role="alert">{{ session('error') }}</div>@endif
-                @if($subtitle)<p class="page-lead">{{ $subtitle }}</p>@endif
                 {{ $slot }}
             </main>
         </div>

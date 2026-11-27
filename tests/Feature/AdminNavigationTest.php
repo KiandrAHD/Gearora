@@ -84,6 +84,25 @@ class AdminNavigationTest extends TestCase
         $this->assertStringContainsString("document.body.classList.toggle('nav-open', sidebarOpen)", $html);
     }
 
+    public function test_admin_topbar_renders_context_and_user_chip(): void
+    {
+        $html = $this->actingAs($this->staff(RoleName::Owner))->get(route('admin.dashboard'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('class="admin-header"', $html);
+        $this->assertStringContainsString('Admin Console · GEARORA', $html);
+        $this->assertStringContainsString('admin-user-chip', $html);
+        $this->assertStringContainsString('admin-subtitle', $html);
+    }
+
+    public function test_dashboard_renders_real_kpi_and_notice_regions(): void
+    {
+        $html = $this->actingAs($this->staff(RoleName::Owner))->get(route('admin.dashboard'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('class="stat-grid"', $html);
+        $this->assertStringContainsString('admin-content', $html);
+        $this->assertStringContainsString('id="admin-content"', $html);
+    }
+
     public function test_every_navigation_route_exists(): void
     {
         foreach (AdminNavigation::groups() as $group) {
