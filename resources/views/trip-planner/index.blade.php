@@ -60,11 +60,24 @@
                                 <input value="Gunung Prau · Dieng, Jawa Tengah" readonly aria-readonly="true">
                                 <span class="field-hint">Terkunci di server untuk paket Prau.</span>
                             </label>
-                            <label class="field"><span>Basecamp / lokasi <em>opsional</em></span>
-                                <input name="location" value="{{ old('location', $plan?->location ?? '') }}" maxlength="160" placeholder="Contoh: Patak Banteng">
+                            <label class="field"><span>Basecamp / lokasi</span>
+                                @php($selectedBasecamp = old('basecamp', $plan?->basecamp ?? (in_array($plan?->location, config('gearora.trip.basecamps', []), true) ? $plan?->location : (filled($plan?->location) ? config('gearora.trip.basecamp_other_value') : ''))))
+                                <select name="basecamp" required x-ref="basecampSelect">
+                                    <option value="" disabled @selected($selectedBasecamp === '')>Pilih basecamp</option>
+                                    @foreach(config('gearora.trip.basecamps', []) as $basecamp)
+                                        <option value="{{ $basecamp }}" @selected($selectedBasecamp === $basecamp)>{{ $basecamp }}</option>
+                                    @endforeach
+                                    <option value="{{ config('gearora.trip.basecamp_other_value') }}" @selected($selectedBasecamp === config('gearora.trip.basecamp_other_value'))>Lainnya…</option>
+                                </select>
+                                <span class="field-hint">Basecamp resmi Gunung Prau. Pilih “Lainnya” bila titik kumpulmu berbeda.</span>
+                            </label>
+                            <label class="field" x-show="$refs.basecampSelect?.value === '{{ config('gearora.trip.basecamp_other_value') }}'" x-cloak>
+                                <span>Nama basecamp lain</span>
+                                <input name="basecamp_other" value="{{ old('basecamp_other', $plan?->basecamp_other ?? '') }}" maxlength="120" placeholder="Contoh: Basecamp Kaliurang" :required="$refs.basecampSelect?.value === '{{ config('gearora.trip.basecamp_other_value') }}'">
                             </label>
                             <label class="field"><span>Tanggal keberangkatan</span>
-                                <input type="date" name="start_date" value="{{ old('start_date', $plan?->startDate ?? '') }}" required>
+                                <input type="date" name="start_date" value="{{ old('start_date', $plan?->startDate ?? '') }}" min="{{ now()->toDateString() }}" required>
+                                <span class="field-hint">Tidak boleh sebelum hari ini ({{ now()->translatedFormat('d M Y') }}).</span>
                             </label>
                             <label class="field"><span>Waktu berkumpul <em>opsional</em></span>
                                 <input type="time" name="departure_time" value="{{ old('departure_time', $plan?->departureTime ?? '') }}">
@@ -157,7 +170,7 @@
                         @else
                             <form method="POST" action="{{ route('trip-planner.package.store') }}" class="trip-package-form">
                                 @csrf
-                                @foreach(['activity' => $plan->activity, 'location' => $plan->location, 'description' => $plan->description, 'duration_days' => $plan->durationDays, 'participants' => $plan->participants, 'experience' => $plan->experience->value, 'mode' => $plan->mode->value, 'departure_time' => $plan->departureTime, 'start_date' => $plan->startDate, 'end_date' => $plan->endDate] as $name => $value)
+                                @foreach(['activity' => $plan->activity, 'location' => $plan->location, 'basecamp' => in_array($plan->location, config('gearora.trip.basecamps', []), true) ? $plan->location : config('gearora.trip.basecamp_other_value'), 'basecamp_other' => in_array($plan->location, config('gearora.trip.basecamps', []), true) ? null : $plan->location, 'description' => $plan->description, 'duration_days' => $plan->durationDays, 'participants' => $plan->participants, 'experience' => $plan->experience->value, 'mode' => $plan->mode->value, 'departure_time' => $plan->departureTime, 'start_date' => $plan->startDate, 'end_date' => $plan->endDate] as $name => $value)
                                     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                                 @endforeach
                                 @foreach($plan->specialNeeds as $need)<input type="hidden" name="special_needs[]" value="{{ $need }}">@endforeach

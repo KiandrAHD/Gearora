@@ -244,8 +244,12 @@ Alpine.data('tripWizard', (config = {}) => ({
         const modeValue = checkedValue('mode') || value('mode');
         const modeLabels = { sewa: 'Sewa', beli: 'Beli', fleksibel: 'Fleksibel (per item)' };
 
+        const basecamp = value('basecamp');
+        const basecampOther = value('basecamp_other');
+        const locationLabel = basecamp === 'lainnya' ? basecampOther : basecamp;
+
         this.summary = {
-            location: value('location'),
+            location: locationLabel,
             departureTime: value('departure_time'),
             startDate: value('start_date'),
             description: value('description'),

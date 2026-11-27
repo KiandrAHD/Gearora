@@ -94,6 +94,19 @@ return [
         'max_results' => (int) env('GEARORA_TRIP_MAX_RESULTS', 12),
         'max_duration_days' => (int) env('GEARORA_TRIP_MAX_DAYS', 60),
         'max_participants' => (int) env('GEARORA_TRIP_MAX_PARTICIPANTS', 100),
+
+        /*
+        | Basecamp resmi Gunung Prau. "Lainnya" membuka input tambahan agar
+        | pendaki tetap dapat menulis basecamp yang tidak ada di daftar.
+        */
+        'basecamps' => [
+            'Patak Banteng',
+            'Dieng',
+            'Kalilembu',
+            'Wates',
+            'Igirmranak',
+        ],
+        'basecamp_other_value' => 'lainnya',
     ],
 
     'guides' => [
