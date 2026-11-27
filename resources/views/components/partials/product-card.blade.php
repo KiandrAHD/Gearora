@@ -9,6 +9,11 @@
     $query = array_filter(['start_date' => $startDate, 'end_date' => $endDate]);
     $url = route('catalog.show', array_merge(['product' => $product], $query));
     $imagePath = $product->displayImagePath();
+
+    // Status ketersediaan dihitung server-side. Mode beli memakai stok fisik
+    // (reservasi aktif sudah dikurangi pada filter); mode sewa menandai unit siap.
+    $stock = (int) ($variant?->stock_quantity ?? 0);
+    $isAvailable = $isRetail ? $stock > 0 : $hasPrice;
 @endphp
 <article class="product-card">
     <a class="product-photo" href="{{ $url }}" aria-label="Lihat detail {{ $product->name }}">
@@ -21,6 +26,16 @@
             </span>
         @endif
         <span class="product-tag">{{ $product->brand ?: 'GEARORA' }}</span>
+        @if($product->is_featured)
+            <span class="product-select">GEARORA SELECT</span>
+        @endif
+        <span class="product-availability {{ $isAvailable ? 'is-ok' : 'is-empty' }}">
+            @if($isRetail)
+                {{ $isAvailable ? 'Stok '.$stock : 'Stok habis' }}
+            @else
+                {{ $hasPrice ? 'Siap sewa' : 'Belum tersedia' }}
+            @endif
+        </span>
     </a>
     <div class="product-body">
         <p class="product-category">{{ $product->category?->name ?? 'Outdoor' }} @if($product->brand) · {{ $product->brand }} @endif</p>
@@ -29,13 +44,15 @@
             @if($product->supportsRental())<span class="{{ ! $isRetail ? 'is-current' : '' }}">SEWA</span>@endif
             @if($product->supportsSale())<span class="{{ $isRetail ? 'is-current' : '' }}">BELI</span>@endif
         </div>
-        <p class="product-price">
-            @if($hasPrice)
-                {{ rupiah($price) }} <small>{{ $unit }}</small>
-            @else
-                <span class="product-price-empty">Harga belum tersedia</span>
-            @endif
-        </p>
-        <a class="product-arrow" href="{{ $url }}" aria-label="Lihat detail {{ $product->name }}">→</a>
+        <div class="product-foot">
+            <p class="product-price">
+                @if($hasPrice)
+                    {{ rupiah($price) }} <small>{{ $unit }}</small>
+                @else
+                    <span class="product-price-empty">Harga belum tersedia</span>
+                @endif
+            </p>
+            <a class="product-arrow" href="{{ $url }}" aria-label="Lihat detail {{ $product->name }}">→</a>
+        </div>
     </div>
 </article>

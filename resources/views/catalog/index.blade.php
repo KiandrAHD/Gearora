@@ -8,16 +8,23 @@
 @endphp
 <x-layout :title="'Katalog '.$modeLabel">
     <section class="catalog-hero">
+        <div class="catalog-hero-bg" aria-hidden="true"></div>
+        <div class="catalog-hero-scrim" aria-hidden="true"></div>
         <div class="page-container catalog-hero-inner">
             <div class="catalog-hero-copy">
-                <p class="eyebrow">KATALOG {{ $isRetail ? 'BELI' : 'SEWA' }} GEARORA</p>
+                <p class="eyebrow"><span class="catalog-hero-dot" aria-hidden="true"></span>KATALOG {{ $isRetail ? 'BELI' : 'SEWA' }} GEARORA</p>
                 <h1 class="page-title">{{ $isRetail ? 'Beli gear yang tepat untukmu.' : 'Sewa gear untuk perjalananmu.' }}</h1>
+                <p class="catalog-hero-desc">
+                    {{ $isRetail
+                        ? 'Bandingkan harga jual per unit dan ketersediaan stok retail yang sudah dikurangi reservasi aktif.'
+                        : 'Saring berdasarkan kategori, harga harian, dan tanggal untuk melihat unit rental yang benar-benar tersedia.' }}
+                </p>
             </div>
-            <p class="catalog-hero-desc">
-                {{ $isRetail
-                    ? 'Bandingkan harga jual per unit dan ketersediaan stok retail yang sudah dikurangi reservasi aktif.'
-                    : 'Saring berdasarkan kategori, harga harian, dan tanggal untuk melihat unit rental yang benar-benar tersedia.' }}
-            </p>
+            <ul class="catalog-hero-stats">
+                <li><strong>Terinspeksi</strong><span>Dicek sebelum diserahkan</span></li>
+                <li><strong>{{ number_format($products->total(), 0, ',', '.') }} gear</strong><span>{{ $isRetail ? 'siap dibeli' : 'siap disewa' }}</span></li>
+                <li><strong>{{ $isRetail ? 'Per unit' : 'Per hari' }}</strong><span>Harga dihitung server</span></li>
+            </ul>
         </div>
     </section>
 
